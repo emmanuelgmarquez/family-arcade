@@ -1,0 +1,8 @@
+{
+  "id": "arcade-self-test-assets",
+  "title": "Arcade Self-Test: Assets",
+  "description": "Checks images, sounds, modules and data files load offline. Tap to beep.",
+  "cover": "cover.png",
+  "orientation": "landscape",
+  "controls": "none"
+}

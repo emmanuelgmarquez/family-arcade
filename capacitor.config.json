@@ -1,0 +1,10 @@
+{
+  "appId": "com.familyarcade.app",
+  "appName": "Family Arcade",
+  "webDir": "www",
+  "ios": {
+    "contentInset": "never",
+    "backgroundColor": "#07080f",
+    "allowsLinkPreview": false
+  }
+}

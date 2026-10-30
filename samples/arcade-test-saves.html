@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Arcade Self-Test: Saves &amp; Keys</title>
+<style>
+  body { margin: 0; min-height: 100vh; display: grid; place-items: center; background: #102030; color: #fff; font: 20px/1.5 system-ui, sans-serif; }
+  .card { text-align: center; padding: 30px; }
+  .big { font-size: 72px; font-weight: 800; }
+  button { font-size: 22px; padding: 14px 28px; border-radius: 14px; border: 0; margin: 6px; }
+  code { background: #0006; padding: 2px 8px; border-radius: 6px; }
+</style>
+</head>
+<body>
+<div class="card">
+  <h1>Saves &amp; Keys self-test</h1>
+  <div class="big" id="count">0</div>
+  <div><button id="inc">+1 and save</button><button id="clear">Clear</button></div>
+  <p>Last key: <code id="key">none</code> &nbsp; keyCode: <code id="code">-</code></p>
+  <p>IndexedDB value: <code id="idb">…</code> &nbsp; window.storage: <code id="ws">…</code></p>
+  <p>Visibility events: <code id="vis">0</code> &nbsp; Frames: <code id="frames">0</code></p>
+</div>
+<script>
+  // A deliberately plain game script: uses localStorage, IndexedDB, window.storage and keyboard events
+  // exactly like an ordinary web game, with no knowledge of Family Arcade.
+  var n = Number(localStorage.getItem('count') || 0);
+  var countEl = document.getElementById('count');
+  countEl.textContent = n;
+  document.getElementById('inc').onclick = function () { n++; localStorage.setItem('count', n); countEl.textContent = n; saveIdb(n); if (window.storage) window.storage.set('best', String(n)); };
+  document.getElementById('clear').onclick = function () { localStorage.clear(); n = 0; countEl.textContent = 0; };
+  window.addEventListener('keydown', function (e) {
+    document.getElementById('key').textContent = e.key === ' ' ? 'Space' : e.key;
+    document.getElementById('code').textContent = e.keyCode;
+  });
+  var vis = 0;
+  document.addEventListener('visibilitychange', function () { vis++; document.getElementById('vis').textContent = vis + ' (' + document.visibilityState + ')'; });
+  var frames = 0;
+  (function loop() { frames++; document.getElementById('frames').textContent = frames; requestAnimationFrame(loop); })();
+
+  function openDb() {
+    return new Promise(function (res, rej) {
+      var r = indexedDB.open('testdb', 1);
+      r.onupgradeneeded = function () { r.result.createObjectStore('kv'); };
+      r.onsuccess = function () { res(r.result); };
+      r.onerror = function () { rej(r.error); };
+    });
+  }
+  function saveIdb(v) { openDb().then(function (db) { db.transaction('kv', 'readwrite').objectStore('kv').put(v, 'n'); }); }
+  openDb().then(function (db) {
+    var g = db.transaction('kv').objectStore('kv').get('n');
+    g.onsuccess = function () { document.getElementById('idb').textContent = g.result === undefined ? 'none' : g.result; };
+  });
+  if (window.storage) window.storage.get('best').then(function (r) { document.getElementById('ws').textContent = r ? r.value : 'none'; });
+  else document.getElementById('ws').textContent = 'unavailable';
+</script>
+</body>
+</html>

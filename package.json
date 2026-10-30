@@ -1,0 +1,11 @@
+{
+  "name": "family-arcade",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Offline game library for the family iPad. Installable web app now, Capacitor-ready later.",
+  "type": "module",
+  "scripts": {
+    "serve": "node tools/serve.mjs",
+    "bump": "node tools/bump-version.mjs"
+  }
+}
