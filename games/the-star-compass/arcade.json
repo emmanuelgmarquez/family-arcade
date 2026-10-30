@@ -1,0 +1,11 @@
+{
+  "id": "the-star-compass",
+  "title": "The Star Compass",
+  "emoji": "🧭",
+  "color": "#ffc400",
+  "orientation": "landscape",
+  "controls": "none",
+  "description": "Math adventure for grades 1–3 with Mateo, Nora and GearBox the robot.",
+  "entry": "index.html",
+  "cover": "cover.png"
+}

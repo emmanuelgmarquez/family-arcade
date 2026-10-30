@@ -1,0 +1,11 @@
+{
+  "id": "brine-bite",
+  "title": "Brine Bite",
+  "emoji": "🦈",
+  "color": "#00d6c8",
+  "orientation": "landscape",
+  "controls": "none",
+  "description": "Grow from pup to leviathan in an open ocean. Unlock new sharks, upgrades and missions.",
+  "entry": "index.html",
+  "cover": "cover.png"
+}

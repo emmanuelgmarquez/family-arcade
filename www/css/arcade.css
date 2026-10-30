@@ -95,7 +95,7 @@ input, select, textarea { font: inherit; -webkit-user-select: text; user-select:
 /* App layout                                                          */
 /* ------------------------------------------------------------------ */
 
-.app { position: fixed; inset: 0; z-index: 1; display: grid; grid-template-rows: auto 1fr auto;
+.app { position: fixed; inset: 0; z-index: 1; display: grid; grid-template-rows: auto 1fr auto; grid-template-columns: minmax(0, 1fr);
   padding: calc(var(--safe-t) + 14px) calc(var(--safe-r) + 28px) calc(var(--safe-b) + 14px) calc(var(--safe-l) + 28px);
   animation: appIn 0.7s var(--ease-out); }
 @keyframes appIn { from { opacity: 0; transform: scale(1.03); } }
@@ -117,7 +117,7 @@ body.playing .app { visibility: hidden; transition: visibility 0s 0.3s; }
   transition: transform 0.18s var(--ease-pop), background 0.2s; }
 .icon-btn:active { transform: scale(0.9); background: var(--glass-strong); }
 
-.home { min-height: 0; display: flex; flex-direction: column; }
+.home { min-height: 0; min-width: 0; display: flex; flex-direction: column; }
 
 /* ------------------------------------------------------------------ */
 /* Hero                                                                */
@@ -496,6 +496,10 @@ body.dropping::after { content: 'Drop games to add them'; position: fixed; inset
 .tc-arrow { width: 0; height: 0; border-left: 9px solid transparent; border-right: 9px solid transparent; border-bottom: 12px solid rgba(255, 255, 255, 0.85); }
 .tc-down .tc-arrow { transform: rotate(180deg); } .tc-left .tc-arrow { transform: rotate(-90deg); } .tc-right .tc-arrow { transform: rotate(90deg); }
 .tc-hub { position: absolute; left: 68px; top: 68px; width: 40px; height: 40px; border-radius: 50%; background: rgba(255, 255, 255, 0.08); }
+.tc-dpad.tc-p1 { left: auto; right: calc(var(--safe-r) + 30px); }
+.tc-dpad.tc-p1 .tc-dpad-ring { border-color: rgba(47, 168, 255, 0.55); }
+.tc-dpad.tc-p2 .tc-dpad-ring { border-color: rgba(255, 122, 26, 0.55); }
+.tc:has(.tc-p1) .tc-buttons { display: none; }
 .tc-buttons { position: absolute; right: calc(var(--safe-r) + 30px); bottom: calc(var(--safe-b) + 30px); width: 190px; height: 170px; }
 .tc-btn { position: absolute; border-radius: 50%; display: grid; place-items: center; align-content: center; gap: 2px;
   background: rgba(255, 255, 255, 0.14); border: 2px solid rgba(255, 255, 255, 0.35); color: #fff;

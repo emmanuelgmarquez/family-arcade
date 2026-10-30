@@ -96,15 +96,30 @@ node tools/bump-version.mjs   # refreshes sw.js's file list + version hash
 
 Upload `www/` again. Installed iPads show *"A new version of Family Arcade is ready → Update"* the next time they're online. Imported games and saves are untouched.
 
-## Pre-installing games (optional)
+## The family's games (pre-installed)
 
-Drop ZIP or HTML files in `www/games/` and list them in `www/games/catalog.json`:
+The arcade ships with nine games made in Claude. Each lives in `games/<id>/` with its original files copied byte-for-byte from the published artifact, plus an `arcade.json` (title, icon, color, cover, controls) and a `cover.png` captured from the game's own title screen.
 
-```json
-{ "games": [ { "file": "space-blaster.zip", "id": "space-blaster", "rev": 1 } ] }
+| Game | Notes |
+|---|---|
+| Brine Bite, Eight Gates, Hop Highway, Mesa Run, Vellmark Tamer | Built-in touch controls |
+| Ricochet Duel | Two players, built-in touch pads |
+| Slipstream Duel | Two players: the arcade adds a D-pad on each side (left = Player 2 / WASD, right = Player 1 / arrows) |
+| The Star Compass | Point and tap; its own offline helper is switched off (the arcade handles offline) |
+| Midnight Meridian Kids | Kid mode only (see below) |
+
+**Midnight Meridian Kids.** Only the kids' driving game is included: the cartridge leaves out the 150 MB real-Utah map data (so the game uses its city world) and adds `family-arcade-kids.js`, listed under `"inject"` in its `arcade.json`. The arcade loads that file before the game. It keeps the game's Kid mode on and replaces the main menu with **Drive · Little Racer** (ages 6–8) and **Drive · Big Kid** (ages 9–12), hiding Legacy Mode, the story, race events and the world switch. The game's own `index.html` is unchanged.
+
+Games that load libraries from a CDN (Three.js, JSZip) or Google Fonts get those saved for offline play when the iPad installs them.
+
+To change or add a pre-installed game, edit its folder in `games/`, then:
+
+```bash
+node tools/build-games.mjs     # zips games/* into www/games/ and updates catalog.json
+node tools/bump-version.mjs
 ```
 
-They're installed on first launch through the normal importer. Bump `rev` to push a new version; saves are kept. If someone removes a bundled game, it isn't re-added.
+Installed arcades pick up new or changed games on their next launch while online (saves are kept). A game the family removes isn't re-added.
 
 ## Packaging for iPad with Capacitor (later)
 

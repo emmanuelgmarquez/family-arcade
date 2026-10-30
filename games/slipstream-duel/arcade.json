@@ -1,0 +1,16 @@
+{
+  "id": "slipstream-duel",
+  "title": "Slipstream Duel",
+  "emoji": "🏁",
+  "color": "#2fa8ff",
+  "orientation": "landscape",
+  "controls": {
+    "dpad": "dual",
+    "a": "none",
+    "b": "none",
+    "start": "Enter"
+  },
+  "description": "Two-player race on one screen. Left pad = Player 2, right pad = Player 1. Up is gas, down is brake.",
+  "entry": "index.html",
+  "cover": "cover.png"
+}

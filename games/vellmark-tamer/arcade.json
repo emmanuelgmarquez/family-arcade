@@ -1,0 +1,11 @@
+{
+  "id": "vellmark-tamer",
+  "title": "Vellmark Tamer",
+  "emoji": "🐉",
+  "color": "#8bd450",
+  "orientation": "any",
+  "controls": "none",
+  "description": "Explore, catch and train creatures, then battle with your team.",
+  "entry": "index.html",
+  "cover": "cover.png"
+}

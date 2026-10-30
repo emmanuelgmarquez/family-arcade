@@ -11,7 +11,7 @@
  *
  * When you change any shell file, bump VERSION (or run `node tools/bump-version.mjs`).
  */
-const VERSION = '79e914eba1';
+const VERSION = '30ae9f6997';
 const SHELL_CACHE = 'fa-shell-' + VERSION;
 const EXTERNAL_CACHE = 'fa-external';
 const GAME_CACHE_PREFIX = 'fa-game-';
@@ -169,7 +169,7 @@ async function serveGame(req, url) {
 
   const type = res.headers.get('Content-Type') || '';
   if (req.mode === 'navigate' && type.startsWith('text/html')) {
-    return injectRuntime(res, gameIdFromStoreKey(storeKey));
+    return injectRuntime(res, gameIdFromStoreKey(storeKey), await addOnTags(cache, storeKey));
   }
   const range = req.headers.get('Range');
   if (range) return rangeResponse(res, range);
@@ -211,10 +211,32 @@ function injectIntoHead(html, snippet) {
   return snippet + html;
 }
 
-async function injectRuntime(res, gameId) {
+/*
+ * Optional add-ons listed in a game's arcade.json ("inject": ["extra.js", "extra.css"]).
+ * They load right after the runtime, before the game's own code, so the game's files stay untouched.
+ */
+async function addOnTags(cache, storeKey) {
+  try {
+    const meta = await cache.match(fileKey(storeKey, 'arcade.json'));
+    if (!meta) return '';
+    const list = (await meta.json()).inject;
+    if (!Array.isArray(list)) return '';
+    const base = PLAY_PATH + encodeURIComponent(storeKey) + '/';
+    return list
+      .filter((p) => typeof p === 'string' && /^[\w.\/-]+\.(js|css)$/.test(p) && !p.includes('..'))
+      .map((p) => /\.css$/.test(p)
+        ? '<link rel="stylesheet" href="' + base + encodePath(p) + '">'
+        : '<script src="' + base + encodePath(p) + '"></script>')
+      .join('');
+  } catch (e) {
+    return '';
+  }
+}
+
+async function injectRuntime(res, gameId, extra = '') {
   const html = await res.text();
   const safeId = gameId.replace(/[^a-z0-9_-]/gi, '');
-  const tag = '<script src="' + SHIM_PATH + '" data-fa-game="' + safeId + '"></script>';
+  const tag = '<script src="' + SHIM_PATH + '" data-fa-game="' + safeId + '"></script>' + extra;
   return new Response(injectIntoHead(html, tag), {
     status: 200,
     headers: { 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'no-store' }

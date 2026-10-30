@@ -230,13 +230,14 @@ export async function exitGame({ quiet = false } = {}) {
   current = null;
   if (!quiet) sfx.back();
   touch.unmount();
-  await sleep(60);
+  // Close the game straight away (its "page hidden" and unload save handlers run synchronously
+  // during pause() and removal), so a heavy 3D game stops using the processor immediately.
+  if (session.iframe) session.iframe.remove();
+  stage.replaceChildren();
   root.classList.remove('open');
   menu.classList.remove('open');
   menu.hidden = true;
   orientHint.hidden = true;
-  if (session.iframe) session.iframe.remove();
-  stage.replaceChildren();
   releaseWakeLock();
   exitFullscreen();
   document.body.classList.remove('playing');

@@ -1,0 +1,11 @@
+{
+  "id": "hop-highway",
+  "title": "Hop Highway",
+  "emoji": "🐸",
+  "color": "#3ddc84",
+  "orientation": "any",
+  "controls": "none",
+  "description": "Hop across busy roads and rivers to the lily pads. Every level gets faster.",
+  "entry": "index.html",
+  "cover": "cover.png"
+}

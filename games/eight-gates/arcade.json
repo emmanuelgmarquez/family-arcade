@@ -1,0 +1,11 @@
+{
+  "id": "eight-gates",
+  "title": "Eight Gates",
+  "emoji": "⚔️",
+  "color": "#ff5d5d",
+  "orientation": "landscape",
+  "controls": "none",
+  "description": "Arcade fighting game: 15 fighters, 16 stages, 3 towers and 2-player versus.",
+  "entry": "index.html",
+  "cover": "cover.png"
+}

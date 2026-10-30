@@ -1,0 +1,11 @@
+{
+  "id": "mesa-run",
+  "title": "Mesa Run",
+  "emoji": "🌵",
+  "color": "#ff7a1a",
+  "orientation": "landscape",
+  "controls": "none",
+  "description": "Run, jump and stomp through the desert as Dilla the armadillo. Find the secret areas!",
+  "entry": "index.html",
+  "cover": "cover.png"
+}

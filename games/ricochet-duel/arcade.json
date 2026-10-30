@@ -1,0 +1,11 @@
+{
+  "id": "ricochet-duel",
+  "title": "Ricochet Duel",
+  "emoji": "🚀",
+  "color": "#ff9ecf",
+  "orientation": "any",
+  "controls": "none",
+  "description": "Two-player arena shooter. Bank your shots off the walls — first to 5 wins.",
+  "entry": "index.html",
+  "cover": "cover.png"
+}

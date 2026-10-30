@@ -51,14 +51,20 @@ async function boot() {
   const wait = 900 - (performance.now() - started);
   if (wait > 0) await sleep(wait);
   $('#app').hidden = false;
+  requestAnimationFrame(() => updateSelection('instant'));
   $('#splash').classList.add('gone');
   setTimeout(() => $('#splash').remove(), 600);
 
   watchForUpdates();
-  syncBundledGames().then((added) => {
+  syncBundledGames(
+    (label, done, total) => toast(total > 1 ? `${label} (${done + 1} of ${total})` : label, { duration: 0 }),
+    (game) => refresh(state.games.length ? undefined : game.id)
+  ).then((added) => {
     if (added.length) {
-      refresh(added[0].id);
-      toast(added.length === 1 ? `${added[0].title} was added to the arcade.` : `${added.length} games were added to the arcade.`, { tone: 'success' });
+      refresh(state.games.length ? undefined : added[0].id);
+      toast(added.length === 1 ? `${added[0].title} was added to the arcade.` : `${added.length} games are ready to play!`, { tone: 'success' });
+    } else {
+      document.getElementById('toast')?.classList.remove('show');
     }
   });
   maybeShowInstallTip();
@@ -114,7 +120,7 @@ async function refresh(selectId) {
 function renderShelf() {
   const c = $('#carousel');
   c.replaceChildren(...state.games.map((g, i) => buildTile(g, i)), buildAddTile(state.games.length));
-  updateSelection(false);
+  updateSelection('instant');
 }
 
 function tileArt(g, coverSrc) {

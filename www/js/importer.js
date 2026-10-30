@@ -216,11 +216,17 @@ function resolveRelative(dir, ref) {
 }
 
 function collectTexts(files) {
+  // Pages are always read in full, even big single-file games (a 3D game can be 5 MB+ of
+  // inline code), because their <script src> tags are where online libraries are found.
   const out = [];
-  let budget = 12 * 1024 * 1024;
-  for (const f of files) {
+  let budget = 48 * 1024 * 1024;
+  const pagesFirst = files.slice().sort((a, b) => Number(isHtmlPath(b.path)) - Number(isHtmlPath(a.path)));
+  for (const f of pagesFirst) {
     const ext = extname(f.path);
-    if (!TEXT_EXT.has(ext) || f.data.byteLength > 4 * 1024 * 1024 || budget <= 0) continue;
+    if (!TEXT_EXT.has(ext)) continue;
+    const page = ext === 'html' || ext === 'htm';
+    if (!page && (f.data.byteLength > 8 * 1024 * 1024 || budget <= 0)) continue;
+    if (page && f.data.byteLength > 64 * 1024 * 1024) continue;
     budget -= f.data.byteLength;
     out.push({ path: f.path, ext, text: bytesToText(f.data) });
   }
