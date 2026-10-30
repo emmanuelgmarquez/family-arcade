@@ -10,14 +10,15 @@ import { library } from './library.js';
 import { readImportFile, quickInstall } from './importer.js';
 import { prefs, slugify } from './util.js';
 
+/** Returns the games it installed, or null when the catalog couldn't be reached. */
 export async function syncBundledGames(onProgress = () => {}, onInstalled = () => {}) {
   let catalog;
   try {
-    const res = await fetch('games/catalog.json', { cache: 'no-cache' });
-    if (!res.ok) return [];
+    const res = await fetch('games/catalog.json?t=' + Date.now(), { cache: 'no-store' });
+    if (!res.ok) return null;
     catalog = await res.json();
   } catch (e) {
-    return [];
+    return null; // offline or the site is unreachable
   }
   const entries = (Array.isArray(catalog) ? catalog : catalog.games || []).filter((e) => e && e.file);
   const removed = new Set(prefs.get('removedBundled', []));
