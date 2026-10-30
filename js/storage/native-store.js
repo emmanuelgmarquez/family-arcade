@@ -10,7 +10,7 @@
 // Requires: npm i @capacitor/core @capacitor/filesystem (see README → "Packaging for iPad").
 
 import { bytesToBase64, base64ToBytes, bytesToText, encodePath, dirname } from '../util.js';
-import { buildSrcdoc } from './html-inject.js';
+import { buildSrcdoc, safeAddOns } from './html-inject.js';
 
 const DIR = 'DATA';
 const ROOT = 'family-arcade/games';
@@ -67,11 +67,15 @@ export function createNativeStore() {
       const folder = cap.convertFileSrc(uri.endsWith('/') ? uri : uri + '/');
       const bytes = await this.readFile(game.storeKey, game.entry);
       if (!bytes) throw new Error('Game files are missing. Try re-importing the game.');
+      let meta = null;
+      try { const m = await this.readFile(game.storeKey, 'arcade.json'); meta = m ? JSON.parse(bytesToText(m)) : null; } catch (e) { meta = null; }
       return {
         srcdoc: buildSrcdoc(bytesToText(bytes), {
           baseHref: folder + encodePath(dirname(game.entry)),
+          rootHref: folder,
           shimSrc: new URL('runtime/game-shim.js', document.baseURI).href,
-          gameId: game.id
+          gameId: game.id,
+          addOns: safeAddOns(meta)
         })
       };
     },

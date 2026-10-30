@@ -1,3 +1,76 @@
 {
-  "games": []
+  "games": [
+    {
+      "id": "brine-bite",
+      "file": "brine-bite.zip",
+      "title": "Brine Bite",
+      "rev": 1,
+      "hash": "e804f5e4028c514d",
+      "size": 169161
+    },
+    {
+      "id": "eight-gates",
+      "file": "eight-gates.zip",
+      "title": "Eight Gates",
+      "rev": 1,
+      "hash": "800f95de93a05188",
+      "size": 144343
+    },
+    {
+      "id": "hop-highway",
+      "file": "hop-highway.zip",
+      "title": "Hop Highway",
+      "rev": 1,
+      "hash": "219b450990ff20dc",
+      "size": 125371
+    },
+    {
+      "id": "mesa-run",
+      "file": "mesa-run.zip",
+      "title": "Mesa Run",
+      "rev": 1,
+      "hash": "ff6080bd4397b5fd",
+      "size": 114394
+    },
+    {
+      "id": "midnight-meridian",
+      "file": "midnight-meridian.zip",
+      "title": "Midnight Meridian Kids",
+      "rev": 2,
+      "hash": "d6fccda3de06a542",
+      "size": 3637622
+    },
+    {
+      "id": "ricochet-duel",
+      "file": "ricochet-duel.zip",
+      "title": "Ricochet Duel",
+      "rev": 1,
+      "hash": "c1cbac95619b2371",
+      "size": 76782
+    },
+    {
+      "id": "slipstream-duel",
+      "file": "slipstream-duel.zip",
+      "title": "Slipstream Duel",
+      "rev": 1,
+      "hash": "b04930d000135d37",
+      "size": 109964
+    },
+    {
+      "id": "the-star-compass",
+      "file": "the-star-compass.zip",
+      "title": "The Star Compass",
+      "rev": 1,
+      "hash": "ec37132e201dd255",
+      "size": 6485357
+    },
+    {
+      "id": "vellmark-tamer",
+      "file": "vellmark-tamer.zip",
+      "title": "Vellmark Tamer",
+      "rev": 1,
+      "hash": "2dfa2cdfd29d7f20",
+      "size": 131259
+    }
+  ]
 }

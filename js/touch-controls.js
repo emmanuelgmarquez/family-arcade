@@ -30,7 +30,7 @@ export const KEYS = {
   KeyP: { key: 'p', code: 'KeyP', keyCode: 80 }
 };
 
-export const DPAD_CHOICES = [['off', 'No D-pad'], ['arrows', 'Arrow keys'], ['wasd', 'W A S D']];
+export const DPAD_CHOICES = [['off', 'No D-pad'], ['arrows', 'Arrow keys'], ['wasd', 'W A S D'], ['dual', '2 players: WASD left · arrows right']];
 export const BUTTON_CHOICES = [
   ['none', '— none —'], ['Space', 'Space'], ['Enter', 'Enter'], ['KeyZ', 'Z'], ['KeyX', 'X'], ['KeyC', 'C'],
   ['ShiftLeft', 'Shift'], ['ControlLeft', 'Ctrl'], ['Escape', 'Esc'], ['KeyP', 'P'], ['KeyE', 'E'], ['KeyQ', 'Q'],
@@ -47,7 +47,7 @@ export function normalizeControls(c) {
   if (!c || c === 'none' || c === 'off') return { dpad: 'off', a: 'none', b: 'none', start: 'none' };
   const pick = (k) => (KEYS[c[k]] ? c[k] : 'none');
   return {
-    dpad: ['arrows', 'wasd'].includes(c.dpad) ? c.dpad : 'off',
+    dpad: ['arrows', 'wasd', 'dual'].includes(c.dpad) ? c.dpad : 'off',
     a: pick('a'), b: pick('b'), start: pick('start')
   };
 }
@@ -59,7 +59,7 @@ export function controlsEnabled(c) {
 export function describeControls(c) {
   if (!controlsEnabled(c)) return 'Off';
   const parts = [];
-  if (c.dpad !== 'off') parts.push(c.dpad === 'wasd' ? 'D-pad (WASD)' : 'D-pad (arrows)');
+  if (c.dpad !== 'off') parts.push(c.dpad === 'dual' ? 'Two D-pads (2 players)' : c.dpad === 'wasd' ? 'D-pad (WASD)' : 'D-pad (arrows)');
   if (c.a !== 'none') parts.push('A = ' + LABEL[c.a]);
   if (c.b !== 'none') parts.push('B = ' + LABEL[c.b]);
   if (c.start !== 'none') parts.push('Start = ' + LABEL[c.start]);
@@ -102,7 +102,11 @@ export class TouchControls {
     if (!controlsEnabled(config)) return;
     const wrap = h('div.tc');
 
-    if (config.dpad !== 'off') wrap.append(this.buildDpad(DIRS[config.dpad]));
+    if (config.dpad === 'dual') {
+      wrap.append(this.buildDpad(DIRS.wasd, 'tc-p2'), this.buildDpad(DIRS.arrows, 'tc-p1'));
+    } else if (config.dpad !== 'off') {
+      wrap.append(this.buildDpad(DIRS[config.dpad]));
+    }
 
     const btns = h('div.tc-buttons');
     if (config.b !== 'none') btns.append(this.buildButton('B', config.b, 'tc-b'));
@@ -154,9 +158,9 @@ export class TouchControls {
     return btn;
   }
 
-  buildDpad(map) {
+  buildDpad(map, extraClass = '') {
     const arms = {};
-    const pad = h('div.tc-dpad', { role: 'group', 'aria-label': 'Direction pad' },
+    const pad = h('div.tc-dpad' + (extraClass ? '.' + extraClass : ''), { role: 'group', 'aria-label': 'Direction pad' },
       h('div.tc-dpad-ring'),
       ...['up', 'down', 'left', 'right'].map((d) => (arms[d] = h('div.tc-arm.tc-' + d, h('span.tc-arrow')))),
       h('div.tc-hub'));

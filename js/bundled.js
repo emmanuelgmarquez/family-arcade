@@ -10,7 +10,7 @@ import { library } from './library.js';
 import { readImportFile, quickInstall } from './importer.js';
 import { prefs, slugify } from './util.js';
 
-export async function syncBundledGames(onProgress = () => {}) {
+export async function syncBundledGames(onProgress = () => {}, onInstalled = () => {}) {
   let catalog;
   try {
     const res = await fetch('games/catalog.json', { cache: 'no-cache' });
@@ -23,21 +23,27 @@ export async function syncBundledGames(onProgress = () => {}) {
   const removed = new Set(prefs.get('removedBundled', []));
   const installed = [];
 
+  const todo = [];
   for (const entry of entries) {
     const id = slugify(entry.id || entry.file.replace(/\.(zip|html?)$/i, ''));
     if (removed.has(id)) continue;
     const rev = Number(entry.rev || 1);
     const existing = await library.get(id);
     if (existing && (existing.bundledRev || 0) >= rev) continue;
+    todo.push({ entry, id, rev, existing });
+  }
+  for (const [i, { entry, id, rev, existing }] of todo.entries()) {
     try {
-      onProgress(`Installing ${entry.title || entry.file}…`);
+      onProgress(`${existing ? 'Updating' : 'Installing'} ${entry.title || entry.file}…`, i, todo.length);
       const res = await fetch('games/' + entry.file.split('/').map(encodeURIComponent).join('/'));
       if (!res.ok) throw new Error('HTTP ' + res.status);
       const file = new File([await res.blob()], entry.file.split('/').pop());
       const pkg = await readImportFile(file);
       const extra = { fixedId: id, bundledRev: rev };
       if (entry.title) extra.title = entry.title;
-      installed.push(await quickInstall(pkg, extra));
+      const game = await quickInstall(pkg, extra);
+      installed.push(game);
+      onInstalled(game, i + 1, todo.length);
     } catch (err) {
       console.warn('[Family Arcade] bundled game failed:', entry.file, err);
     }

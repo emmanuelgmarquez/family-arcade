@@ -21,7 +21,16 @@ export function runtimeTag(shimSrc, gameId) {
  * Builds an iframe srcdoc for engines without a service worker (Capacitor/WKWebView).
  * <base> makes the game's relative URLs resolve against its real folder.
  */
-export function buildSrcdoc(html, { baseHref, shimSrc, gameId }) {
-  const snippet = `<base href="${attr(baseHref)}">` + runtimeTag(shimSrc, gameId);
+export function buildSrcdoc(html, { baseHref, shimSrc, gameId, addOns = [], rootHref = baseHref }) {
+  const extra = addOns.map((p) => /\.css$/.test(p)
+    ? `<link rel="stylesheet" href="${attr(rootHref + p)}">`
+    : `<script src="${attr(rootHref + p)}"></script>`).join('');
+  const snippet = `<base href="${attr(baseHref)}">` + runtimeTag(shimSrc, gameId) + extra;
   return injectIntoHead(html, snippet);
+}
+
+/** Add-on files a game's arcade.json asks to load before the game ("inject": [...]). */
+export function safeAddOns(meta) {
+  const list = meta && Array.isArray(meta.inject) ? meta.inject : [];
+  return list.filter((p) => typeof p === 'string' && /^[\w./-]+\.(js|css)$/.test(p) && !p.includes('..'));
 }
