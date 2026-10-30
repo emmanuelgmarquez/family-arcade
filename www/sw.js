@@ -11,7 +11,7 @@
  *
  * When you change any shell file, bump VERSION (or run `node tools/bump-version.mjs`).
  */
-const VERSION = '30ae9f6997';
+const VERSION = '2a9cdaba9a';
 const SHELL_CACHE = 'fa-shell-' + VERSION;
 const EXTERNAL_CACHE = 'fa-external';
 const GAME_CACHE_PREFIX = 'fa-game-';
@@ -118,7 +118,7 @@ async function networkFirst(req) {
   const cache = await caches.open(SHELL_CACHE);
   try {
     const res = await fetch(req, { cache: 'no-cache' });
-    if (res.ok && req.url.endsWith('catalog.json')) cache.put(req, res.clone());
+    if (res.ok && new URL(req.url).pathname.endsWith('/catalog.json')) cache.put(new URL('games/catalog.json', SCOPE_URL).href, res.clone());
     return res;
   } catch (err) {
     const hit = await cache.match(req, { ignoreSearch: true });

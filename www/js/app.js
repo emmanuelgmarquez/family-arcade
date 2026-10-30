@@ -56,18 +56,47 @@ async function boot() {
   setTimeout(() => $('#splash').remove(), 600);
 
   watchForUpdates();
-  syncBundledGames(
+  checkForGames();
+  // A Home Screen app is often resumed rather than restarted, so look again whenever it comes
+  // back to the front or reconnects (at most once a minute).
+  document.addEventListener('visibilitychange', () => { if (!document.hidden) checkForGames({ throttle: 60000 }); });
+  window.addEventListener('online', () => checkForGames());
+  maybeShowInstallTip();
+}
+
+/* ---------------- family games from the catalog ---------------- */
+
+let gamesCheck = null;
+let lastGamesCheck = 0;
+function checkForGames({ throttle = 0, manual = false } = {}) {
+  if (gamesCheck) return gamesCheck;
+  if (throttle && Date.now() - lastGamesCheck < throttle) return Promise.resolve([]);
+  lastGamesCheck = Date.now();
+  const empty = !state.games.length;
+  if (empty || manual) toast('Looking for games…', { duration: 0 });
+  state.checking = true;
+  if (empty) renderHero();
+  gamesCheck = syncBundledGames(
     (label, done, total) => toast(total > 1 ? `${label} (${done + 1} of ${total})` : label, { duration: 0 }),
     (game) => refresh(state.games.length ? undefined : game.id)
   ).then((added) => {
-    if (added.length) {
+    if (added === null) {
+      if (!state.games.length || manual) toast('Couldn’t reach the internet to download games. Connect to Wi-Fi and try again.', { tone: 'warn', duration: 8000 });
+    } else if (added.length) {
       refresh(state.games.length ? undefined : added[0].id);
       toast(added.length === 1 ? `${added[0].title} was added to the arcade.` : `${added.length} games are ready to play!`, { tone: 'success' });
+    } else if (manual) {
+      toast('All games are up to date.', { tone: 'success' });
     } else {
       document.getElementById('toast')?.classList.remove('show');
     }
+    return added || [];
+  }).finally(() => {
+    gamesCheck = null;
+    state.checking = false;
+    if (!state.games.length) renderHero();
   });
-  maybeShowInstallTip();
+  return gamesCheck;
 }
 
 function setSplash(msg) {
@@ -271,10 +300,12 @@ function welcomeHero() {
     h('div.hero-text',
       h('div.hero-kicker', 'PRESS START'),
       h('h1.hero-title', 'Welcome to the Family Arcade'),
-      h('p.hero-desc', 'Your library is empty. Add the games you’ve made in Claude — each one gets its own save slot and plays full-screen, even with no internet.'),
+      h('p.hero-desc', state.checking
+        ? 'Downloading the family’s games onto this iPad. Keep Wi-Fi on — this takes about a minute the first time.'
+        : 'No games yet. Tap Get the family’s games to download them (Wi-Fi needed once), or add a game you’ve made in Claude.'),
       h('div.hero-actions',
-        button({ label: 'Add your first game', kind: 'play', icon: 'plus', onClick: () => startImport() }),
-        button({ label: 'How it works', kind: 'ghost', onClick: () => openHelp() }))),
+        button({ label: state.checking ? 'Downloading…' : 'Get the family’s games', kind: 'play', icon: 'download', disabled: state.checking, onClick: () => checkForGames({ manual: true }) }),
+        button({ label: 'Add a game file', kind: 'ghost', icon: 'plus', onClick: () => startImport() }))),
     h('div.hero-show', h('div.showcase.showcase-empty',
       h('div.cart-slot', h('div.cart-slot-mouth'), h('div.cart-slot-label', 'INSERT GAME')))));
 }
@@ -711,7 +742,9 @@ async function openSettings() {
         ? 'In Safari, tap the Share button, then “Add to Home Screen”. Family Arcade then opens full-screen like an app and works with no internet.'
         : 'Use your browser’s “Install app” or “Add to Home Screen” option to install Family Arcade.')),
     h('section.form-section', h('h3', 'Adding games'),
-      button({ label: 'How to add and update games', kind: 'secondary', icon: 'info', onClick: () => openHelp() })),
+      h('div.btn-row',
+        button({ label: 'Check for new games', kind: 'secondary', icon: 'download', onClick: () => { sheet.close(); checkForGames({ manual: true }); } }),
+        button({ label: 'How to add and update games', kind: 'secondary', icon: 'info', onClick: () => openHelp() }))),
     h('section.form-section', h('h3', 'About'),
       h('dl.info-list',
         h('dt', 'Version'), h('dd', `${APP_VERSION} (offline engine ${version || 'unknown'})`),
