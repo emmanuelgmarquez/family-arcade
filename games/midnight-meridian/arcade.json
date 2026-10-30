@@ -7,7 +7,8 @@
   "controls": "none",
   "description": "Kids driving: the car drives itself. Smash street lights and play tag with the police. Little Racer or Big Kid.",
   "inject": [
-    "family-arcade-kids.js"
+    "family-arcade-kids.js",
+    "family-arcade-kids-hud.js"
   ],
   "entry": "index.html",
   "cover": "cover.png"
