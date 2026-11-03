@@ -11,7 +11,7 @@
  *
  * When you change any shell file, bump VERSION (or run `node tools/bump-version.mjs`).
  */
-const VERSION = '9f785894de';
+const VERSION = 'dbc409258e';
 const SHELL_CACHE = 'fa-shell-' + VERSION;
 const EXTERNAL_CACHE = 'fa-external';
 const GAME_CACHE_PREFIX = 'fa-game-';
@@ -19,6 +19,7 @@ const INDEX_FILE = '__fa__/index.json';
 
 const SHELL_FILES = [
   './',
+  '.nojekyll',
   'css/arcade.css',
   'fonts/press-start-2p.woff2',
   'games/catalog.json',
