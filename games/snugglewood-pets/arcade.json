@@ -1,0 +1,11 @@
+{
+  "id": "snugglewood-pets",
+  "title": "Snugglewood Pets",
+  "emoji": "🐾",
+  "color": "#ff8f6e",
+  "orientation": "landscape",
+  "controls": "none",
+  "description": "Adopt a puppy, kitten, bunny, pony and more. Pet, feed, bathe, play and teach tricks. Every player has their own pets.",
+  "entry": "index.html",
+  "cover": "cover.png"
+}
