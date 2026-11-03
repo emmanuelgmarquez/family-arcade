@@ -1,6 +1,14 @@
 {
   "games": [
     {
+      "id": "aurora-bay",
+      "file": "aurora-bay.zip",
+      "title": "Aurora Bay",
+      "rev": 1,
+      "hash": "cf9c05d9131f8b68",
+      "size": 426205
+    },
+    {
       "id": "brine-bite",
       "file": "brine-bite.zip",
       "title": "Brine Bite",

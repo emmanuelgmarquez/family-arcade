@@ -1,0 +1,72 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Minigame harness</title>
+<style>html,body{margin:0;height:100%;background:#1b2747;overflow:hidden;touch-action:none}canvas{display:block}
+#log{position:fixed;left:8px;bottom:8px;color:#fff;font:12px monospace;white-space:pre;pointer-events:none}</style></head>
+<body><canvas id="c"></canvas><div id="log"></div>
+<script src="../js/core.js"></script><script src="../js/art.js"></script><script src="../js/characters.js"></script>
+<script>
+// Test harness for a single minigame. Usage: minigame-harness.html?game=fishing&species=hare
+var q = new URLSearchParams(location.search);
+var gameId = q.get('game') || 'fishing';
+var s = document.createElement('script'); s.src = '../js/minigames/' + gameId + '.js'; s.onload = start; document.body.appendChild(s);
+var canvas = document.getElementById('c'), ctx = canvas.getContext('2d'), logEl = document.getElementById('log');
+var view = { s: 1, ox: 0, oy: 0 };
+window.__sfx = []; window.__result = null; window.__paused = false;
+function resize() {
+  var dpr = Math.min(2, devicePixelRatio || 1);
+  canvas.width = innerWidth * dpr; canvas.height = innerHeight * dpr;
+  canvas.style.width = innerWidth + 'px'; canvas.style.height = innerHeight + 'px';
+  view.s = Math.min(innerWidth / AB.W, innerHeight / AB.H); view.ox = (innerWidth - AB.W * view.s) / 2; view.oy = (innerHeight - AB.H * view.s) / 2; view.dpr = dpr;
+}
+addEventListener('resize', resize); resize();
+function toLogical(e) { var r = canvas.getBoundingClientRect(); return { x: (e.clientX - r.left - view.ox) / view.s, y: (e.clientY - r.top - view.oy) / view.s }; }
+function start() {
+  var def = AB.minigames[gameId];
+  var host = {
+    W: AB.W, H: AB.H,
+    look: { species: q.get('species') || 'penguin', palette: q.get('palette') || '', outfit: { neck: 'scarf_red', head: 'beanie_blue' } },
+    petLook: null,
+    records: { best: 0, plays: 0 },
+    safeTop: 110,
+    sfx: function (n) { window.__sfx.push(n); },
+    music: function () {},
+    finish: function (r) { window.__result = r; inst = null; logEl.textContent = 'RESULT ' + JSON.stringify(r); }
+  };
+  window.__def = def;
+  var inst = window.__inst = def.create(host);
+  var last = performance.now();
+  function frame(now) {
+    var dt = Math.min(0.05, (now - last) / 1000); last = now; AB.now = now / 1000;
+    ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.fillStyle = '#1b2747'; ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.setTransform(view.s * view.dpr, 0, 0, view.s * view.dpr, view.ox * view.dpr, view.oy * view.dpr);
+    ctx.save(); ctx.beginPath(); ctx.rect(0, 0, AB.W, AB.H); ctx.clip();
+    if (inst) { if (!window.__paused) inst.update(dt); inst.draw(ctx, now / 1000); }
+    ctx.restore();
+    // shell's pause button area (top-left) for reference
+    ctx.strokeStyle = 'rgba(255,255,255,0.4)'; ctx.setLineDash([6, 6]); ctx.strokeRect(16, 16, 92, 92); ctx.setLineDash([]);
+    requestAnimationFrame(frame);
+  }
+  requestAnimationFrame(frame);
+  canvas.addEventListener('pointerdown', function (e) { var p = toLogical(e); inst && inst.pointer('down', p.x, p.y); });
+  canvas.addEventListener('pointermove', function (e) { var p = toLogical(e); inst && inst.pointer('move', p.x, p.y); });
+  addEventListener('pointerup', function (e) { var p = toLogical(e); inst && inst.pointer('up', p.x, p.y); });
+  addEventListener('keydown', function (e) { inst && inst.key('down', e.key); });
+  addEventListener('keyup', function (e) { inst && inst.key('up', e.key); });
+  // Tutorial preview: harness.html?game=x&tut=1 draws tutorial cards instead
+  if (q.get('tut')) {
+    inst = null;
+    var t0 = performance.now();
+    (function tut(now) {
+      var t = (now - t0) / 1000;
+      ctx.setTransform(view.dpr, 0, 0, view.dpr, 0, 0); ctx.fillStyle = '#26324d'; ctx.fillRect(0, 0, innerWidth, innerHeight);
+      def.tutorial.forEach(function (card, i) {
+        ctx.save(); ctx.translate(20 + i * 380, 40); ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, 360, 240);
+        ctx.beginPath(); ctx.rect(0, 0, 360, 240); ctx.clip(); card.draw(ctx, 360, 240, t); ctx.restore();
+        ctx.fillStyle = '#fff'; ctx.font = '20px sans-serif'; ctx.fillText(card.caption, 20 + i * 380, 310);
+      });
+      requestAnimationFrame(tut);
+    })(t0);
+  }
+}
+</script></body></html>

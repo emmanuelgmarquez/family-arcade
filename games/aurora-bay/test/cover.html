@@ -1,0 +1,22 @@
+<!doctype html><html><body style="margin:0"><canvas id="c" width="1024" height="1024" style="width:512px;height:512px"></canvas>
+<script src="../js/core.js"></script><script src="../js/art.js"></script><script src="../js/icons.js"></script><script src="../js/characters.js"></script><script src="../js/scenekit.js"></script><script src="../js/pet-art.js"></script>
+<script>
+// Renders the 512×512 Family Arcade cover.
+var x = document.getElementById('c').getContext('2d'); x.scale(2, 2);
+var A = AB.art;
+x.save(); x.scale(512 / 900, 512 / 900); x.translate(-190, 0);
+AB.kit.skyAndMountains(x, 430, 21); AB.kit.treeline(x, 495, 5, 30, 40, 80); AB.kit.snowGround(x, 480);
+A.aurora(x, 1280, 40, 260, 2.2, 0.5);
+A.igloo(x, 330, 690, 0.95, { flag: '#e2574c' }); A.igloo(x, 1010, 670, 0.8, { flag: '#4a8fe0' });
+A.pine(x, 220, 620, 170); A.pine(x, 1080, 610, 190); A.pine(x, 860, 560, 110);
+x.restore();
+var looks = [['penguin','midnight',{neck:'scarf_red'}],['fox','winter',{head:'beanie_blue'}],['bear','snow',{neck:'scarf_rainbow'}],['seal','harp',{head:'flower_crown'}],['owl','snowy',{face:'glasses_round'}],['hare','snow',{neck:'scarf_green'}]];
+var pos = [[70,440],[150,452],[232,440],[312,452],[392,440],[462,452]];
+looks.forEach(function (l, i) { AB.chars.draw(x, pos[i][0], pos[i][1], { species: l[0], palette: l[1], outfit: l[2] }, { t: 0.4 + i, scale: 0.86, pose: i % 2 ? 'wave' : 'happy', dir: i < 3 ? 1 : -1 }); });
+AB.pets.draw(x, 200, 470, { kind: 'puffin', color: 'classic' }, { t: 1, scale: 0.8, mood: 'happy' });
+x.textAlign = 'center'; x.textBaseline = 'middle'; x.font = '900 74px ' + AB.FONT; x.lineJoin = 'round';
+x.lineWidth = 14; x.strokeStyle = '#26324d'; x.strokeText('Aurora Bay', 256, 118);
+x.fillStyle = '#ffffff'; x.fillText('Aurora Bay', 256, 118);
+x.shadowColor = 'rgba(140,255,210,0.8)'; x.shadowBlur = 20; x.fillText('Aurora Bay', 256, 118); x.shadowBlur = 0;
+document.title = 'ready';
+</script></body></html>

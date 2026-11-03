@@ -36,9 +36,13 @@ const entries = [];
 for (const id of readdirSync(gamesDir).sort()) {
   const dir = join(gamesDir, id);
   if (!statSync(dir).isDirectory()) continue;
+  // arcade.json may list "exclude": ["test/", "notes.md"] — paths (or folder prefixes) left out of the cartridge.
+  let exclude = [];
+  try { exclude = JSON.parse(readFileSync(join(dir, 'arcade.json'), 'utf8')).exclude || []; } catch (e) { /* no arcade.json */ }
   const files = walk(dir)
     .map((p) => relative(dir, p).split(sep).join('/'))
     .filter((p) => !/(^|\/)\.DS_Store$|(^|\/)Thumbs\.db$/.test(p))
+    .filter((p) => !exclude.some((x) => (x.endsWith('/') ? p.startsWith(x) : p === x)))
     .sort();
   if (!files.includes('index.html') && !files.some((p) => /\.html?$/.test(p))) {
     console.warn(`skip ${id}: no html page`);

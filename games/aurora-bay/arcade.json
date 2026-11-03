@@ -1,0 +1,12 @@
+{
+  "id": "aurora-bay",
+  "title": "Aurora Bay",
+  "emoji": "🐧",
+  "color": "#5677bf",
+  "orientation": "landscape",
+  "controls": "none",
+  "description": "A cozy Arctic village: make your animal, decorate your igloo, adopt a pet, play minigames and help friends. A save for every child.",
+  "entry": "index.html",
+  "cover": "cover.png",
+  "exclude": ["test/", "README.md"]
+}

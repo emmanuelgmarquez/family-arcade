@@ -1,0 +1,41 @@
+<!doctype html><html><head><meta charset=utf-8><title>styles</title></head>
+<body style="margin:0;background:#cfe0f5">
+<canvas id=c width=1350 height=1300></canvas>
+<script src="../../js/core.js"></script><script src="../../js/art.js"></script><script src="../../js/furniture.js"></script>
+<script>
+var ctx = document.getElementById('c').getContext('2d'), S = AB.roomStyles, T = 2;
+ctx.fillStyle = '#e8f1fc'; ctx.fillRect(0, 0, 1350, 1300);
+function lab(t, x, y) { ctx.fillStyle = '#26324d'; ctx.font = 'bold 14px sans-serif'; ctx.textAlign = 'center'; ctx.fillText(t, x, y); }
+// walls: scaled dome 0.25
+Object.keys(S.wall).forEach(function (id, i) {
+  var x = 10 + i * 266, y = 10; ctx.save(); ctx.translate(x, y); ctx.scale(0.245, 0.245); ctx.translate(-120, -90);
+  ctx.beginPath(); ctx.moveTo(120, 470); ctx.ellipse(640, 470, 520, 380, 0, Math.PI, 2 * Math.PI); ctx.lineTo(1160, 470); ctx.closePath(); ctx.save(); ctx.clip();
+  S.wall[id].paint(ctx, { x: 120, y: 90, w: 1040, h: 380 }); ctx.restore(); ctx.beginPath(); ctx.moveTo(120, 470); ctx.ellipse(640, 470, 520, 380, 0, Math.PI, 2 * Math.PI); ctx.lineTo(1160, 470); ctx.closePath(); ctx.lineWidth = 6; ctx.strokeStyle = '#26324d'; ctx.stroke(); ctx.restore();
+  lab(S.wall[id].name + ' ' + S.wall[id].price, x + 128, y + 112);
+});
+Object.keys(S.floor).forEach(function (id, i) {
+  var x = 10 + i * 266, y = 140; ctx.save(); ctx.translate(x, y); ctx.scale(0.205, 0.205); ctx.translate(-10, -470);
+  ctx.beginPath(); ctx.moveTo(120, 470); ctx.lineTo(1160, 470); ctx.lineTo(1270, 890); ctx.lineTo(10, 890); ctx.closePath(); ctx.save(); ctx.clip();
+  S.floor[id].paint(ctx, { x: 10, y: 470, w: 1260, h: 420 }); ctx.restore(); ctx.beginPath(); ctx.moveTo(120, 470); ctx.lineTo(1160, 470); ctx.lineTo(1270, 890); ctx.lineTo(10, 890); ctx.closePath(); ctx.lineWidth = 6; ctx.strokeStyle = '#26324d'; ctx.stroke(); ctx.restore();
+  lab(S.floor[id].name + ' ' + S.floor[id].price, x + 128, y + 105);
+});
+Object.keys(S.window).forEach(function (id, i) {
+  var x = 170 + i * 300, y = 360;
+  ctx.fillStyle = '#d9e9fb'; ctx.fillRect(x - 140, y - 110, 280, 230);
+  S.window[id].draw(ctx, x, y, T);
+  lab(S.window[id].name + ' ' + S.window[id].price, x, y + 105);
+});
+// big full-scale wall/floor crops
+ctx.save(); ctx.translate(0, 480);
+ctx.beginPath(); ctx.rect(0, 0, 1350, 800); ctx.clip();
+ctx.translate(-80, -60);
+ctx.save(); ctx.beginPath(); ctx.moveTo(120, 470); ctx.ellipse(640, 470, 520, 380, 0, Math.PI, 2 * Math.PI); ctx.lineTo(1160, 470); ctx.closePath(); ctx.clip();
+var ids = Object.keys(S.wall);
+ids.forEach(function (id, i) { ctx.save(); ctx.beginPath(); ctx.rect(120 + i * 208, 0, 208, 470); ctx.clip(); S.wall[id].paint(ctx, { x: 120, y: 90, w: 1040, h: 380 }); ctx.restore(); });
+ctx.restore();
+ctx.save(); ctx.beginPath(); ctx.moveTo(120, 470); ctx.lineTo(1160, 470); ctx.lineTo(1270, 890); ctx.lineTo(10, 890); ctx.closePath(); ctx.clip();
+Object.keys(S.floor).forEach(function (id, i) { ctx.save(); ctx.beginPath(); ctx.rect(10 + i * 252, 470, 252, 420); ctx.clip(); S.floor[id].paint(ctx, { x: 10, y: 470, w: 1260, h: 420 }); ctx.restore(); });
+ctx.restore();
+ctx.restore();
+document.title = 'done';
+</script></body></html>

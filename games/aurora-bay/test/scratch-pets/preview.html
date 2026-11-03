@@ -1,0 +1,85 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>Pet preview</title>
+<style>body{margin:0;background:#cddbf2}canvas{display:block}</style></head>
+<body>
+<canvas id="c"></canvas>
+<script src="../../js/core.js"></script>
+<script src="../../js/art.js"></script>
+<script src="../../js/characters.js"></script>
+<script src="../../js/pet-art.js"></script>
+<script>
+(function () {
+  var A = AB.art, P = AB.pets;
+  var q = new URLSearchParams(location.search);
+  var Z = +(q.get('zoom') || 2);       // pixels per logical unit
+  var only = q.get('kind');
+  var W = 1400, H = 1300;
+  var cv = document.getElementById('c'), ctx = cv.getContext('2d');
+  cv.width = W; cv.height = H;
+  window.__t = q.get('t') != null ? +q.get('t') : null;
+  var MOODS = ['idle', 'moving', 'happy', 'love', 'eat', 'play', 'sleep'];
+  function label(s, x, y) { ctx.fillStyle = A.C.out; ctx.font = '700 13px ' + AB.FONT; ctx.textAlign = 'center'; ctx.fillText(s, x, y); }
+  function draw(t) {
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.fillStyle = '#eef4fd'; ctx.fillRect(0, 0, W, H);
+    var kinds = only ? [only] : P.KINDS;
+    var sec = q.get('sec') || 'all';
+    var rowH = 62 * Z;
+    // section 1: kinds x colours (left half in 'all')
+    var y0 = 10;
+    if (sec === 'all' || sec === 'colours') {
+      var colW = 75 * Z;
+      kinds.forEach(function (k, r) {
+        var kd = P.kinds[k];
+        kd.colors.forEach(function (c, i) {
+          var cx = 120 + i * colW, cy = y0 + (r + 1) * rowH - 14;
+          ctx.save(); ctx.translate(cx, cy); ctx.scale(Z, Z);
+          P.draw(ctx, 0, 0, { kind: k, color: c.id }, { t: t, mood: 'idle', blinkOffset: i * 0.9 + r });
+          ctx.restore();
+          label(k + ' / ' + c.id, cx, cy + 16);
+        });
+      });
+    }
+    // section 2: moods
+    var y1 = sec === 'moods' ? 30 : y0 + kinds.length * rowH + 30;
+    var mw = 82 * Z;
+    if (sec === 'all' || sec === 'moods') MOODS.forEach(function (m, i) { label(m, 100 + i * mw, y1); });
+    if (sec === 'all' || sec === 'moods') kinds.forEach(function (k, r) {
+      MOODS.forEach(function (m, i) {
+        var cx = 100 + i * mw, cy = y1 + (r + 1) * rowH - 6;
+        var st = { t: t, mood: m === 'moving' ? 'idle' : m, moving: m === 'moving', blinkOffset: r };
+        ctx.save(); ctx.translate(cx, cy); ctx.scale(Z * 0.9, Z * 0.9);
+        P.draw(ctx, 0, 0, { kind: k, color: P.kinds[k].colors[r % 4].id }, st);
+        if (m === 'sleep') P.bubble(ctx, 14, -P.kinds[k].height + 4, 'zzz', t);
+        ctx.restore();
+      });
+    });
+    // section 3: scale vs player + bubbles
+    var y2 = sec === 'scale' ? 220 : y1 + (kinds.length) * rowH + 140;
+    if (!only && (sec === 'all' || sec === 'scale')) {
+      ctx.save(); ctx.translate(120, y2); ctx.scale(1.4, 1.4);
+      AB.chars.draw(ctx, 0, 0, { species: 'penguin', palette: 'midnight', outfit: {} }, { t: t });
+      P.draw(ctx, 60, 0, { kind: 'lemming', color: 'honey' }, { t: t, mood: 'idle' });
+      P.draw(ctx, 120, 0, { kind: 'puffin', color: 'tufted' }, { t: t, mood: 'idle' });
+      P.draw(ctx, 190, 0, { kind: 'ermine', color: 'snow' }, { t: t, mood: 'idle', dir: -1 });
+      P.draw(ctx, 260, 0, { kind: 'walrus', color: 'rosy' }, { t: t, mood: 'happy' });
+      AB.chars.draw(ctx, 340, 0, { species: 'hare', palette: 'snow', outfit: {} }, { t: t });
+      ctx.restore();
+      ['heart', 'note', 'zzz', 'sparkle', 'crumb'].forEach(function (b, i) {
+        ctx.save(); ctx.translate(780 + i * 110, y2 - 50); ctx.scale(3, 3);
+        P.bubble(ctx, 0, 0, b, t); ctx.restore();
+        label(b, 780 + i * 110, y2 + 10);
+      });
+    }
+  }
+  window.__draw = draw;
+  var start = performance.now();
+  function loop() {
+    var t = window.__t != null ? window.__t : (performance.now() - start) / 1000;
+    try { draw(t); } catch (e) { console.error(e); throw e; }
+    requestAnimationFrame(loop);
+  }
+  loop();
+})();
+</script>
+</body></html>

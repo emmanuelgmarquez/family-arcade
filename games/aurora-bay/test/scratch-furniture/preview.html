@@ -1,0 +1,49 @@
+<!doctype html><html><head><meta charset=utf-8><title>furniture preview</title></head>
+<body style="margin:0;background:#cfe0f5;font-family:sans-serif">
+<canvas id=room width=1280 height=900></canvas><br>
+<canvas id=cat width=1350 height=900></canvas>
+<script src="../../js/core.js"></script><script src="../../js/art.js"></script><script src="../../js/characters.js"></script><script src="../../js/furniture.js"></script>
+<script src="room.js"></script>
+<script>
+var T = +(new URLSearchParams(location.search).get('t') || 1.3);
+var ctx = document.getElementById('room').getContext('2d');
+paintRoom(ctx, 'ice', 'snow', 'round', T);
+var o = { t: T, rot: 0 };
+// wall items
+[['pic_aurora', 640, 210], ['wall_lights', 640, 120], ['wall_clock', 1040, 330], ['pic_fish', 240, 360], ['wall_shelf', 640, 390], ['wreath', 520, 300], ['bunting', 760, 300]].forEach(function (w) { drawItem(ctx, w[0], w[1], w[2], o); });
+// rugs
+drawItem(ctx, 'rug_round_blue', 640, 650, o);
+drawItem(ctx, 'rug_stripe', 300, 760, { t: T, rot: 0 });
+drawItem(ctx, 'rug_fish', 1000, 770, { t: T, rot: 1 });
+// floor items back to front
+var items = [['bookshelf', 200, 520], ['fireplace', 640, 510], ['bed_cozy', 340, 560], ['piano', 1060, 540], ['lamp_floor', 480, 540], ['fish_tank', 860, 540],
+ ['plant_fern', 150, 600], ['ice_tree', 1180, 620], ['sofa_red', 640, 700, true], ['armchair_teal', 860, 650], ['table_low', 640, 660], ['chair_wood', 420, 680], ['table_round', 500, 700],
+ ['teddy_bear', 300, 720], ['toybox', 200, 740], ['snowman', 1120, 760], ['rocking_seal', 980, 780], ['pet_bed', 760, 820], ['lantern', 480, 820], ['plant_flower', 1220, 850], ['beanbag', 870, 860]];
+items.sort(function (a, b) { return a[2] - b[2]; });
+items.forEach(function (it) { drawItem(ctx, it[0], it[1], it[2], { t: T, flip: !!it[3] }); });
+AB.chars.draw(ctx, 560, 760, { species: 'bear', palette: 'snow', outfit: {} }, { t: 1 });
+AB.chars.draw(ctx, 760, 740, { species: 'penguin', palette: 'midnight', outfit: {} }, { t: 1 });
+
+// catalog
+var cc = document.getElementById('cat').getContext('2d');
+cc.fillStyle = '#e8f1fc'; cc.fillRect(0, 0, 1350, 900);
+var ids = Object.keys(AB.furniture), cols = 9;
+cc.canvas.height = Math.ceil(ids.length / cols) * 150 + 10;
+cc.fillStyle = '#e8f1fc'; cc.fillRect(0, 0, 1350, cc.canvas.height);
+ids.forEach(function (id, i) {
+  var d = AB.furniture[id], x = (i % cols) * 150, y = Math.floor(i / cols) * 150;
+  cc.fillStyle = (i + Math.floor(i / cols)) % 2 ? '#dbe7f7' : '#e8f1fc'; cc.fillRect(x, y, 150, 150);
+  var s = Math.min(1, 118 / Math.max(d.w, d.h + (d.place === 'floor' ? 10 : 0)));
+  var ox = x + 75, oy = d.place === 'floor' ? y + 122 : y + 68;
+  cc.save(); cc.translate(ox, oy); cc.scale(s, s);
+  // footprint
+  cc.strokeStyle = 'rgba(255,0,100,0.35)'; cc.lineWidth = 1 / s;
+  if (d.place === 'floor') cc.strokeRect(-d.w / 2, -d.h, d.w, d.h); else cc.strokeRect(-d.w / 2, -d.h / 2, d.w, d.h);
+  d.draw(cc, { t: T, rot: 0 });
+  cc.fillStyle = 'red'; cc.fillRect(-2 / s, -2 / s, 4 / s, 4 / s);
+  cc.restore();
+  cc.fillStyle = '#26324d'; cc.font = 'bold 12px sans-serif'; cc.textAlign = 'center';
+  cc.fillText(d.name + ' ' + d.price, x + 75, y + 143);
+});
+document.title = 'done ' + ids.length;
+</script></body></html>

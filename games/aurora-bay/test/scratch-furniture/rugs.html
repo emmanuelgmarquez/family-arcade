@@ -1,0 +1,22 @@
+<!doctype html><html><head><meta charset=utf-8><title>rugs</title></head>
+<body style="margin:0;background:#cfe0f5">
+<canvas id=c width=1100 height=900></canvas>
+<script src="../../js/core.js"></script><script src="../../js/art.js"></script><script src="../../js/characters.js"></script><script src="../../js/furniture.js"></script>
+<script>
+var ctx = document.getElementById('c').getContext('2d'), T = 1.3;
+ctx.fillStyle = '#eef4ff'; ctx.fillRect(0, 0, 1100, 760);
+['rug_round_blue', 'rug_stripe', 'rug_star', 'rug_fish'].forEach(function (id, r) {
+  for (var k = 0; k < 4; k++) {
+    var x = 140 + k * 260, y = 80 + r * 150, b = AB.furnitureBox(id, k);
+    ctx.strokeStyle = 'rgba(255,0,100,0.5)'; ctx.strokeRect(x - b.w / 2, y - b.h / 2, b.w, b.h);
+    ctx.save(); ctx.translate(x, y); AB.furniture[id].draw(ctx, { t: T, rot: k }); ctx.restore();
+  }
+});
+// flip test
+ctx.save(); ctx.translate(140, 860); AB.furniture.sofa_red.draw(ctx, { t: 1 }); ctx.restore();
+ctx.save(); ctx.translate(400, 860); ctx.scale(-1, 1); AB.furniture.sofa_red.draw(ctx, { t: 1, flip: true }); ctx.restore();
+ctx.save(); ctx.translate(620, 860); ctx.scale(-1, 1); AB.furniture.bed_star.draw(ctx, { t: 1, flip: true }); ctx.restore();
+AB.chars.draw(ctx, 860, 860, { species: 'bear', palette: 'snow', outfit: {} }, { t: 1 });
+ctx.save(); ctx.translate(980, 860); AB.furniture.chair_wood.draw(ctx, { t: 1 }); ctx.restore();
+document.title = 'done';
+</script></body></html>

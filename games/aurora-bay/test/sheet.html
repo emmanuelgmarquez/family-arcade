@@ -1,0 +1,23 @@
+<!doctype html><html><body style="margin:0;background:#cfe0f5"><canvas id=c width=1400 height=760></canvas>
+<script src="../js/core.js"></script><script src="../js/art.js"></script><script src="../js/characters.js"></script>
+<script>
+var ctx=document.getElementById('c').getContext('2d');
+var outfits=[{},{neck:'scarf_red'},{head:'beanie_blue'},{face:'glasses_round'},{head:'flower_crown',body:'sweater_red'},{head:'top_hat',neck:'bowtie',body:'puffer'}];
+AB.chars.ORDER.forEach(function(sp,i){
+  var pals=AB.chars.species[sp].palettes;
+  for(var k=0;k<4;k++){
+    var look={species:sp,palette:pals[k%pals.length].id,outfit:outfits[(i+k)%outfits.length]};
+    AB.chars.draw(ctx,90+k*120+(k>1?0:0)+ (i%2)*0, 0,look,{t:1}); 
+  }
+});
+ctx.clearRect(0,0,1400,760);
+AB.chars.ORDER.forEach(function(sp,i){
+  var pals=AB.chars.species[sp].palettes;
+  for(var k=0;k<5;k++){
+    var look={species:sp,palette:pals[k%pals.length].id,outfit:outfits[(i+k)%outfits.length]};
+    var st={t:1+k*0.3,moving:k==3,dir:k==4?-1:1,back:k==2&&false,pose:k==1?'wave':k==4?'happy':'stand'};
+    AB.chars.draw(ctx,80+k*130+(i%2)*700,140+Math.floor(i/2)*240,look,st);
+  }
+});
+document.title='done';
+</script></body></html>
