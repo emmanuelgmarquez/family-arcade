@@ -37,7 +37,7 @@
       { id: 'rockhopper', name: 'Rockhopper', body: '#303a52', belly: '#fdfdfd', beak: '#ff6a3c', feet: '#ff9fb4', crest: '#ffd23f' },
       { id: 'emperor', name: 'Emperor', body: '#2f3a57', belly: '#fffaf0', beak: '#ff8a3c', feet: '#3d4c6e', cheek: '#ffc24a' }
     ],
-    anchors: { head: { x: 3, y: -94, w: 46, tilt: 0 }, eyes: { x: 9, y: -72, w: 34 }, neck: { x: 2, y: -58, w: 54 }, top: -100 },
+    anchors: { head: { x: 3, y: -94, w: 46, tilt: 0 }, eyes: { x: 9, y: -72, w: 34 }, neck: { x: 3, y: -52, w: 58 }, top: -100 },
     bodyPath: function (c) { c.ellipse(0, -47, 31, 47, 0, 0, Math.PI * 2); },
     draw: function (ctx, p, st, wear) {
       var t = st.t, mv = st.moving && !st.sit, step = mv ? Math.sin(t * 12) : 0;
@@ -87,7 +87,7 @@
       { id: 'cream', name: 'Cream', body: '#f5e4c4', shade: '#ddc79f', accent: '#5b4636', inner: '#ffc1d0', belly: '#fff6e6' },
       { id: 'summer', name: 'Summer', body: '#b48a68', shade: '#906a4c', accent: '#3a2a20', inner: '#f4b7a5', belly: '#f1dfc8' }
     ],
-    anchors: { head: { x: 4, y: -98, w: 40, tilt: 0 }, eyes: { x: 10, y: -78, w: 30 }, neck: { x: 0, y: -58, w: 42 }, top: -112 },
+    anchors: { head: { x: 4, y: -98, w: 40, tilt: 0 }, eyes: { x: 10, y: -78, w: 30 }, neck: { x: 2, y: -56, w: 40 }, top: -112 },
     bodyPath: function (c) { c.ellipse(0, -32, 24, 30, 0, 0, Math.PI * 2); },
     draw: function (ctx, p, st, wear) {
       var t = st.t, mv = st.moving && !st.sit, step = mv ? Math.sin(t * 14) : 0;
@@ -110,6 +110,7 @@
       // arms
       var wave = st.pose === 'wave';
       ctx.save(); ctx.translate(18, -46); ctx.rotate(wave ? -2.4 + Math.sin(t * 10) * 0.3 : -0.2 - step * 0.2); A.ellipse(ctx, 0, 10, 6, 13, p.body, 2.5); ctx.restore();
+      wear('neck'); // tucked under the chin: drawn before the head
       // head
       var hy = -76;
       // ears
@@ -124,7 +125,7 @@
         eye(ctx, 2, hy - 3, 4, st); eye(ctx, 18, hy - 3, 4, st);
         blush(ctx, -4, hy + 8, 5);
       }
-      wear('neck'); if (!st.back) wear('face'); wear('head');
+      if (!st.back) wear('face'); wear('head');
     }
   };
 
@@ -136,7 +137,7 @@
       { id: 'honey', name: 'Honey', body: '#ecd09a', shade: '#d3b273', nose: '#3a2e29' },
       { id: 'mist', name: 'Misty', body: '#dfe5ef', shade: '#bfc8d8', nose: '#2f3a52' }
     ],
-    anchors: { head: { x: 3, y: -104, w: 50, tilt: 0 }, eyes: { x: 10, y: -84, w: 32 }, neck: { x: 1, y: -60, w: 56 }, top: -110 },
+    anchors: { head: { x: 3, y: -104, w: 50, tilt: 0 }, eyes: { x: 10, y: -84, w: 32 }, neck: { x: 2, y: -58, w: 52 }, top: -110 },
     bodyPath: function (c) { c.ellipse(0, -34, 32, 31, 0, 0, Math.PI * 2); },
     draw: function (ctx, p, st, wear) {
       var t = st.t, mv = st.moving && !st.sit, step = mv ? Math.sin(t * 9) : 0;
@@ -150,6 +151,7 @@
       var wave = st.pose === 'wave';
       ctx.save(); ctx.translate(-26, -42); ctx.rotate(0.3 + step * 0.2); A.ellipse(ctx, 0, 10, 9, 15, p.body, 2.5); ctx.restore();
       ctx.save(); ctx.translate(26, -44); ctx.rotate(wave ? -2.5 + Math.sin(t * 10) * 0.3 : -0.3 - step * 0.2); A.ellipse(ctx, 0, 10, 9, 15, p.body, 2.5); ctx.restore();
+      wear('neck'); // tucked under the chin: drawn before the head
       var hy = -80;
       A.circle(ctx, -18, hy - 20, 10, p.body, 3); A.circle(ctx, 22, hy - 20, 10, p.body, 3);
       if (!st.back) { A.circle(ctx, -18, hy - 20, 5, p.shade, 0); A.circle(ctx, 22, hy - 20, 5, p.shade, 0); }
@@ -161,7 +163,7 @@
         eye(ctx, 0, hy - 6, 4.2, st); eye(ctx, 22, hy - 6, 4.2, st);
         blush(ctx, -10, hy + 6, 6); blush(ctx, 28, hy + 8, 4);
       }
-      wear('neck'); if (!st.back) wear('face'); wear('head');
+      if (!st.back) wear('face'); wear('head');
     }
   };
 
@@ -174,7 +176,7 @@
       { id: 'ringed', name: 'Ringed', body: '#6f7b91', shade: '#5a657a', belly: '#aeb8c9', rings: '#c8d1e0' },
       { id: 'brown', name: 'Cocoa', body: '#8d6d58', shade: '#715645', belly: '#c8ac93' }
     ],
-    anchors: { head: { x: 10, y: -96, w: 40, tilt: 0.05 }, eyes: { x: 15, y: -76, w: 28 }, neck: { x: 6, y: -56, w: 46 }, top: -100 },
+    anchors: { head: { x: 10, y: -96, w: 40, tilt: 0.05 }, eyes: { x: 15, y: -76, w: 28 }, neck: { x: 7, y: -54, w: 42 }, top: -100 },
     bodyPath: function (c) {
       c.moveTo(-40, -4); c.bezierCurveTo(-36, -36, -16, -60, 8, -60); c.bezierCurveTo(28, -58, 30, -30, 28, -8);
       c.quadraticCurveTo(0, 2, -40, -4); c.closePath();
@@ -196,6 +198,7 @@
       ctx.save(); ctx.translate(20, -26);
       var wave = st.pose === 'wave';
       ctx.rotate(wave ? -2.2 + Math.sin(t * 10) * 0.3 : 0.5 - sc * 0.3); A.ellipse(ctx, 0, 10, 7, 15, p.shade, 2.5); ctx.restore();
+      wear('neck'); // tucked under the chin: drawn before the head
       var hx = 12, hy = -72;
       A.ellipse(ctx, hx, hy, 23, 21, p.body, 3);
       if (!st.back) {
@@ -206,7 +209,7 @@
         eye(ctx, hx - 2, hy - 4, 5.2, st); eye(ctx, hx + 14, hy - 5, 5, st);
         blush(ctx, hx - 8, hy + 8, 5);
       }
-      wear('neck'); if (!st.back) wear('face'); wear('head');
+      if (!st.back) wear('face'); wear('head');
     }
   };
 
@@ -218,7 +221,7 @@
       { id: 'barred', name: 'Barred', body: '#dde2ec', shade: '#bec6d6', fleck: '#59647d', eye: '#ffd23f', beak: '#3d4c6e', bars: true },
       { id: 'golden', name: 'Golden', body: '#f6dc98', shade: '#e0bd6e', fleck: '#8a6331', eye: '#ffffff', beak: '#5b4636' }
     ],
-    anchors: { head: { x: 0, y: -96, w: 48, tilt: 0 }, eyes: { x: 2, y: -74, w: 40 }, neck: { x: 0, y: -56, w: 54 }, top: -100 },
+    anchors: { head: { x: 0, y: -96, w: 48, tilt: 0 }, eyes: { x: 2, y: -74, w: 40 }, neck: { x: 1, y: -52, w: 54 }, top: -100 },
     bodyPath: function (c) { c.ellipse(0, -46, 31, 44, 0, 0, Math.PI * 2); },
     draw: function (ctx, p, st, wear) {
       var t = st.t, fly = st.moving && !st.sit, flap = fly ? Math.sin(t * 18) : 0;
@@ -269,7 +272,7 @@
       { id: 'meadow', name: 'Meadow', body: '#b9a58d', shade: '#9a866e', inner: '#f2b4b4', tip: '#3a2a20', belly: '#efe4d3' },
       { id: 'silver', name: 'Silver', body: '#cbd1dd', shade: '#adb4c4', inner: '#ffc1d0', tip: '#3d4c6e' }
     ],
-    anchors: { head: { x: 6, y: -88, w: 36, tilt: 0 }, eyes: { x: 12, y: -70, w: 28 }, neck: { x: 2, y: -52, w: 40 }, top: -128, earsOver: true },
+    anchors: { head: { x: 6, y: -88, w: 36, tilt: 0 }, eyes: { x: 12, y: -70, w: 28 }, neck: { x: 4, y: -48, w: 38 }, top: -128, earsOver: true },
     bodyPath: function (c) { c.ellipse(0, -30, 25, 28, 0, 0, Math.PI * 2); },
     draw: function (ctx, p, st, wear) {
       var t = st.t, mv = st.moving && !st.sit;
@@ -283,6 +286,7 @@
       wear('body');
       var wave = st.pose === 'wave';
       ctx.save(); ctx.translate(18, -40); ctx.rotate(wave ? -2.4 + Math.sin(t * 10) * 0.3 : -0.15); A.ellipse(ctx, 0, 9, 6, 12, p.body, 2.5); ctx.restore();
+      wear('neck'); // tucked under the chin: drawn before the head
       var hx = 6, hy = -66;
       A.circle(ctx, hx, hy, 21, p.body, 3);
       if (!st.back) {
@@ -292,7 +296,7 @@
         blush(ctx, hx - 8, hy + 8, 5);
         ctx.strokeStyle = OUT; ctx.lineWidth = 1.3; [[0], [4]].forEach(function (d) { ctx.beginPath(); ctx.moveTo(hx + 25, hy + 9 + d[0]); ctx.lineTo(hx + 36, hy + 7 + d[0] * 1.5); ctx.stroke(); });
       }
-      wear('neck'); if (!st.back) wear('face'); wear('head');
+      if (!st.back) wear('face'); wear('head');
       // ears drawn over hats so they poke through
       var flop = Math.sin(t * (mv ? 14 : 2)) * (mv ? 0.12 : 0.04);
       [[-6, -0.18], [14, 0.14]].forEach(function (e, i) {
@@ -404,33 +408,92 @@
     A.heart(ctx, -8, 4, 11, '#e2574c', 2.5); A.heart(ctx, 16, 4, 11, '#e2574c', 2.5); A.line(ctx, [2, -2, 6, -2], 2.5);
   }) };
 
-  function scarf(c1, c2, stripes) {
-    return neck(function (ctx, st) {
-      var sw = Math.sin((st && st.t || 0) * (st && st.moving ? 10 : 2)) * 3;
-      ctx.beginPath(); ctx.moveTo(-26, -6); ctx.quadraticCurveTo(0, 6, 26, -6); ctx.lineTo(26, 6); ctx.quadraticCurveTo(0, 18, -26, 6); ctx.closePath(); A.fs(ctx, c1, 3);
-      if (stripes) { ctx.save(); ctx.clip(); ctx.fillStyle = c2; for (var i = -24; i < 26; i += 12) ctx.fillRect(i, -10, 5, 30); ctx.restore(); ctx.beginPath(); ctx.moveTo(-26, -6); ctx.quadraticCurveTo(0, 6, 26, -6); ctx.lineTo(26, 6); ctx.quadraticCurveTo(0, 18, -26, 6); ctx.closePath(); A.fs(ctx, null, 3); }
-      ctx.save(); ctx.translate(-14, 8); ctx.rotate(0.12 + sw * 0.02);
-      A.box(ctx, -6, 0, 12, 26, 4, c1, 3); ctx.fillStyle = c2; ctx.fillRect(-4.5, 16, 9, 3); ctx.fillRect(-4.5, 21, 9, 3);
-      ctx.restore();
-    });
+  /* Scarves wrap the neck: a curved band with rounded ends that sits just under the chin, a knot on
+   * the chest side (characters face right) and two hanging ends that sway as the character moves. */
+  function band(c, w, th) {
+    var hw = w / 2, sag = Math.min(9, w * 0.16);
+    c.moveTo(-hw, -th / 2);
+    c.quadraticCurveTo(0, -th / 2 + sag * 2, hw, -th / 2);
+    c.quadraticCurveTo(hw + th * 0.55, 0, hw, th / 2);
+    c.quadraticCurveTo(0, th / 2 + sag * 2, -hw, th / 2);
+    c.quadraticCurveTo(-hw - th * 0.55, 0, -hw, -th / 2);
+    c.closePath();
   }
-  CL.scarf_red = { slot: 'neck', name: 'Red Scarf', price: 0, draw: scarf('#e2574c', '#ffffff') };
-  CL.scarf_rainbow = { slot: 'neck', name: 'Rainbow Scarf', price: 40, draw: neck(function (ctx) {
-    var cols = ['#e2574c', '#ff9a3c', '#ffcf4a', '#5dbb63', '#4a8fe0', '#8e6bd8'];
-    ctx.save(); ctx.beginPath(); ctx.moveTo(-26, -6); ctx.quadraticCurveTo(0, 6, 26, -6); ctx.lineTo(26, 6); ctx.quadraticCurveTo(0, 18, -26, 6); ctx.closePath(); ctx.clip();
-    cols.forEach(function (c, i) { ctx.fillStyle = c; ctx.fillRect(-26 + i * 9, -12, 9, 34); }); ctx.restore();
-    ctx.beginPath(); ctx.moveTo(-26, -6); ctx.quadraticCurveTo(0, 6, 26, -6); ctx.lineTo(26, 6); ctx.quadraticCurveTo(0, 18, -26, 6); ctx.closePath(); A.fs(ctx, null, 3);
-    A.box(ctx, -20, 8, 12, 26, 4, '#4a8fe0', 3);
-  }) };
-  CL.scarf_green = { slot: 'neck', name: 'Pine Scarf', price: 25, draw: scarf('#3d8c48', '#ffcf4a', true) };
-  CL.scarf_dot = { slot: 'neck', name: 'Twin Scarf', price: -1, draw: scarf('#ff8fb1', '#ffffff', true) };
-  CL.bowtie = { slot: 'neck', name: 'Bow Tie', price: 20, draw: neck(function (ctx) {
-    A.poly(ctx, [0, 4, -16, -6, -16, 14], '#4a8fe0', 2.5); A.poly(ctx, [0, 4, 16, -6, 16, 14], '#4a8fe0', 2.5); A.circle(ctx, 0, 4, 4.5, '#2f6fbf', 2.5);
-  }) };
-  CL.bell_collar = { slot: 'neck', name: 'Jingle Collar', price: 20, draw: neck(function (ctx) {
-    ctx.beginPath(); ctx.moveTo(-24, -2); ctx.quadraticCurveTo(0, 10, 24, -2); ctx.lineWidth = 7; ctx.strokeStyle = OUT; ctx.stroke(); ctx.lineWidth = 4; ctx.strokeStyle = '#e2574c'; ctx.stroke();
-    A.circle(ctx, 0, 10, 6, '#ffcf4a', 2.5); A.line(ctx, [-3, 12, 3, 12], 1.5);
-  }) };
+  function paint(ctx, cols, x0, w, y0, h, stripeW) {
+    if (cols.length === 1) { ctx.fillStyle = cols[0]; ctx.fillRect(x0, y0, w, h); return; }
+    for (var i = 0, x = x0; x < x0 + w; i++, x += stripeW) { ctx.fillStyle = cols[i % cols.length]; ctx.fillRect(x, y0, stripeW + 0.5, h); }
+  }
+  function scarfTail(ctx, cols, fringe, len, ang) {
+    ctx.save(); ctx.rotate(ang);
+    ctx.beginPath(); A.rrect(ctx, -6, 0, 12, len, 4);
+    ctx.save(); ctx.clip();
+    if (cols.length > 2) paint(ctx, cols, -6, 12, 0, len, 2);   // rainbow: thin vertical stripes
+    else { ctx.fillStyle = cols[0]; ctx.fillRect(-6, 0, 12, len); if (cols[1]) { ctx.fillStyle = cols[1]; for (var y = 6; y < len - 6; y += 9) ctx.fillRect(-6, y, 12, 4); } }
+    ctx.fillStyle = 'rgba(20,30,70,0.18)'; ctx.fillRect(1, 0, 6, len);
+    ctx.restore();
+    ctx.beginPath(); A.rrect(ctx, -6, 0, 12, len, 4); A.fs(ctx, null, 2.5);
+    // fringe
+    ctx.strokeStyle = fringe; ctx.lineWidth = 2.2; ctx.lineCap = 'round';
+    for (var f = -4; f <= 4; f += 2.7) { ctx.beginPath(); ctx.moveTo(f, len); ctx.lineTo(f * 1.1, len + 5); ctx.stroke(); }
+    ctx.restore();
+  }
+  function scarf(cols, fringe) {
+    return function (ctx, a, look, st) {
+      var n = a.neck, w = n.w, th = Math.max(11, Math.min(15, w * 0.24));
+      var t = (st && st.t) || 0, mv = st && st.moving;
+      var sway = Math.sin(t * (mv ? 10 : 2.2)) * (mv ? 0.16 : 0.05);
+      ctx.save(); ctx.translate(n.x, n.y);
+      // wrap
+      ctx.beginPath(); band(ctx, w, th);
+      ctx.save(); ctx.clip();
+      paint(ctx, cols.length > 2 ? cols : [cols[0]], -w / 2 - th, w + th * 2, -th, th * 3, (w + th * 2) / cols.length);
+      if (cols.length === 2) { ctx.fillStyle = cols[1]; for (var x = -w / 2 + 4; x < w / 2; x += 11) ctx.fillRect(x, -th * 2, 4, th * 4); }
+      ctx.fillStyle = 'rgba(20,30,70,0.2)'; ctx.beginPath(); ctx.moveTo(-w, th * 0.15); ctx.quadraticCurveTo(0, th * 0.15 + 18, w, th * 0.15); ctx.lineTo(w, th * 3); ctx.lineTo(-w, th * 3); ctx.fill();
+      ctx.strokeStyle = 'rgba(255,255,255,0.35)'; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(-w * 0.35, -th * 0.22 + 3); ctx.quadraticCurveTo(0, -th * 0.22 + 12, w * 0.3, -th * 0.22 + 2); ctx.stroke();
+      ctx.restore();
+      ctx.beginPath(); band(ctx, w, th); A.fs(ctx, null, 3);
+      if (!(st && st.back)) {
+        var kx = w * 0.2, ky = th * 0.55 + Math.min(9, w * 0.16) * 0.9;
+        ctx.save(); ctx.translate(kx, ky);
+        scarfTail(ctx, cols.length > 2 ? cols : cols, fringe, 18, -0.28 - sway * 0.7);
+        scarfTail(ctx, cols.length > 2 ? cols : cols, fringe, 24, 0.12 + sway);
+        // knot
+        ctx.beginPath(); ctx.ellipse(0, 0, 8, 6.5, 0, 0, Math.PI * 2);
+        ctx.save(); ctx.clip(); paint(ctx, cols.length > 2 ? cols : [cols[0]], -9, 18, -8, 16, 3); ctx.restore();
+        ctx.beginPath(); ctx.ellipse(0, 0, 8, 6.5, 0, 0, Math.PI * 2); A.fs(ctx, null, 2.5);
+        ctx.restore();
+      }
+      ctx.restore();
+    };
+  }
+  var RAINBOW = ['#e2574c', '#ff9a3c', '#ffcf4a', '#5dbb63', '#4a8fe0', '#8e6bd8'];
+  CL.scarf_red = { slot: 'neck', name: 'Red Scarf', price: 0, draw: scarf(['#e2574c'], '#ffffff') };
+  CL.scarf_rainbow = { slot: 'neck', name: 'Rainbow Scarf', price: 40, draw: scarf(RAINBOW, '#ffffff') };
+  CL.scarf_green = { slot: 'neck', name: 'Pine Scarf', price: 25, draw: scarf(['#3d8c48', '#ffcf4a'], '#ffcf4a') };
+  CL.scarf_dot = { slot: 'neck', name: 'Twin Scarf', price: -1, draw: scarf(['#ff8fb1', '#ffffff'], '#ffffff') };
+  CL.bowtie = { slot: 'neck', name: 'Bow Tie', price: 20, draw: function (ctx, a, look, st) {
+    if (st && st.back) return;
+    var n = a.neck, k = Math.min(1.1, n.w / 52);
+    ctx.save(); ctx.translate(n.x + n.w * 0.12, n.y + 4); ctx.scale(k, k);
+    A.poly(ctx, [0, 0, -15, -9, -15, 9], '#4a8fe0', 2.5); A.poly(ctx, [0, 0, 15, -9, 15, 9], '#4a8fe0', 2.5);
+    A.line(ctx, [-10, -3, -10, 3], 1.5, 'rgba(38,50,77,0.5)'); A.line(ctx, [10, -3, 10, 3], 1.5, 'rgba(38,50,77,0.5)');
+    A.ellipse(ctx, 0, 0, 4.5, 5, '#2f6fbf', 2.5);
+    ctx.restore();
+  } };
+  CL.bell_collar = { slot: 'neck', name: 'Jingle Collar', price: 20, draw: function (ctx, a, look, st) {
+    var n = a.neck, hw = n.w / 2 - 2, sag = Math.min(9, n.w * 0.16);
+    ctx.save(); ctx.translate(n.x, n.y);
+    ctx.beginPath(); ctx.moveTo(-hw, -1); ctx.quadraticCurveTo(0, sag * 2 - 1, hw, -1);
+    ctx.lineCap = 'round'; ctx.lineWidth = 8; ctx.strokeStyle = OUT; ctx.stroke(); ctx.lineWidth = 4.5; ctx.strokeStyle = '#e2574c'; ctx.stroke();
+    if (!(st && st.back)) {
+      var bx = n.w * 0.12, by = sag + 3;
+      var sw = Math.sin(((st && st.t) || 0) * (st && st.moving ? 12 : 2)) * (st && st.moving ? 0.35 : 0.08);
+      ctx.translate(bx, by); ctx.rotate(sw);
+      A.circle(ctx, 0, 5, 6.5, '#ffcf4a', 2.5); A.line(ctx, [-3.5, 7, 3.5, 7], 1.5); A.circle(ctx, 0, 9, 1.4, OUT, 0);
+      A.highlight(ctx, -2.5, 2.5, 2, 1.2, 0.8);
+    }
+    ctx.restore();
+  } };
 
   function sweater(main, trim, pattern) {
     return body(function (ctx, ny, sp) {
