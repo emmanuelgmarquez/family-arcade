@@ -100,7 +100,7 @@ Upload `www/` again. Installed iPads show *"A new version of Family Arcade is re
 
 ## The family's games (pre-installed)
 
-The arcade ships with ten games made in Claude. Each lives in `games/<id>/` with its original files copied byte-for-byte from the published artifact, plus an `arcade.json` (title, icon, color, cover, controls) and a `cover.png` captured from the game's own title screen.
+The arcade ships with eleven games made in Claude. Each lives in `games/<id>/` with its original files copied byte-for-byte from the published artifact, plus an `arcade.json` (title, icon, color, cover, controls) and a `cover.png` captured from the game's own title screen.
 
 | Game | Notes |
 |---|---|
