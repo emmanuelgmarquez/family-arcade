@@ -1,0 +1,15 @@
+{
+  "name": "Sprint Stars",
+  "short_name": "Sprint Stars",
+  "description": "A speedy 16-bit style platform adventure across five worlds.",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "fullscreen",
+  "orientation": "landscape",
+  "background_color": "#101030",
+  "theme_color": "#101030",
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ]
+}

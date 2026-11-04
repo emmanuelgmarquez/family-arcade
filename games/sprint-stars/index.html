@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-fullscreen">
+<meta name="apple-mobile-web-app-title" content="Sprint Stars">
+<meta name="theme-color" content="#101030">
+<title>Sprint Stars</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<link rel="icon" href="icons/icon-192.png">
+<style>
+  html, body { margin: 0; height: 100%; background: #000; overflow: hidden; touch-action: none;
+    -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; -webkit-tap-highlight-color: transparent; }
+  body { display: flex; align-items: center; justify-content: center; }
+  #game { image-rendering: pixelated; image-rendering: crisp-edges; display: block; background: #000; }
+  #touch { position: fixed; left: 0; top: 0; pointer-events: none; z-index: 2; }
+  #rotate { display: none; position: fixed; inset: 0; z-index: 5; background: #101030; color: #fff;
+    font: bold 22px system-ui, sans-serif; align-items: center; justify-content: center; text-align: center; flex-direction: column; gap: 16px; }
+  #rotate .phone { width: 60px; height: 100px; border: 5px solid #fff; border-radius: 12px; animation: turn 2s ease-in-out infinite; }
+  @keyframes turn { 0%,30% { transform: rotate(0); } 60%,100% { transform: rotate(-90deg); } }
+  @media (orientation: portrait) and (pointer: coarse) { #rotate { display: flex; } }
+</style>
+</head>
+<body>
+<canvas id="game" width="424" height="240"></canvas>
+<canvas id="touch"></canvas>
+<div id="rotate"><div class="phone"></div><div>Turn your device sideways to play!</div></div>
+<script src="js/core.js"></script>
+<script src="js/audio.js"></script>
+<script src="js/art.js"></script>
+<script src="js/objart.js"></script>
+<script src="js/themes.js"></script>
+<script src="js/themes2.js"></script>
+<script src="js/terrain.js"></script>
+<script src="js/builder.js"></script>
+<script src="js/fx.js"></script>
+<script src="js/player.js"></script>
+<script src="js/objects.js"></script>
+<script src="js/objects2.js"></script>
+<script src="js/boss.js"></script>
+<script src="js/levels/w1.js"></script>
+<script src="js/levels/worlds.js"></script>
+<script src="js/save.js"></script>
+<script src="js/play.js"></script>
+<script src="js/menus.js"></script>
+<script src="js/touch.js"></script>
+<script src="js/main.js"></script>
+<script>G.boot();</script>
+</body>
+</html>

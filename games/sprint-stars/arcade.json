@@ -1,0 +1,11 @@
+{
+  "id": "sprint-stars",
+  "title": "Sprint Stars",
+  "emoji": "🦊",
+  "color": "#2a78e4",
+  "orientation": "landscape",
+  "controls": "none",
+  "description": "Race through loops and hills as Bolt the fox or Rosie the red panda. Five worlds, boss battles and hidden star medals!",
+  "entry": "index.html",
+  "cover": "cover.png"
+}
