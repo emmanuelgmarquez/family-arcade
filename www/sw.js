@@ -11,7 +11,7 @@
  *
  * When you change any shell file, bump VERSION (or run `node tools/bump-version.mjs`).
  */
-const VERSION = '0596692972';
+const VERSION = '6c3bb79928';
 const SHELL_CACHE = 'fa-shell-' + VERSION;
 const EXTERNAL_CACHE = 'fa-external';
 const GAME_CACHE_PREFIX = 'fa-game-';

@@ -89,8 +89,8 @@
   G.CHARS = {
     bolt: {
       id: 'bolt', name: 'BOLT', species: 'fox', title: 'THE SPEEDY FOX',
-      desc: ['TOP SPEED: FASTEST', 'SPIN DASH: STRONGEST'],
-      top: 6.4, acc: 0.0546875, air: 0.09375, jump: 6.5, jumpRel: 4, dashMul: 1.05, doubleJump: 0,
+      desc: ['TOP SPEED: FASTEST', 'AIR JUMP: TAIL FLY!'],
+      top: 6.4, acc: 0.0546875, air: 0.09375, jump: 6.5, jumpRel: 4, dashMul: 1.05, doubleJump: 0, fly: 480,
       fur: '#2a78e4', furD: '#17459e', furL: '#74b8ff', cream: '#fff1d6', creamD: '#e0b98a',
       inner: '#ff9cb6', shoe: '#ffc61c', shoeD: '#d27c06', strap: '#e8403a', sole: '#ffffff',
       iris: '#1fae58', nose: '#1b1530', line: '#0c1638', limb: '#2a78e4', limbD: '#17459e',
@@ -152,6 +152,15 @@
     c.save();
     c.translate(-4.5, 4);
     c.rotate(t);
+    if (P.prop !== undefined) {
+      // propeller blur: the tail spins around its own length fast enough to fly
+      const ph = P.prop * (Math.PI / 2);
+      c.save(); c.translate(-11, -3); c.scale(1, 0.55);
+      c.beginPath(); c.arc(0, 0, 13, ph, ph + 2.2); c.strokeStyle = d.furL; c.lineWidth = 1.6; c.stroke();
+      c.beginPath(); c.arc(0, 0, 13, ph + Math.PI, ph + Math.PI + 2.2); c.stroke();
+      c.beginPath(); c.arc(0, 0, 9, ph + 1.2, ph + 2.8); c.strokeStyle = '#ffffff'; c.lineWidth = 1.2; c.stroke();
+      c.restore();
+    }
     if (d.species === 'fox') {
       c.beginPath();
       c.moveTo(1, -1.5);
@@ -509,6 +518,26 @@
     spindash(i, n) {
       return { ball: true, spin: (i / n) * G.TAU * 2, squash: 1.12, by: 1.5 };
     },
+    fly(i, n) {
+      const P = base();
+      P.prop = i;
+      P.tail = [0.45, 0.7, 0.95, 0.7][i % 4];
+      P.by = -1 + (i % 2) * 0.5; P.lean = 0.12; P.ears = 0.35;
+      P.eye = 'open'; P.mouth = 'grin';
+      P.arms = [{ a: 1.9, e: 0.4 }, { a: 1.6, e: 0.5 }];
+      P.legs = [{ a: -0.15, k: 0.5 + (i % 2) * 0.2 }, { a: 0.25, k: 0.3 + ((i + 1) % 2) * 0.2 }];
+      return P;
+    },
+    flytired(i, n) {
+      const P = base();
+      P.prop = i;
+      P.tail = [0.35, 0.55, 0.35, 0.55][i % 4];
+      P.by = (i % 2) * 0.5; P.lean = -0.05; P.ears = -0.2;
+      P.eye = 'half'; P.mouth = 'open';
+      P.arms = [{ a: 0.6, e: 0.3 }, { a: 0.4, e: 0.4 }];
+      P.legs = [{ a: -0.05, k: 0.2 }, { a: 0.15, k: 0.2 }];
+      return P;
+    },
     twirl(i, n) {
       const P = base();
       const t = (i / n) * G.TAU;
@@ -597,7 +626,7 @@
       return P;
     },
   };
-  const COUNTS = { idle: 6, wait: 8, walk: 8, run: 8, sprint: 4, spin: 8, spindash: 6, twirl: 8, spring: 2, fall: 4, skid: 2, push: 4, crouch: 1, lookup: 1, hurt: 2, dead: 1, victory: 6 };
+  const COUNTS = { fly: 4, flytired: 4, idle: 6, wait: 8, walk: 8, run: 8, sprint: 4, spin: 8, spindash: 6, twirl: 8, spring: 2, fall: 4, skid: 2, push: 4, crouch: 1, lookup: 1, hurt: 2, dead: 1, victory: 6 };
 
   const cache = {};
   G.Art = {

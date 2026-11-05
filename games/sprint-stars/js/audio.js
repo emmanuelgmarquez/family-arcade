@@ -268,6 +268,7 @@
         case 'laser': this.osc('sawtooth', 1800, 600, 0.25, 0.1); break;
         case 'thud': this.osc('sine', 120, 40, 0.25, 0.4); this.noise(0.2, 0.3, t, 'lowpass', 600, 80); break;
         case 'icicle': this.osc('triangle', 2400, 1200, 0.15, 0.15); break;
+        case 'fly': this.osc('triangle', opt.tired ? 160 : 230, opt.tired ? 130 : 290, 0.07, 0.07); this.noise(0.05, 0.05, t, 'bandpass', 900, 600); break;
         case 'count': this.osc(0.25, 1600, 0, 0.03, 0.08); break;
       }
     },

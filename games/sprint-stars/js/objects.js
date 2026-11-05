@@ -434,7 +434,8 @@
     hurtsFromTop() { return false; }
     touch(p) {
       if (p.dead) return;
-      const attacking = p.isAttacking;
+      // a flying fox's spinning tail knocks out enemies it bumps from below
+      const attacking = p.isAttacking || (p.flying && p.y > this.y + 4);
       if (attacking && !(this.hurtsFromTop() && p.y < this.y - 6 && p.inv <= 0)) {
         this.kill(p);
       } else {

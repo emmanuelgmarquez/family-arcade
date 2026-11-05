@@ -25,6 +25,7 @@
       this.shield = false; this.inv = 0; this.shoes = 0;
       this.rings = 0; this.chain = 0;
       this.groundSeg = null; this.springT = 0; this.twirl = 0; this.doubleJumped = false;
+      this.flying = false; this.flew = false; this.flyT = 0;
       this.anim = 'idle'; this.animT = 0; this.idleT = 0; this.dispAng = 0;
       this.victory = false; this.victoryT = 0; this.autoRun = 0; this.frozen = false;
       this.boostT = 0; this.ice = false; this.airLock = 0;
@@ -321,7 +322,26 @@
         G.Audio.sfx('twirl');
         this.scene.fx.burst(this.x, this.y + 6, 'sparkle', 5);
       }
-      this.vy += this.hurt ? 0.1875 : this.twirl > 0 ? PHYS.grv * 0.7 : PHYS.grv;
+      // Bolt-style tail flight: press jump in the air, hold it to climb
+      if (inp.jumpP && this.def.fly && !this.flying && !this.flew && !this.hurt && !this.victory) {
+        this.flying = true;
+        this.flew = true;
+        this.flyT = this.def.fly;
+        this.jumping = false;
+        this.setBall(false);
+        this.rolling = false;
+        this.vy = Math.min(this.vy, 0);
+      }
+      if (this.flying) {
+        if (this.flyT > 0) this.flyT--;
+        const tired = this.flyT === 0;
+        if (!tired && inp.jump) this.vy = Math.max(this.vy - 0.2, -2.6);
+        else this.vy = Math.min(this.vy + (tired ? 0.09 : 0.05), tired ? 3 : 1.6);
+        if (Math.abs(this.vx) > 4.5) this.vx = G.approach(this.vx, Math.sign(this.vx) * 4.5, 0.06);
+        if (G.frame % (tired ? 16 : 9) === 0) G.Audio.sfx('fly', { tired });
+      } else {
+        this.vy += this.hurt ? 0.1875 : this.twirl > 0 ? PHYS.grv * 0.7 : PHYS.grv;
+      }
       if (this.vy > 16) this.vy = 16;
 
       const steps = Math.max(1, Math.ceil(Math.max(Math.abs(this.vx), Math.abs(this.vy)) / 4));
@@ -396,6 +416,7 @@
       this.jumping = false;
       this.doubleJumped = false;
       this.twirl = 0;
+      this.flying = false; this.flew = false;
       this.groundSeg = h.seg;
       this.chain = 0;
       this.airLock = 0;
@@ -420,6 +441,7 @@
     }
     spring(vx, vy, opts = {}) {
       if (this.dead) return;
+      this.flying = false; this.flew = false;
       if (vy !== 0 || !this.onGround) {
         if (this.onGround) this.leaveGround();
         if (vx) this.vx = vx;
@@ -456,6 +478,7 @@
       return true;
     }
     knockback(srcX) {
+      this.flying = false;
       const dir = Math.sign(this.x - srcX) || -this.facing;
       if (this.onGround) this.leaveGround();
       this.onGround = false;
@@ -483,6 +506,7 @@
       else if (this.hurt) { a = 'hurt'; rate = 0.1; }
       else if (this.spindash) { a = 'spindash'; rate = 0.5; }
       else if (this.twirl > 0) { a = 'twirl'; rate = 0.4; }
+      else if (this.flying) { a = this.flyT > 0 ? 'fly' : 'flytired'; rate = this.flyT > 0 ? 0.5 : 0.2; }
       else if (this.ball) { a = 'spin'; rate = 0.25 + Math.min(spd, 12) / 24; }
       else if (!this.onGround) {
         if (this.springT > 0 && this.vy < 0) { a = 'spring'; rate = 0.2; }
