@@ -176,6 +176,9 @@
         p.x += p.groundSeg.ref.pdx; p.y += p.groundSeg.ref.pdy;
       }
       p.update();
+      // sky ceiling: flyers and big springs stop at the top of the level so they stay on screen
+      const ceil = this.camTop + 64;
+      if (!p.dead && p.y < ceil) { p.y = ceil; if (p.vy < 0) p.vy = 0; }
       if (p.shoes > 0 && this.frame % 2 === 0) {
         this.trail.push({ x: p.x, y: p.y, anim: p.anim, f: Math.floor(p.animT), facing: p.facing, ball: p.ball });
         if (this.trail.length > 4) this.trail.shift();

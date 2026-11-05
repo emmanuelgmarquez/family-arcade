@@ -225,7 +225,8 @@
   function bandSky(ctx, W, H, y0, stops) {
     // stops: [[y, color],...] drawn as solid 16-bit style bands
     for (let i = 0; i < stops.length; i++) {
-      const y = stops[i][0] + y0;
+      // the first band always reaches the top of the screen, however far the view shifts
+      const y = i === 0 ? Math.min(0, stops[0][0] + y0) : stops[i][0] + y0;
       const yn = i + 1 < stops.length ? stops[i + 1][0] + y0 : H + 400;
       ctx.fillStyle = stops[i][1];
       ctx.fillRect(0, Math.floor(y), W, Math.ceil(yn - y) + 1);
