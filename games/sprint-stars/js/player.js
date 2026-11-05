@@ -322,7 +322,7 @@
         G.Audio.sfx('twirl');
         this.scene.fx.burst(this.x, this.y + 6, 'sparkle', 5);
       }
-      // Bolt-style tail flight: press jump in the air, hold it to climb
+      // tail flight (Rosie): press jump in the air, hold it to climb
       if (inp.jumpP && this.def.fly && !this.flying && !this.flew && !this.hurt && !this.victory) {
         this.flying = true;
         this.flew = true;

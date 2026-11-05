@@ -89,8 +89,8 @@
   G.CHARS = {
     bolt: {
       id: 'bolt', name: 'BOLT', species: 'fox', title: 'THE SPEEDY FOX',
-      desc: ['TOP SPEED: FASTEST', 'AIR JUMP: TAIL FLY!'],
-      top: 6.4, acc: 0.0546875, air: 0.09375, jump: 6.5, jumpRel: 4, dashMul: 1.05, doubleJump: 0, fly: 480,
+      desc: ['TOP SPEED: FASTEST', 'SPIN DASH: STRONGEST'],
+      top: 6.4, acc: 0.0546875, air: 0.09375, jump: 6.5, jumpRel: 4, dashMul: 1.05, doubleJump: 0,
       fur: '#2a78e4', furD: '#17459e', furL: '#74b8ff', cream: '#fff1d6', creamD: '#e0b98a',
       inner: '#ff9cb6', shoe: '#ffc61c', shoeD: '#d27c06', strap: '#e8403a', sole: '#ffffff',
       iris: '#1fae58', nose: '#1b1530', line: '#0c1638', limb: '#2a78e4', limbD: '#17459e',
@@ -98,8 +98,8 @@
     },
     rosie: {
       id: 'rosie', name: 'ROSIE', species: 'panda', title: 'THE TWIRLING RED PANDA',
-      desc: ['JUMP: HIGHEST', 'AIR JUMP: TWIRL!'],
-      top: 6.0, acc: 0.0625, air: 0.1, jump: 6.8, jumpRel: 4, dashMul: 0.95, doubleJump: 5.2,
+      desc: ['JUMP: HIGHEST', 'AIR JUMP: TAIL FLY!'],
+      top: 6.0, acc: 0.0625, air: 0.1, jump: 6.8, jumpRel: 4, dashMul: 0.95, doubleJump: 0, fly: 480,
       fur: '#d8592a', furD: '#972f12', furL: '#f79a5a', cream: '#fff7ea', creamD: '#e6c8a8',
       inner: '#3a1a10', shoe: '#2fd39c', shoeD: '#16916a', strap: '#ffffff', sole: '#fffbe0',
       iris: '#6a3014', nose: '#22100a', line: '#3a1206', limb: '#5a2716', limbD: '#36130a',
