@@ -190,6 +190,7 @@ SONGS.dungeon3 = Object.assign({}, SONGS.dungeon, { bpm: 90, tr: -5 });
 SONGS.dungeon4 = Object.assign({}, SONGS.dungeon, { bpm: 128, tr: 3 });
 SONGS.dungeon5 = Object.assign({}, SONGS.dungeon, { bpm: 110, tr: 5 });
 SONGS.dungeon6 = Object.assign({}, SONGS.dungeon, { bpm: 100, tr: -7 });
+SONGS.dungeon7 = Object.assign({}, SONGS.dungeon, { bpm: 92, tr: 2 });
 const Snd = {
   ac:null, master:null, mus:null, fx:null, pulse:{}, noiseBuf:null,
   cur:null, want:null, tracks:[], timer:null, step:0.1, loop:true,
@@ -629,6 +630,21 @@ function buildArt() {
   const mr = [spr(HERO_SIDE.concat(SIDE_LEGS_A), MS), spr(HERO_SIDE.concat(SIDE_LEGS_B), MS)];
   S.heroMantle = { down: md, up: mu, right: mr, left: mr.map(flipH) };
 
+  // ---------------- LEVEL-7 additions ----------------
+  const YETI = ['................', '.....wwwwww.....', '....wwwwwwww....', '...wwkwwwwkww...', '...wwwwggwwww...', '...wwwrrrrwww...',
+    '..wwwwwwwwwwww..', '.gwwwwwwwwwwwwg.', '.gwwgwwwwwwgwwg.', '.gww.wwwwww.wwg.', '..g..wwwwww..g..', '.....wwggww.....'];
+  S.yeti = [spr(YETI.concat(['....www..www....', '...gggg..gggg...'])), spr(YETI.concat(['....www...www...', '...gggg....ggg..']))];
+  S.frost = S.bat.map(b => tint(b, C.c));
+  S.sentry = [spr(['.......c........', '......cac.......', '.....caaac......', '....caawaac.....', '....cawwaac.....', '...caawaaaac....',
+    '...caaaaaaac....', '...cuaaaaauc....', '....cuaaauc.....', '....cuuauuc.....', '.....cuuuc......', '...GGGGGGGGG....', '..GgggggggggG...', '..GGGGGGGGGGG...'])];
+  S.sentry.push(S.sentry[0]);
+  const GLAC = ['....cc....cc....', '...caac..caac...', '..caaaaccaaaac..', '..caakaaaakaac..', '..caaaaaaaaaac..', '.ccaaauuuuaaacc.',
+    'caaacauaauacaaac', 'caaacaaaaaacaaac', 'caaaccaaaaccaaac', '.cac.caaaac.cac.', '.cc..caaaac..cc.', '.....caaaac.....'];
+  S.glacius = [spr(GLAC.concat(['....caac.caac...', '...caaac.caaac..', '..ccccc...ccccc.'])), spr(GLAC.concat(['...caac..caac....', '..caaac..caaac...', '.ccccc....ccccc..']))];
+  S.ice = spr(['...c....', '..cac...', '.cawac..', 'caaaaac.', '.caaac..', '..cac...', '...c....']);
+  const SILV = { g:'c', b:'g', r:'w' };
+  S.arrowSilver = dirSet(spr(ARROW, SILV)); S.arrowSilverItem = spr(ARROW, SILV);
+
   buildTiles();
 }
 
@@ -713,7 +729,7 @@ const OW = {
   '2,0': { name: 'peaks', enemies: ['hopper', 'hopper', 'hopper', 'golem'], secrets: { '10,1': 'heart_cave' }, dungeon: { '7,7': 5, '8,7': 5 }, map: [
     'RRRRRRRRRRRRRRRR', 'RRRRRRRRRRBRRRRR', 'RRR........RRRRR', 'RR...RR.......RR', '................', '.....RR....RR...',
     '......KKKK......', 'RR....KEEK....RR', 'RRRR........RRRR', 'RRRRRRRRRRRRRRRR', 'RRRRRRRRRRRRRRRR'] },
-  '3,0': { name: 'highlake', enemies: ['boar', 'boar', 'boar'], caves: { '13,1': 'island_cave' }, map: [
+  '3,0': { name: 'highlake', enemies: ['boar', 'boar', 'boar'], caves: { '13,1': 'island_cave' }, drain: true, secrets: { '12,3': 'dun7' }, map: [
     'RRRRRRRRRRRRRRRR', 'RR..........RCRR', 'R..........WW.WR', 'R...T......WWWWR', '...........WW.WR', '......T....WW.WR',
     '...............R', 'R..T........T..R', 'R..............R', 'RRR...........RR', 'RRRRRR....RRRRRR'] },
   // ---- row 1 ----
@@ -801,6 +817,7 @@ const ITEMS = {
   harp: { name: "THE SHEPHERD'S HARP", spr: 'harp', big: true },
   boomerang2: { name: 'THE BLUE BOOMERANG', spr: 'boomerangBlue', big: true },
   mantle: { name: 'THE BLUE MANTLE', spr: 'mantle', big: true },
+  silverarrows: { name: 'THE SILVER ARROWS', spr: 'arrowSilverItem', big: true },
   sword2: { name: 'THE SILVER SWORD', spr: 'swordItem2', big: true },
   bible: { name: 'THE HOLY BIBLE', spr: 'bible', big: true },
   bow: { name: 'THE BOW', spr: 'bow', big: true },
@@ -943,6 +960,24 @@ const DUNGEONS = {
       '1,0': { doors: { s: 'shutter', w: 'shutter' }, layout: 'boss', enemies: ['bramble'], boss: true, item: { id: 'heartc', c: 6, r: 5, when: 'clear' } },
       '0,0': { doors: { e: 'open' }, layout: 'sand', item: { id: 'shard', c: 5, r: 3, when: 'now' } }
     }
+  },
+  7: {
+    name: 'LEVEL-7', title: 'THE CRYSTAL DEPTHS',
+    pal: { wall: '#3C5C9C', wallHi: '#A8D8F8', wallLo: '#1C2C5C', floor: '#5C7CBC', floorHi: '#C8E8FC', floorLo: '#2C4C8C' },
+    start: '2,4', exitTo: { sx: 3, sy: 0, x: 192, y: 56 }, bossRoom: '2,0',
+    rooms: {
+      '2,4': { doors: { n: 'open', s: 'exit' }, layout: 'statues', enemies: [] },
+      '2,3': { doors: { s: 'open', n: 'locked', e: 'open' }, layout: 'pillars', enemies: ['yeti', 'yeti', 'frost', 'frost'], item: { id: 'map', c: 0, r: 0, when: 'now' } },
+      '3,3': { doors: { w: 'open' }, layout: 'sand', dark: true, enemies: ['frost', 'frost', 'frost', 'sentry'], item: { id: 'key', c: 6, r: 3, when: 'clear' } },
+      '2,2': { doors: { s: 'locked', w: 'open', e: 'locked', n: 'shutter' }, layout: 'crypt', enemies: ['yeti', 'knight', 'sentry', 'sentry'], item: { id: 'key', c: 6, r: 3, when: 'clear' } },
+      '1,2': { doors: { e: 'open', n: 'open' }, layout: 'tomb', enemies: ['frost', 'frost', 'golem', 'sentry'], item: { id: 'compass', c: 6, r: 3, when: 'now' } },
+      '1,1': { doors: { s: 'open', e: 'push' }, layout: 'push', enemies: ['yeti', 'yeti', 'wrap'], item: { id: 'key', c: 2, r: 3, when: 'clear' } },
+      '2,1': { doors: { s: 'open', w: 'open', n: 'locked', e: 'bomb' }, layout: 'statues', enemies: ['knight', 'knight', 'sentry', 'sentry'] },
+      '3,1': { doors: { w: 'bomb' }, layout: 'sage', sage: 'ITS CRYSTAL TURNS ASIDE\nTHE BLADE. USE ARROWS\nOR THE WAND.', item: { id: 'gems30', c: 6, r: 4, when: 'now' } },
+      '3,2': { doors: { w: 'locked' }, layout: 'center', enemies: ['yeti', 'yeti', 'knight', 'frost', 'frost'], item: { id: 'silverarrows', c: 6, r: 5, when: 'clear' } },
+      '2,0': { doors: { s: 'shutter', w: 'shutter' }, layout: 'boss', enemies: ['glacius'], boss: true, item: { id: 'heartc', c: 6, r: 5, when: 'clear' } },
+      '1,0': { doors: { e: 'open' }, layout: 'statues', item: { id: 'shard', c: 5, r: 3, when: 'now' } }
+    }
   }
 };
 
@@ -966,6 +1001,10 @@ const ENEMY = {
   lurker: { hp: 2, dmg: 1, speed: 0, ai: 'lurker', art: 'lurker', water: true, still: true },
   thorn: { hp: 3, dmg: 1, speed: 0, ai: 'thorn', art: 'thorn', still: true },
   mole: { hp: 2, dmg: 1, speed: 0.7, ai: 'mole', art: 'mole' },
+  yeti: { hp: 5, dmg: 2, speed: 0.6, ai: 'walker', art: 'yeti' },
+  frost: { hp: 2, dmg: 1, speed: 0, ai: 'bat', art: 'frost', fly: true },
+  sentry: { hp: 99, dmg: 1, speed: 0, ai: 'sentry', art: 'sentry', still: true, hazard: true },
+  glacius: { hp: 12, dmg: 2, speed: 0, ai: 'glacius', art: 'glacius', boss: true, size: 32 },
   bramble: { hp: 10, dmg: 2, speed: 0, ai: 'bramble', art: 'bramble', boss: true, size: 32 },
   brine: { hp: 10, dmg: 2, speed: 0, ai: 'brine', art: 'brine', boss: true, size: 32 },
   golem: { hp: 6, dmg: 2, speed: 0.4, ai: 'walker', art: 'golem' },
@@ -1106,17 +1145,21 @@ class Arrow {
   box() { return this.dir === 'up' || this.dir === 'down' ? { x: this.x + 6, y: this.y, w: 4, h: 14 } : { x: this.x, y: this.y + 6, w: 14, h: 4 }; }
   update() {
     const [dx, dy] = DV[this.dir]; this.x += dx * 4; this.y += dy * 4;
-    for (const e of G.ents) if (!e.dead && overlap(this.box(), e.hitbox())) { e.damage(2, this.dir); this.dead = true; G.fx.push({ kind: 'spark', x: this.x + 4, y: this.y + 4, vx: 0, vy: 0, t: 0, dur: 8 }); return; }
+    const silver = G.prof.items.silverarrows; this.hits = this.hits || new Set();
+    for (const e of G.ents) if (!e.dead && !this.hits.has(e) && overlap(this.box(), e.hitbox())) {
+      this.hits.add(e); e.damage(silver ? 4 : 2, this.dir, 'arrow');
+      if (!silver || e.st.hazard || e.st.boss) { this.dead = true; G.fx.push({ kind: 'spark', x: this.x + 4, y: this.y + 4, vx: 0, vy: 0, t: 0, dur: 8 }); return; }
+    }
     if (outOfBounds(this.x, this.y, 16, 16)) this.dead = true;
   }
-  draw() { const img = this.img; dr(img, this.x + (16 - img.width) / 2, this.y + (16 - img.height) / 2); }
+  draw() { const img = G.prof.items.silverarrows ? S.arrowSilver[this.dir] : this.img; dr(img, this.x + (16 - img.width) / 2, this.y + (16 - img.height) / 2); }
 }
 class Magic {
   constructor(x, y, dir) { this.kind = 'magic'; this.x = x; this.y = y; this.dir = dir; this.t = 0; }
   box() { return { x: this.x + 3, y: this.y + 3, w: 10, h: 10 }; }
   update() {
     this.t++; const [dx, dy] = DV[this.dir]; this.x += dx * 3; this.y += dy * 3;
-    for (const e of G.ents) if (!e.dead && overlap(this.box(), e.hitbox())) { e.damage(2, this.dir); this.end(); return; }
+    for (const e of G.ents) if (!e.dead && overlap(this.box(), e.hitbox())) { e.damage(2, this.dir, 'magic'); this.end(); return; }
     const b = G.bounds; if (this.x < b.x0 || this.x > b.x1 || this.y < b.y0 || this.y > b.y1) this.end();
   }
   end() {
@@ -1210,6 +1253,7 @@ class EProj {
       case 'fireball': dr(S.fireball[(this.t >> 2) & 1], this.x, this.y); break;
       case 'orb': dr(S.orb, this.x, this.y); break;
       case 'seed': dr(S.seed, this.x, this.y); break;
+      case 'ice': dr(S.ice, this.x, this.y); break;
       case 'bubble': dr(S.bubble, this.x, this.y + Math.sin(this.t / 4)); break;
       case 'boomer': if (!BOOM_ROT.length) Boomerang.prototype.draw.call({ t: 0, x: -99, y: -99 }); dr(tint(BOOM_ROT[(this.t >> 1) & 3], C.r), this.x, this.y); break;
     }
@@ -1245,11 +1289,13 @@ class Enemy {
     const p = G.player;
     if (!G.holdItem && p.inv === 0 && this.z < 6 && overlap(this.hitbox(), p.hitbox())) G.hurtPlayer(this.st.dmg, this.x + this.size / 2 - 8, this.y + this.size / 2 - 8);
   }
-  damage(n, dir) {
+  damage(n, dir, kind) {
     if (this.inv > 0 || this.spawn > 0 || this.dead) return false;
     if (this.type === 'lich' && this.phase !== 'cast') return false;
     if (this.type === 'lurker' && this.ph !== 'up') return false;
     if (this.type === 'gloom' && !(this.small > 0)) { Snd.sfx('shield'); this.inv = 10; return false; }
+    if (this.st.hazard) { Snd.sfx('shield'); this.inv = 10; return false; }
+    if (this.type === 'glacius' && kind !== 'arrow' && kind !== 'magic') { Snd.sfx('shield'); this.inv = 10; return false; }
     if (this.type === 'bramble' && this.ph !== 'open') { Snd.sfx('shield'); this.inv = 10; return false; }
     if (this.type === 'brine' && this.ph !== 'rest') { Snd.sfx('shield'); this.inv = 10; return false; }
     if (this.st.frontShield && dir && dir === OPP[this.dir] && !this.stun) { Snd.sfx('shield'); this.inv = 8; return false; }
@@ -1481,6 +1527,23 @@ class Enemy {
       if (this.pt > 150) { this.ph = 'open'; this.pt = 0; Snd.sfx('door'); }
     } else if (this.pt > (this.hp <= 4 ? 55 : 75)) { this.ph = 'closed'; this.pt = 0; }
   }
+  // --- AI: crystal sentry (fires ice when the hero lines up with it; can't be destroyed) ---
+  sentry() {
+    if (this.cd > 0) { this.cd--; return; }
+    const p = G.player; let d = null;
+    if (Math.abs(p.x - this.x) < 6) d = p.y > this.y ? 'down' : 'up'; else if (Math.abs(p.y - this.y) < 6) d = p.x > this.x ? 'right' : 'left';
+    if (d) { const [dx, dy] = DV[d]; G.eprojs.push(new EProj('ice', this.x + 4, this.y + 4, dx * 2.4, dy * 2.4, this)); this.cd = 80; Snd.sfx('shield'); }
+  }
+  // --- AI: Glacius the Crystal Golem (Level-7 guardian): only arrows and the wand can crack it ---
+  glacius() {
+    const p = G.player, dx = p.x - 8 - this.x, dy = p.y - 8 - this.y, d = Math.hypot(dx, dy) || 1, sp = this.hp <= 5 ? 0.6 : 0.4;
+    this.x = clamp(this.x + dx / d * sp, 32, 192); this.y = clamp(this.y + dy / d * sp, 32, 112);
+    if (this.t % 130 === 0) {
+      const cx = this.x + 12, cy = this.y + 12, a0 = ((this.t / 130) % 2) * Math.PI / 6;
+      for (let i = 0; i < 6; i++) { const a = a0 + i * Math.PI / 3; G.eprojs.push(new EProj('ice', cx, cy, Math.cos(a) * 1.5, Math.sin(a) * 1.5, this)); }
+      Snd.sfx('bomb'); G.flash = 2;
+    }
+  }
   // --- AI: Gorrak the Stone Ram (Level-1 guardian) ---
   ram() {
     const p = G.player;
@@ -1640,6 +1703,8 @@ function loadOW(sx, sy) {
   G.area = 'ow'; G.sx = sx; G.sy = sy; G.scr = OW[`${sx},${sy}`];
   G.tiles = G.scr.map.map(r => r.split(''));
   for (const k in (G.scr.secrets || {})) if (flag(`sec:${sx},${sy},${k}`)) { const [tx, ty] = k.split(',').map(Number); G.tiles[ty][tx] = G.tiles[ty][tx] === 'b' ? 'Z' : 'C'; }
+  // a lake the Shepherd's Harp has drawn back: dry lakebed with stairs down
+  if (G.scr.drain && flag(`drain:${sx},${sy}`)) { for (const row of G.tiles) for (let c = 0; c < COLS; c++) if (row[c] === 'W') row[c] = '.'; for (const k in G.scr.secrets) if (G.scr.secrets[k].startsWith('dun')) { const [tx, ty] = k.split(',').map(Number); G.tiles[ty][tx] = 'Z'; } }
   G.bounds = { x0: 0, y0: 0, x1: 240, y1: 160 }; G.lit = true;
   clearRoomObjects();
 }
@@ -1689,6 +1754,7 @@ function loadCave(id, ret) {
     else if (!p.shards.includes(5) && p.shards.includes(4)) lines = 'A KEEP STANDS ON THE\nNORTHERN PEAKS. BE\nSTRONG IN THE LORD.';
     else if (!p.shards.includes(4)) lines = 'A SHRINE RISES FROM THE\nEASTERN RIVER. TAKE\nYOUR RAFT AND GO.';
     else if (!p.shards.includes(6)) lines = 'THORNS HIDE A HOLLOW IN\nTHE EASTERN WOOD. LET\nYOUR LIGHT SHINE.';
+    else if (!p.shards.includes(7)) lines = 'AT THE HIGH LAKE, PLAY\nTHE HARP, AND THE WATERS\nWILL DRAW BACK.';
     else lines = 'THY WORD IS A LAMP UNTO\nMY FEET, AND A LIGHT\nUNTO MY PATH.  PS 119';
   }
   const gift = items.length && items.every(i => i.price === 0);
@@ -1749,7 +1815,7 @@ function roomEnter(fromDir) {
     if (rm.boss) G.ents.push(new Enemy(rm.enemies[0], 160, 48));
     else spawnEnemies(rm.enemies, { c0: 3, c1: 12, r0: 3, r1: 7 });
   }
-  G.roomClear = G.ents.length === 0;
+  G.roomClear = G.ents.every(e => e.st.hazard);
   const it = rm.item;
   if (it && !flag(`di:${G.dnum}:${G.rkey}`) && (it.when === 'now' || G.roomClear)) spawnRoomItem();
   G.autoWalk = fromDir ? { dir: fromDir, from: OPP[fromDir], n: 20 } : null;
@@ -1761,7 +1827,7 @@ function spawnRoomItem() {
 }
 function checkRoomClear() {
   if (G.area !== 'dun' || G.roomClear) return;
-  if (G.ents.some(e => !e.dead)) return;
+  if (G.ents.some(e => !e.dead && !e.st.hazard)) return;
   G.roomClear = true; G.dunKilled.add(G.rkey);
   const it = G.rm.item;
   if (it && it.when === 'clear' && !flag(`di:${G.dnum}:${G.rkey}`)) { spawnRoomItem(); Snd.sfx('heart'); }
@@ -1895,6 +1961,7 @@ function giveItem(id) {
     case 'key': p.keys++; break;
     case 'heartpot': p.hp = p.maxHp; break;
     case 'sword2': p.sword = 2; break;
+    case 'silverarrows': p.items.silverarrows = 1; break;
     case 'boomerang2': p.items.boomerang = 1; p.items.boomerang2 = 1; if (!p.bsel) p.bsel = 'boomerang'; break;
     case 'bombbag': p.items.bombbag = 1; p.maxBombs = 12; p.bombs = 12; if (!p.bsel) p.bsel = 'bomb'; break;
     case 'gems30': p.gems = Math.min(255, p.gems + 30); break;
@@ -1912,6 +1979,7 @@ function giveItem(id) {
     if (id === 'bible') m += '\nTHE WAND\'S LIGHT WILL NOW\nLEAVE A HOLY FLAME.';
     if (id === 'wand' && !G.equipHint) m += '\nPRESS B TO CAST LIGHT.';
     if (id === 'candle') m += '\nIT LIGHTS DARK ROOMS AND\nBURNS AWAY BUSHES.';
+    if (id === 'silverarrows') m += '\nYOUR ARROWS NOW STRIKE\nTWICE AS HARD AND PIERCE.';
     if (id === 'boomerang2') m += '\nIT FLIES FASTER AND\nFARTHER THAN BEFORE.';
     if (id === 'mantle') m += "\nLIKE ELIJAH'S MANTLE, IT\nWAS PASSED ON TO YOU.\nFOES NOW HURT YOU LESS.";
     if (id === 'harp') m += '\nWHEN DAVID PLAYED, THE\nDARKNESS DEPARTED.';
@@ -1937,6 +2005,10 @@ function harpEffect() {
     return;
   }
   if (G.area !== 'ow') return;
+  if (G.scr.drain && !flag(`drain:${G.sx},${G.sy}`)) {
+    setFlag(`drain:${G.sx},${G.sy}`); const keep = G.ents; loadOW(G.sx, G.sy); G.ents = keep;
+    Snd.sfx('secret'); G.flash = 6; say('THE WATERS DRAW BACK!\nSTAIRS LEAD DOWN INTO\nTHE LAKEBED.', 200); saveGame(); return;
+  }
   // outdoors the harp's song carries you to the doorway of a dungeon you have already won
   const spots = p.shards.slice().sort((a, b) => a - b).filter(n => DUNGEONS[n]).map(n => DUNGEONS[n].exitTo);
   if (!spots.length) { say('A PEACEFUL SONG. NOTHING\nMORE HAPPENS... YET.', 120); return; }
@@ -2378,7 +2450,7 @@ function drawInv() {
     if (own && id === p.bsel && blink(3)) frame8(x - 2, y - 4, 20, 24, C.r);
   });
   text('TREASURES', 24, 96, C.r); frame8(16, 108, 224, 30, C.u);
-  const tr = [[p.sword, p.sword >= 2 ? S.swordItem2 : S.swordItem], [1, p.items.silver ? S.shieldSilver : S.shield], [p.items.bible, S.bible], [p.items.ladder, S.ladder], [p.items.raft, S.raft], [p.items.mantle, S.mantle]];
+  const tr = [[p.sword, p.sword >= 2 ? S.swordItem2 : S.swordItem], [1, p.items.silver ? S.shieldSilver : S.shield], [p.items.bible, S.bible], [p.items.ladder, S.ladder], [p.items.raft, S.raft], [p.items.mantle, S.mantle], [p.items.silverarrows, S.arrowSilverItem]];
   if (G.area === 'dun') tr.push([p.dmap[G.dnum], S.map], [p.dcomp[G.dnum], S.compass]);
   let x = 28; for (const [own, img] of tr) { if (own) { ctx.drawImage(img, x, 115); x += 24; } }
   text('SHARDS OF WISDOM', 24, 148, C.y);
