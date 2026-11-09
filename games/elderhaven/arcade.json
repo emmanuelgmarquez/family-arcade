@@ -1,0 +1,11 @@
+{
+  "id": "elderhaven",
+  "title": "Elderhaven",
+  "emoji": "🛡️",
+  "color": "#c84c0c",
+  "orientation": "landscape",
+  "controls": "none",
+  "description": "An 8-bit adventure: explore the kingdom, clear the dungeons, and recover the Shards of Wisdom. Three save profiles and a Gentle mode.",
+  "entry": "index.html",
+  "cover": "cover.png"
+}

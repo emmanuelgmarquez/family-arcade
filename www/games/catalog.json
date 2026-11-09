@@ -25,6 +25,14 @@
       "size": 144343
     },
     {
+      "id": "elderhaven",
+      "file": "elderhaven.zip",
+      "title": "Elderhaven",
+      "rev": 1,
+      "hash": "0df170e1e45fd66d",
+      "size": 57527
+    },
+    {
       "id": "hop-highway",
       "file": "hop-highway.zip",
       "title": "Hop Highway",

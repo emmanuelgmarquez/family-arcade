@@ -100,7 +100,7 @@ Upload `www/` again. Installed iPads show *"A new version of Family Arcade is re
 
 ## The family's games (pre-installed)
 
-The arcade ships with twelve games made in Claude. Each lives in `games/<id>/` with its original files copied byte-for-byte from the published artifact, plus an `arcade.json` (title, icon, color, cover, controls) and a `cover.png` captured from the game's own title screen.
+The arcade ships with thirteen games made in Claude. Each lives in `games/<id>/` with its original files copied byte-for-byte from the published artifact, plus an `arcade.json` (title, icon, color, cover, controls) and a `cover.png` captured from the game's own title screen.
 
 | Game | Notes |
 |---|---|
@@ -112,6 +112,7 @@ The arcade ships with twelve games made in Claude. Each lives in `games/<id>/` w
 | Snugglewood Pets | Pet care for several kids: each player has their own pets, saved in the game's own storage. Its in-game **Grown-ups** area (behind a times-table question) backs up and restores pets; the arcade's *Back up saves* doesn't include them, because they're in IndexedDB. The game moves its buttons out of the way of the ⌂ return button in whichever corner it's in. |
 | Aurora Bay | Cozy Arctic village with a separate save for each child; see `games/aurora-bay/README.md` |
 | Sprint Stars | Speed platformer: five worlds with two acts and a boss each, Bolt the fox or Rosie the red panda (press jump in mid-air to fly with her spinning tail), three save slots. Built-in touch controls (floating D-pad, JUMP, SPIN); its HUD and buttons move out of the way of the ⌂ return button in whichever corner it's in, and its own offline helper is switched off inside the arcade. |
+| Elderhaven | Original 8-bit adventure: overworld, dungeons and the Shards of Wisdom, three save profiles and a per-profile Gentle mode. Built-in touch controls; its Fullscreen button hides inside the arcade and its buttons move out of the way of the ⌂ return button in whichever corner it's in. |
 
 **Midnight Meridian Kids.** Only the kids' driving game is included: the cartridge leaves out the 150 MB real-Utah map data (so the game uses its city world) and adds `family-arcade-kids.js`, listed under `"inject"` in its `arcade.json`. The arcade loads that file before the game. It keeps the game's Kid mode on and replaces the main menu with **Drive · Little Racer** (ages 6–8) and **Drive · Big Kid** (ages 9–12), hiding Legacy Mode, the story, race events and the world switch. A second add-on, `family-arcade-kids-hud.js`, redesigns the driving screen for small hands: steering in the bottom-left corner, big GAS / BRAKE pedals in the bottom-right (GAS shows AUTO when the car drives itself; DRIFT appears for Big Kid only), the minimap moved to the top-left and a smaller speedometer in the top-right, so no control covers the HUD. Steering can be **Buttons**, a draggable **Wheel**, or **Tilt** (turn the iPad like a wheel; the iPad asks for motion access on first use, and *Straight ahead* re-centres it). The choice is on the main menu and the pause menu and is remembered. Wheel and tilt steer through the game's own game-controller input, so Kid mode's steering help still applies. The game's own `index.html` is unchanged.
 

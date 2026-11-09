@@ -1,0 +1,2539 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<title>Elderhaven: The Sacred Crest</title>
+<style>
+  :root { color-scheme: dark; }
+  html, body { margin: 0; height: 100%; background: #000; overflow: hidden; touch-action: none;
+    -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
+  body { display: flex; align-items: center; justify-content: center; font-family: monospace; }
+  #screen { image-rendering: pixelated; image-rendering: crisp-edges; display: block; background: #000; }
+  body.touch.portrait { align-items: flex-start; padding-top: env(safe-area-inset-top); }
+  #touch { display: none; position: fixed; inset: 0; pointer-events: none; }
+  body.touch #touch { display: block; }
+  #dpad { position: absolute; left: max(16px, env(safe-area-inset-left)); bottom: max(20px, env(safe-area-inset-bottom));
+    width: 156px; height: 156px; pointer-events: auto; touch-action: none; }
+  #dpad .arm { position: absolute; background: #3a3a3a; border: 2px solid #6c6c6c; box-sizing: border-box; }
+  #dpad .h { left: 0; top: 52px; width: 156px; height: 52px; border-radius: 8px; }
+  #dpad .v { left: 52px; top: 0; width: 52px; height: 156px; border-radius: 8px; }
+  #dpad .hub { position: absolute; left: 54px; top: 54px; width: 48px; height: 48px; background: #3a3a3a; }
+  .btn { position: absolute; pointer-events: auto; touch-action: none; display: flex; align-items: center; justify-content: center;
+    color: #fcfcfc; font: bold 22px monospace; border-radius: 50%; background: #a80020; border: 3px solid #fc7460;
+    width: 74px; height: 74px; box-sizing: border-box; opacity: .9; }
+  .btn.on { background: #fc7460; }
+  #bA { right: max(16px, env(safe-area-inset-right)); bottom: max(70px, calc(env(safe-area-inset-bottom) + 50px)); }
+  #bB { right: max(104px, calc(env(safe-area-inset-right) + 88px)); bottom: max(24px, env(safe-area-inset-bottom)); }
+  .pill { position: absolute; pointer-events: auto; touch-action: none; color: #bcbcbc; font: bold 12px monospace;
+    background: #303030; border: 2px solid #6c6c6c; border-radius: 14px; padding: 7px 12px; letter-spacing: 1px; }
+  .pill.on { background: #6c6c6c; }
+  #bSel { left: 50%; transform: translateX(-110%); bottom: max(14px, env(safe-area-inset-bottom)); }
+  #bStart { left: 50%; transform: translateX(10%); bottom: max(14px, env(safe-area-inset-bottom)); }
+  #fs { right: max(12px, env(safe-area-inset-right)); top: max(10px, env(safe-area-inset-top)); }
+  #mute { left: max(12px, env(safe-area-inset-left)); top: max(10px, env(safe-area-inset-top)); }
+  body.touch:not(.portrait) .btn, body.touch:not(.portrait) #dpad { opacity: .8; }
+  body.touch:not(.portrait) #bSel { left: max(12px, env(safe-area-inset-left)); top: max(58px, calc(env(safe-area-inset-top) + 48px)); bottom: auto; transform: none; }
+  body.touch:not(.portrait) #bStart { right: max(12px, env(safe-area-inset-right)); left: auto; top: max(58px, calc(env(safe-area-inset-top) + 48px)); bottom: auto; transform: none; }
+  body.touch.portrait #bSel, body.touch.portrait #bStart { bottom: calc(max(20px, env(safe-area-inset-bottom)) + 182px); }
+  body.touch.portrait #fs, body.touch.portrait #mute { top: auto; bottom: calc(max(20px, env(safe-area-inset-bottom)) + 236px); }
+  #keys { position: fixed; right: 10px; top: 8px; color: #555; font: 11px monospace; }
+  #keys button { background: #222; color: #aaa; border: 1px solid #555; font: 11px monospace; padding: 3px 8px; cursor: pointer; }
+  body.touch #keys { display: none; }
+  /* Inside the Family Arcade: it plays full-screen already, and its ⌂ button owns one corner */
+  body.fa #fs, body.fa #keys button:not(.soundBtn) { display: none; }
+  body.fa.fa-tl:not(.portrait) #mute, body.fa.fa-tl:not(.portrait) #bSel { left: auto; right: max(12px, env(safe-area-inset-right)); }
+  body.fa.fa-tl:not(.portrait) #bSel { top: max(104px, calc(env(safe-area-inset-top) + 94px)); }
+  body.fa.fa-tr:not(.portrait) #bStart { top: max(104px, calc(env(safe-area-inset-top) + 48px)); }
+  body.fa.fa-tl.portrait #mute { left: auto; right: 150px; }
+  body.fa.fa-bl #dpad { bottom: max(92px, calc(env(safe-area-inset-bottom) + 80px)); }
+  body.fa.fa-br #bA { bottom: max(146px, calc(env(safe-area-inset-bottom) + 130px)); }
+  body.fa.fa-br #bB { bottom: max(100px, calc(env(safe-area-inset-bottom) + 84px)); }
+</style>
+</head>
+<body>
+<canvas id="screen" width="256" height="240"></canvas>
+<div id="touch">
+  <div id="dpad"><div class="arm h"></div><div class="arm v"></div><div class="hub"></div></div>
+  <div class="btn" id="bB" data-btn="b">B</div>
+  <div class="btn" id="bA" data-btn="a">A</div>
+  <div class="pill" id="bSel" data-btn="select">SELECT</div>
+  <div class="pill" id="bStart" data-btn="start">START</div>
+  <div class="pill" id="fs">FULLSCREEN</div>
+  <div class="pill soundBtn" id="mute">SOUND ON</div>
+</div>
+<div id="keys"><button class="soundBtn" title="M key">SOUND ON</button> <button onclick="document.getElementById('fs').click()">Fullscreen</button></div>
+<script>
+'use strict';
+// ============================================================
+//  ELDERHAVEN: THE SACRED CREST  —  engine
+//  Input, audio (pulse/triangle/noise chiptune), font, storage
+// ============================================================
+const W = 256, H = 240, TS = 16, COLS = 16, ROWS = 11, HUD = 64;
+const screen = document.getElementById('screen');
+const ctx = screen.getContext('2d');
+ctx.imageSmoothingEnabled = false;
+
+// NES-style master palette (single-character keys used by all pixel art)
+const C = {
+  k:'#000000', w:'#FCFCFC', g:'#BCBCBC', G:'#7C7C7C', r:'#D82800', R:'#881400',
+  o:'#FC9838', s:'#FCBC88', b:'#C84C0C', B:'#503000', y:'#F8B800', Y:'#FCE0A8',
+  e:'#00A800', E:'#005800', l:'#B8F818', u:'#0058F8', U:'#0000BC', c:'#3CBCFC',
+  p:'#F878F8', P:'#6844FC', t:'#FCD8A8', n:'#AC7C00', q:'#00A844', a:'#A4E4FC'
+};
+
+// ---------------- INPUT ----------------
+const BTN = ['up','down','left','right','a','b','start','select'];
+const DIRS = ['up','down','left','right'];
+const DV = { up:[0,-1], down:[0,1], left:[-1,0], right:[1,0] };
+const OPP = { up:'down', down:'up', left:'right', right:'left' };
+const KEYMAP = {
+  ArrowUp:'up', KeyW:'up', ArrowDown:'down', KeyS:'down', ArrowLeft:'left', KeyA:'left',
+  ArrowRight:'right', KeyD:'right', KeyX:'a', KeyK:'a', Space:'a', KeyZ:'b', KeyJ:'b',
+  Enter:'start', Escape:'start', ShiftLeft:'select', ShiftRight:'select', KeyC:'select'
+};
+const Input = {
+  keys:{}, touch:{}, latch:{}, down:{}, prev:{}, pressed:{}, order:[], textMode:false, typed:[],
+  update() {
+    for (const b of BTN) {
+      const d = !!(this.keys[b] || this.touch[b] || this.latch[b]); this.latch[b] = false;
+      this.pressed[b] = d && !this.prev[b];
+      this.down[b] = d; this.prev[b] = d;
+    }
+    for (const d of DIRS) if (this.pressed[d]) { this.order = this.order.filter(x => x !== d); this.order.push(d); }
+    this.order = this.order.filter(d => this.down[d]);
+  },
+  dir() { return this.order.length ? this.order[this.order.length - 1] : null; },
+  clear() { for (const b of BTN) { this.pressed[b] = false; } this.typed.length = 0; }
+};
+window.addEventListener('keydown', e => {
+  Snd.init();
+  if (e.code === 'KeyM' && !Input.textMode && window.cycleSound) { cycleSound(); e.preventDefault(); return; }
+  if (Input.textMode) {
+    if (/^Key[A-Z]$/.test(e.code) || /^Digit[0-9]$/.test(e.code)) { Input.typed.push(e.code.slice(-1)); e.preventDefault(); return; }
+    if (e.code === 'Backspace') { Input.typed.push('DEL'); e.preventDefault(); return; }
+    if (e.code === 'Minus') { Input.typed.push('-'); return; }
+    if (e.code === 'Space') { Input.typed.push(' '); e.preventDefault(); return; }
+    if (e.code.startsWith('Key') && !e.code.startsWith('Arrow')) return;
+  }
+  const b = KEYMAP[e.code];
+  if (b) { if (!e.repeat) Input.latch[b] = true; Input.keys[b] = true; e.preventDefault(); }
+});
+window.addEventListener('keyup', e => { const b = KEYMAP[e.code]; if (b) { Input.keys[b] = false; e.preventDefault(); } });
+window.addEventListener('blur', () => { Input.keys = {}; Input.touch = {}; });
+
+// ---------------- AUDIO ----------------
+function mtof(m) { return 440 * Math.pow(2, (m - 69) / 12); }
+const NOTE_IDX = { C:0, D:2, E:4, F:5, G:7, A:9, B:11 };
+function parseNotes(str) {
+  const out = [];
+  for (const tok of str.trim().split(/[\s|]+/)) {
+    if (!tok) continue;
+    const [n, d] = tok.split(':'); const dur = +d || 4;
+    if (n === 'R') { out.push([null, dur]); continue; }
+    if (n === 'H') { out.push([1.0, dur]); continue; }   // noise hat
+    if (n === 'S') { out.push([0.35, dur]); continue; }  // noise snare
+    if (n === 'K') { out.push([0.12, dur]); continue; }  // noise kick
+    const m = n.match(/^([A-G])([#b]?)(\d)$/);
+    if (!m) continue;
+    let v = NOTE_IDX[m[1]] + (m[2] === '#' ? 1 : m[2] === 'b' ? -1 : 0);
+    out.push([12 * (+m[3] + 1) + v, dur]);
+  }
+  return out;
+}
+function bassFrom(roots, oct) {
+  return roots.map(r => { const lo = r + oct, hi = r + (oct + 1); return `${lo}:2 ${hi}:2 ${lo}:2 ${hi}:2 ${lo}:2 ${hi}:2 ${lo}:2 ${hi}:2`; }).join(' ');
+}
+const DRUMBAR = 'K:4 H:2 H:2 S:4 H:2 H:2';
+
+const SONGS = {
+  title: { bpm: 96, tracks: [
+    { w:0.25, v:0.22, n:'G4:4 B4:4 D5:4 B4:4 C5:4 E5:4 D5:8 B4:4 C5:4 D5:4 G4:4 A4:12 R:4 G4:4 B4:4 D5:4 G5:4 E5:4 C5:4 D5:8 C5:4 B4:4 A4:4 F#4:4 G4:12 R:4' },
+    { w:0.125, v:0.13, n:'D4:8 G4:8 E4:8 B4:8 G4:8 B4:8 F#4:12 R:4 D4:8 B4:8 C5:8 B4:8 A4:8 D4:8 D4:12 R:4' },
+    { w:'tri', v:0.32, n:'G2:4 D3:4 G2:4 D3:4 C3:4 G2:4 G2:4 D3:4 G2:4 D3:4 G2:4 B2:4 D3:4 A2:4 D3:4 F#2:4 G2:4 D3:4 G2:4 D3:4 C3:4 E3:4 G2:4 D3:4 D3:4 C3:4 A2:4 F#2:4 G2:4 D3:4 G2:8' } ] },
+  chapel: { bpm: 66, tracks: [
+    { w:0.5, v:0.12, n:'G4:4 B4:4 D5:4 B4:4 C5:4 E5:4 D5:8 B4:4 C5:4 D5:4 G4:4 A4:12 R:4 G4:4 B4:4 D5:4 G5:4 E5:4 C5:4 D5:8 C5:4 B4:4 A4:4 F#4:4 G4:12 R:4' },
+    { w:'tri', v:0.3, n:'G3:16 C3:8 G3:8 G3:16 D3:16 G3:16 C3:8 G3:8 D3:16 G3:16' } ] },
+  overworld: { bpm: 148, tracks: [
+    { w:0.25, v:0.2, n:
+      'D5:4 A4:2 D5:2 E5:2 F5:2 G5:4 F5:2 E5:2 D5:4 A4:8 Bb4:4 C5:2 D5:2 C5:4 A4:4 G4:2 A4:2 Bb4:2 C5:2 A4:8 ' +
+      'D5:4 A4:2 D5:2 E5:2 F5:2 G5:4 A5:4 G5:2 F5:2 E5:4 C5:4 D5:2 E5:2 F5:2 E5:2 D5:4 C#5:4 D5:12 R:4 ' +
+      'F5:4 F5:2 G5:2 A5:4 F5:4 G5:4 F5:2 E5:2 D5:8 E5:4 E5:2 F5:2 G5:4 E5:4 F5:4 E5:2 D5:2 C#5:8 ' +
+      'D5:2 F5:2 A5:4 G5:2 F5:2 E5:4 F5:2 E5:2 D5:2 C5:2 Bb4:4 A4:4 Bb4:2 A4:2 G4:2 E4:2 A4:4 C#5:4 D5:12 R:4' },
+    { w:'tri', v:0.3, n: bassFrom(['D','D','Bb','F','D','F','A','D','F','Bb','C','A','D','Bb','A','D'], 2) },
+    { w:'noise', v:0.05, n: Array(16).fill(DRUMBAR).join(' ') } ] },
+  dungeon: { bpm: 118, tracks: [
+    { w:0.125, v:0.16, n:
+      'A4:2 C5:2 E5:2 C5:2 A4:2 C5:2 E5:2 C5:2 G#4:2 B4:2 E5:2 B4:2 G#4:2 B4:2 E5:2 B4:2 ' +
+      'G4:2 Bb4:2 E5:2 Bb4:2 G4:2 Bb4:2 E5:2 Bb4:2 F4:2 A4:2 D5:2 A4:2 E4:2 G#4:2 B4:2 D5:2 ' +
+      'A4:2 E5:2 A5:2 E5:2 C5:2 E5:2 A5:2 E5:2 B4:2 E5:2 G#5:2 E5:2 B4:2 E5:2 G#5:2 E5:2 ' +
+      'C5:2 E5:2 G5:2 E5:2 Bb4:2 E5:2 G5:2 E5:2 A4:2 D5:2 F5:2 D5:2 G#4:2 B4:2 E5:4' },
+    { w:'tri', v:0.32, n:'A2:16 G#2:16 G2:16 F2:8 E2:8 A2:16 G#2:16 G2:16 F2:8 E2:8' } ] },
+  boss: { bpm: 168, tracks: [
+    { w:0.25, v:0.18, n:'E4:2 E4:2 F4:2 E4:2 E4:2 Bb4:2 A4:2 F4:2 E4:2 E4:2 F4:2 E4:2 G4:2 F4:2 E4:2 D#4:2' },
+    { w:'tri', v:0.32, n:'E2:2 E3:2 E2:2 E3:2 E2:2 E3:2 E2:2 E3:2 E2:2 E3:2 E2:2 E3:2 F2:2 F3:2 D#2:2 D#3:2' },
+    { w:'noise', v:0.05, n:'K:2 H:2 S:2 H:2 K:2 H:2 S:2 H:2 K:2 H:2 S:2 H:2 K:2 K:2 S:2 S:2' } ] },
+  gameover: { bpm: 80, loop:false, tracks: [
+    { w:0.25, v:0.2, n:'A4:4 G4:4 F4:4 E4:4 D4:8 E4:4 C#4:4 D4:16' },
+    { w:'tri', v:0.3, n:'D3:8 A2:8 Bb2:8 A2:8 D2:16' } ] },
+  victory: { bpm: 110, loop:false, tracks: [
+    { w:0.25, v:0.22, n:'G4:2 B4:2 D5:2 G5:6 R:2 F#5:2 G5:2 A5:2 B5:12' },
+    { w:0.125, v:0.12, n:'D4:2 G4:2 B4:2 D5:6 R:2 D5:2 D5:2 F#5:2 G5:12' },
+    { w:'tri', v:0.3, n:'G2:8 D3:8 G2:16' } ] }
+};
+
+SONGS.dungeon2 = Object.assign({}, SONGS.dungeon, { bpm: 104, tr: -2 });
+SONGS.dungeon3 = Object.assign({}, SONGS.dungeon, { bpm: 90, tr: -5 });
+SONGS.dungeon4 = Object.assign({}, SONGS.dungeon, { bpm: 128, tr: 3 });
+SONGS.dungeon5 = Object.assign({}, SONGS.dungeon, { bpm: 110, tr: 5 });
+SONGS.dungeon6 = Object.assign({}, SONGS.dungeon, { bpm: 100, tr: -7 });
+const Snd = {
+  ac:null, master:null, mus:null, fx:null, pulse:{}, noiseBuf:null,
+  cur:null, want:null, tracks:[], timer:null, step:0.1, loop:true,
+  init() {
+    if (this.ac) { if (this.ac.state === 'suspended') this.ac.resume(); return; }
+    const AC = window.AudioContext || window.webkitAudioContext; if (!AC) return;
+    try { this.ac = new AC(); } catch (e) { return; }
+    this.master = this.ac.createGain(); this.master.gain.value = this.mode === 2 ? 0 : 0.6;
+    this.master.connect(this.ac.destination);
+    this.mus = this.ac.createGain(); this.mus.gain.value = this.mode === 1 ? 0 : 0.55; this.mus.connect(this.master);
+    this.fx = this.ac.createGain(); this.fx.gain.value = 0.8; this.fx.connect(this.master);
+    for (const d of [0.125, 0.25, 0.5]) {
+      const n = 32, re = new Float32Array(n), im = new Float32Array(n);
+      for (let i = 1; i < n; i++) re[i] = 2 * Math.sin(Math.PI * i * d) / (Math.PI * i);
+      this.pulse[d] = this.ac.createPeriodicWave(re, im);
+    }
+    const len = this.ac.sampleRate, buf = this.ac.createBuffer(1, len, this.ac.sampleRate), data = buf.getChannelData(0);
+    let v = 0; for (let i = 0; i < len; i++) { if (i % 6 === 0) v = Math.random() * 2 - 1; data[i] = v; }
+    this.noiseBuf = buf;
+    if (this.want) { const w = this.want; this.want = null; this.play(w); }
+  },
+  mode: (() => { try { return +localStorage.getItem('elderhaven_sound') || 0; } catch (e) { return 0; } })(),
+  get muted() { return this.mode === 2; },
+  setMode(m) {
+    this.mode = m; try { localStorage.setItem('elderhaven_sound', String(m)); } catch (e) {}
+    if (this.master) this.master.gain.value = m === 2 ? 0 : 0.6;
+    if (this.mus) this.mus.gain.value = m === 1 ? 0 : 0.55;
+  },
+  label() { return ['SOUND ON', 'MUSIC OFF', 'SOUND OFF'][this.mode]; },
+  osc(wave, freq, t, dur, vol, dest, slide) {
+    const o = this.ac.createOscillator(), g = this.ac.createGain();
+    if (wave === 'tri') o.type = 'triangle'; else o.setPeriodicWave(this.pulse[wave] || this.pulse[0.5]);
+    o.frequency.setValueAtTime(freq, t);
+    if (slide) o.frequency.exponentialRampToValueAtTime(Math.max(20, slide), t + dur);
+    g.gain.setValueAtTime(vol, t); g.gain.setValueAtTime(vol, t + dur * 0.75); g.gain.linearRampToValueAtTime(0.0001, t + dur);
+    o.connect(g); g.connect(dest || this.fx); o.start(t); o.stop(t + dur + 0.03);
+  },
+  noise(t, dur, vol, dest, rate) {
+    const s = this.ac.createBufferSource(), g = this.ac.createGain();
+    s.buffer = this.noiseBuf; s.playbackRate.value = rate || 1;
+    g.gain.setValueAtTime(vol, t); g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+    s.connect(g); g.connect(dest || this.fx); s.start(t, Math.random() * 0.5); s.stop(t + dur + 0.02);
+  },
+  seq(notes, wave, step, vol, t0) { // notes = midi numbers
+    const t = (t0 || this.ac.currentTime);
+    notes.forEach((m, i) => { if (m) this.osc(wave, mtof(m), t + i * step, step * 0.95, vol); });
+  },
+  sfx(name) {
+    if (!this.ac) return;
+    const t = this.ac.currentTime;
+    switch (name) {
+      case 'sword': this.noise(t, 0.1, 0.35, null, 0.9); this.osc(0.5, 700, t, 0.08, 0.12, null, 200); break;
+      case 'beam': this.seq([96, 91, 96, 91, 88], 0.25, 0.03, 0.12); break;
+      case 'hit': this.osc(0.5, 300, t, 0.12, 0.25, null, 60); this.noise(t, 0.08, 0.3, null, 0.6); break;
+      case 'kill': this.noise(t, 0.3, 0.45, null, 0.35); this.osc(0.25, 400, t, 0.2, 0.15, null, 50); break;
+      case 'hurt': this.osc(0.25, 500, t, 0.08, 0.25, null, 200); this.osc(0.25, 300, t + 0.08, 0.12, 0.25, null, 80); break;
+      case 'shield': this.osc(0.125, 1500, t, 0.05, 0.15); this.osc(0.125, 1000, t + 0.05, 0.05, 0.12); break;
+      case 'gem': this.seq([88, 95, 100], 0.25, 0.05, 0.16); break;
+      case 'gem5': this.seq([88, 95, 100, 95, 100, 107], 0.25, 0.04, 0.15); break;
+      case 'heart': this.seq([81, 86, 93], 0.5, 0.05, 0.14); break;
+      case 'item': this.seq([67, 72, 76, 79, 79, 0, 76, 79], 0.25, 0.09, 0.18); this.seq([43, 0, 48, 0, 52, 0, 55, 55], 'tri', 0.09, 0.3); break;
+      case 'shard': this.seq([67, 71, 74, 79, 0, 78, 79, 81, 83, 83, 83, 83], 0.25, 0.1, 0.2); this.seq([55, 59, 62, 67, 0, 62, 67, 69, 71, 71], 0.125, 0.1, 0.1); break;
+      case 'secret': this.seq([79, 78, 74, 69, 68, 76, 80, 84], 0.25, 0.085, 0.16); break;
+      case 'bomb_drop': this.osc(0.5, 220, t, 0.05, 0.15); break;
+      case 'bomb': this.noise(t, 0.6, 0.6, null, 0.18); this.noise(t, 0.25, 0.5, null, 0.5); break;
+      case 'arrow': this.noise(t, 0.15, 0.25, null, 1.4); break;
+      case 'boomerang': this.osc(0.125, 1100, t, 0.05, 0.08); this.osc(0.125, 900, t + 0.06, 0.05, 0.08); break;
+      case 'fire': this.noise(t, 0.4, 0.3, null, 0.25); break;
+      case 'magic': this.osc(0.25, 1800, t, 0.25, 0.12, null, 400); break;
+      case 'unlock': this.seq([60, 72], 0.5, 0.06, 0.2); this.noise(t + 0.12, 0.1, 0.3, null, 0.5); break;
+      case 'door': this.noise(t, 0.2, 0.3, null, 0.3); this.osc(0.5, 120, t, 0.15, 0.15, null, 60); break;
+      case 'stairs': this.seq([72, 71, 69, 67, 65, 64, 62, 60], 0.5, 0.05, 0.12); break;
+      case 'text': this.osc(0.5, 1200, t, 0.025, 0.06); break;
+      case 'select': this.osc(0.25, 1000, t, 0.04, 0.12); break;
+      case 'push': this.noise(t, 0.3, 0.2, null, 0.2); break;
+      case 'fairy': this.seq([84, 88, 91, 96, 91, 96, 100], 0.125, 0.06, 0.12); break;
+      case 'lowhp': this.osc(0.5, 1760, t, 0.06, 0.07); break;
+      case 'die': this.seq([72, 71, 70, 69, 68, 67, 66, 65], 0.25, 0.08, 0.16); break;
+      case 'bosshit': this.osc(0.5, 120, t, 0.2, 0.3, null, 40); this.noise(t, 0.2, 0.35, null, 0.3); break;
+      case 'bossdie': for (let i = 0; i < 6; i++) this.noise(t + i * 0.12, 0.25, 0.5, null, 0.15 + i * 0.03); break;
+      case 'buy': this.seq([76, 79, 84], 0.25, 0.06, 0.15); break;
+      case 'deny': this.osc(0.5, 140, t, 0.2, 0.2); break;
+      case 'harp': this.seq([67, 71, 74, 79, 74, 79, 83, 86, 0, 79, 83, 86, 91], 'tri', 0.11, 0.35); this.seq([55, 0, 59, 0, 62, 0, 67, 0, 0, 67, 0, 71, 0], 0.125, 0.11, 0.08); break;
+      case 'pause': this.seq([76, 0, 76], 0.25, 0.05, 0.12); break;
+    }
+  },
+  play(name) {
+    if (this.cur === name) return;
+    this.stop(); this.cur = name;
+    if (!this.ac) { this.want = name; return; }
+    const song = SONGS[name]; if (!song) return;
+    this.step = 60 / song.bpm / 4; this.loop = song.loop !== false;
+    const t0 = this.ac.currentTime + 0.06;
+    const tp = song.tr || 0;
+    this.tracks = song.tracks.map(tr => ({ w:tr.w, v:tr.v, notes:parseNotes(tr.n).map(([m, d]) => [m !== null && tr.w !== 'noise' ? m + tp : m, d]), i:0, t:t0 }));
+    this.timer = setInterval(() => this.tick(), 25);
+  },
+  tick() {
+    if (!this.ac) return;
+    const now = this.ac.currentTime, ahead = now + 0.15;
+    for (const tr of this.tracks) {
+      if (tr.t < now - 0.2) tr.t = now; // tab was throttled; skip ahead
+      while (tr.t < ahead) {
+        if (tr.i >= tr.notes.length) { if (!this.loop) { tr.t = Infinity; break; } tr.i = 0; }
+        const [m, d] = tr.notes[tr.i++], dur = d * this.step;
+        if (m !== null) {
+          if (tr.w === 'noise') this.noise(tr.t, m < 0.2 ? 0.12 : 0.06, tr.v * (m < 0.2 ? 3 : m < 0.5 ? 2 : 1), this.mus, m);
+          else this.osc(tr.w, mtof(m), tr.t, dur * 0.9, tr.v, this.mus);
+        }
+        tr.t += dur;
+      }
+    }
+  },
+  stop() { if (this.timer) clearInterval(this.timer); this.timer = null; this.cur = null; this.tracks = []; this.want = null; }
+};
+
+// ---------------- 5x7 PIXEL FONT ----------------
+const FONT = {
+  A:[14,17,17,31,17,17,17], B:[30,17,17,30,17,17,30], C:[14,17,16,16,16,17,14], D:[30,17,17,17,17,17,30],
+  E:[31,16,16,30,16,16,31], F:[31,16,16,30,16,16,16], G:[14,17,16,23,17,17,15], H:[17,17,17,31,17,17,17],
+  I:[14,4,4,4,4,4,14], J:[7,2,2,2,2,18,12], K:[17,18,20,24,20,18,17], L:[16,16,16,16,16,16,31],
+  M:[17,27,21,21,17,17,17], N:[17,17,25,21,19,17,17], O:[14,17,17,17,17,17,14], P:[30,17,17,30,16,16,16],
+  Q:[14,17,17,17,21,18,13], R:[30,17,17,30,20,18,17], S:[15,16,16,14,1,1,30], T:[31,4,4,4,4,4,4],
+  U:[17,17,17,17,17,17,14], V:[17,17,17,17,17,10,4], W:[17,17,17,21,21,21,10], X:[17,17,10,4,10,17,17],
+  Y:[17,17,10,4,4,4,4], Z:[31,1,2,4,8,16,31],
+  0:[14,17,19,21,25,17,14], 1:[4,12,4,4,4,4,14], 2:[14,17,1,2,4,8,31], 3:[31,2,4,2,1,17,14],
+  4:[2,6,10,18,31,2,2], 5:[31,16,30,1,1,17,14], 6:[6,8,16,30,17,17,14], 7:[31,1,2,4,8,8,8],
+  8:[14,17,17,14,17,17,14], 9:[14,17,17,15,1,2,12],
+  '.':[0,0,0,0,0,12,12], ',':[0,0,0,0,12,4,8], '!':[4,4,4,4,4,0,4], '?':[14,17,1,2,4,0,4],
+  "'":[4,4,8,0,0,0,0], '-':[0,0,0,31,0,0,0], ':':[0,12,12,0,12,12,0], '/':[1,1,2,4,8,16,16],
+  '+':[4,4,31,4,4,4,4], '(':[2,4,8,8,8,4,2], ')':[8,4,2,2,2,4,8], '>':[8,4,2,1,2,4,8],
+  '<':[2,4,8,16,8,4,2], '=':[0,0,31,0,31,0,0], '"':[10,10,0,0,0,0,0], '&':[12,18,20,8,21,18,13],
+  '*':[0,4,21,14,21,4,0], '#':[10,31,10,10,31,10,0]
+};
+const glyphCache = {};
+function glyph(ch, color) {
+  const key = ch + color;
+  if (glyphCache[key]) return glyphCache[key];
+  const rows = FONT[ch]; if (!rows) return null;
+  const c = document.createElement('canvas'); c.width = 8; c.height = 8;
+  const g = c.getContext('2d'); g.fillStyle = color;
+  rows.forEach((r, y) => { for (let x = 0; x < 5; x++) if (r & (16 >> x)) g.fillRect(x + 1, y, 1, 1); });
+  return glyphCache[key] = c;
+}
+function text(str, x, y, color, scale) {
+  color = color || C.w; scale = scale || 1;
+  str = String(str).toUpperCase();
+  let cx = x;
+  for (const ch of str) {
+    if (ch === '\n') { cx = x; y += 8 * scale; continue; }
+    const gl = glyph(ch, color);
+    if (gl) ctx.drawImage(gl, 0, 0, 8, 8, Math.round(cx), Math.round(y), 8 * scale, 8 * scale);
+    cx += 8 * scale;
+  }
+}
+function textC(str, y, color, scale) { scale = scale || 1; text(str, Math.round((W - String(str).length * 8 * scale) / 2), y, color, scale); }
+
+// ---------------- STORAGE ----------------
+const Store = {
+  key: 'elderhaven_sacred_crest_v1',
+  load() {
+    try { const s = JSON.parse(localStorage.getItem(this.key)); if (Array.isArray(s) && s.length === 3) return s; } catch (e) {}
+    return [null, null, null];
+  },
+  save(arr) { try { localStorage.setItem(this.key, JSON.stringify(arr)); return true; } catch (e) { return false; } }
+};
+
+// ---------------- MISC HELPERS ----------------
+const rnd = n => Math.floor(Math.random() * n);
+const pick = a => a[rnd(a.length)];
+const clamp = (v, a, b) => v < a ? a : v > b ? b : v;
+function overlap(a, b) { return a.x < b.x + b.w && a.x + a.w > b.x && a.y < b.y + b.h && a.y + a.h > b.y; }
+// ============================================================
+//  PIXEL ART — every sprite is hand-drawn as character rows
+//  (characters map to the NES-style palette C in engine)
+// ============================================================
+function mkCanvas(w, h) { const c = document.createElement('canvas'); c.width = w; c.height = h; return c; }
+function spr(rows, swap, bg) {
+  const h = rows.length, w = Math.max(...rows.map(r => r.length));
+  const c = mkCanvas(w, h), g = c.getContext('2d');
+  if (bg) { g.fillStyle = C[bg]; g.fillRect(0, 0, w, h); }
+  rows.forEach((r, y) => {
+    for (let x = 0; x < r.length; x++) {
+      let ch = r[x]; if (swap && swap[ch] !== undefined) ch = swap[ch];
+      if (ch === '.' || !C[ch]) continue;
+      g.fillStyle = C[ch]; g.fillRect(x, y, 1, 1);
+    }
+  });
+  return c;
+}
+function flipH(src) { const c = mkCanvas(src.width, src.height), g = c.getContext('2d'); g.translate(src.width, 0); g.scale(-1, 1); g.drawImage(src, 0, 0); return c; }
+function flipV(src) { const c = mkCanvas(src.width, src.height), g = c.getContext('2d'); g.translate(0, src.height); g.scale(1, -1); g.drawImage(src, 0, 0); return c; }
+function rotCW(src) { const c = mkCanvas(src.height, src.width), g = c.getContext('2d'); g.translate(src.height, 0); g.rotate(Math.PI / 2); g.drawImage(src, 0, 0); return c; }
+// directional set from an "up"-pointing sprite
+function dirSet(up) { const right = rotCW(up), down = rotCW(right), left = rotCW(down); return { up, right, down, left }; }
+const tintCache = new Map();
+function tint(src, color) {
+  let m = tintCache.get(src); if (!m) { m = {}; tintCache.set(src, m); }
+  if (m[color]) return m[color];
+  const c = mkCanvas(src.width, src.height), g = c.getContext('2d');
+  g.drawImage(src, 0, 0); g.globalCompositeOperation = 'source-atop'; g.fillStyle = color; g.fillRect(0, 0, c.width, c.height);
+  return m[color] = c;
+}
+
+// ---------------- HERO (blue tunic, white tabard with red cross) ----------------
+const HERO_LEGS_A = ['....bbB..Bbb....', '....bbB..BBB....', '...BBBB.........'];
+const HERO_LEGS_B = ['....bbB..Bbb....', '....BBB..Bbb....', '.........BBBB...'];
+const HERO_DOWN = [
+  '.....BBBBBB.....', '....BbbbbbbB....', '...BbbbbbbbbB...', '...BbssssssbB...', '...BskssssksB...',
+  '....ssssssss....', '.....ssssss.....', '...uuwwrrwwuu...', '..suuwrrrrwuus..', '..suuwwrrwwuus..',
+  '...uUwwrrwwUu...', '...UUwwwwwwUU...', '....UUUUUUUU....'];
+const HERO_UP = [
+  '.....BBBBBB.....', '....BbbbbbbB....', '...BbbbbbbbbB...', '...BbbbbbbbbB...', '...BbbbbbbbbB...',
+  '....BbbbbbbB....', '.....ssssss.....', '...uuuuuuuuuu...', '..suuuurruuuus..', '..suurrrrrruus..',
+  '...uuuurruuuu...', '...UUuurruuUU...', '....UUUUUUUU....'];
+const HERO_SIDE = [
+  '......BBBBB.....', '.....BbbbbbB....', '....BbbbbbbbB...', '....BbbbsssssB..', '....Bbbbsskss...',
+  '.....Bbbsssss...', '......sssss.....', '....uuuwwwuggg..', '....uuuwrwugrg..', '....uuwrrrwrrr..',
+  '....uuuwrwugrg..', '....UUuwwwUggg..', '.....UUUUUU.....'];
+const SIDE_LEGS_A = ['.....bbB.bb.....', '.....bbB.BB.....', '....BBBB........'];
+const SIDE_LEGS_B = ['.....bb..bbB....', '.....BB..bbB....', '.........BBBB...'];
+
+const S = {};
+function buildArt() {
+  const hd = [spr(HERO_DOWN.concat(HERO_LEGS_A)), spr(HERO_DOWN.concat(HERO_LEGS_B))];
+  const hu = [spr(HERO_UP.concat(HERO_LEGS_A)), spr(HERO_UP.concat(HERO_LEGS_B))];
+  const hr = [spr(HERO_SIDE.concat(SIDE_LEGS_A)), spr(HERO_SIDE.concat(SIDE_LEGS_B))];
+  S.hero = { down: hd, up: hu, right: hr, left: hr.map(flipH) };
+  S.heroHold = spr(['................', '..s.BBBBBB..s...', '..sBbbbbbbbBs...', '..sbbbbbbbbbs...', '..sBbssssssbB...',
+    '...BskssssksB...', '....ssssssss....', '.....ssssss.....', '...uuwwrrwwuu...', '...uuwrrrrwuu...', '...uuwwrrwwuu...',
+    '...uUwwrrwwUu...', '...UUwwwwwwUU...', '....UUUUUUUU....', '....bbB..Bbb....', '...BBBB..BBBB...']);
+
+  // ---------------- WEAPONS & ITEMS ----------------
+  const SWORD = ['.......w........', '......wgw.......', '......wgw.......', '......wgw.......', '......wgw.......', '......wgw.......',
+    '......wgw.......', '......wgw.......', '......wgw.......', '....yyyyyyy.....', '.......b........', '.......b........', '......yyy.......'];
+  S.sword = dirSet(spr(SWORD));
+  S.beamA = dirSet(spr(SWORD, { w:'c', g:'w', y:'u', b:'c' }));
+  S.beamB = dirSet(spr(SWORD, { w:'r', g:'y', y:'o', b:'r' }));
+  S.swordItem = spr(SWORD);
+  S.spark = spr(['...w....', '...c....', '.w.c.w..', '..wcw...', 'cccwccc.', '..wcw...', '.w.c.w..', '...c....']);
+  const SHIELD = ['................', '...gggggggggg...', '..gwwwwrrwwwwg..', '..gwwwwrrwwwwg..', '..gwwwwrrwwwwg..', '..grrrrrrrrrrg..',
+    '..grrrrrrrrrrg..', '..gwwwwrrwwwwg..', '..gwwwwrrwwwwg..', '...gwwwrrwwwg...', '...gwwwrrwwwg...', '....gwwrrwwg....',
+    '.....gwrrwg.....', '......gggg......'];
+  S.shield = spr(SHIELD); S.shieldSilver = spr(SHIELD, { g:'u', w:'a' });
+  const GEM = ['...kk...', '..keek..', '.keewek.', '.keweek.', 'keeweeek', 'keweeeek', 'keeeeeEk', 'keeeeeEk',
+    'keeeeEEk', 'keeeeEEk', '.keeEEk.', '.keEEEk.', '..kEEk..', '...kk...'];
+  S.gem = spr(GEM); S.gem5 = spr(GEM, { e:'c', E:'u' });
+  const HEART = ['.rr.rr..', 'rrrrrrr.', 'rwrrrrr.', 'rrrrrrr.', '.rrrrr..', '..rrr...', '...r....', '........'];
+  S.heart = spr(HEART); S.heartEmpty = spr(HEART, { r:'G', w:'G' }); S.heartHalf = spr(['.rr.GG..', 'rrrrGGG.', 'rwrrGGG.', 'rrrrGGG.', '.rrrGG..', '..rrG...', '...r....']);
+  S.heartBig = spr(['................', '...rrrr..rrrr...', '..rrwwrrrrrrrr..', '..rwwrrrrrrrrr..', '..rwrrrrrrrrrr..', '..rrrrrrrrrrrr..',
+    '...rrrrrrrrrr...', '....rrrrrrrr....', '.....rrrrrr.....', '......rrrr......', '.......rr.......']);
+  S.key = spr(['..yyy...', '.y...y..', '.y...y..', '..yyy...', '...y....', '...y....', '...yy...', '...y....', '...yy...', '...y....']);
+  S.bomb = spr(['................', '..........w.....', '.........y......', '........b.......', '......uuuu......', '.....uuuuuu.....',
+    '....uuwuuuuu....', '....uwuuuuuu....', '....uuuuuuuu....', '....uuuuuuUu....', '....uuuuuUUu....', '.....uuuUUu.....', '......uuuu......']);
+  S.boomerang = spr(['bbbbbb..', 'bBBBBb..', 'bb......', 'bb......', 'bb......', 'bb......', '........', '........']);
+  S.bow = spr(['.bb.....', '...b....', 'w...b...', 'w....b..', 'w....b..', 'w.....b.', 'w.....b.', 'w.....b.', 'w.....b.',
+    'w.....b.', 'w....b..', 'w....b..', 'w...b...', '...b....', '.bb.....']);
+  const ARROW = ['...g....', '..ggg...', '.g.g.g..', '...b....', '...b....', '...b....', '...b....', '...b....', '...b....', '...b....',
+    '...b....', '..rbr...', '.r.b.r..', '...b....'];
+  S.arrow = dirSet(spr(ARROW)); S.arrowItem = spr(ARROW);
+  S.spear = dirSet(spr(ARROW, { g:'w', r:'B' }));
+  S.candle = spr(['...r....', '..ryr...', '..ryr...', '...y....', '..uuu...', '..ucu...', '..ucu...', '..ucu...', '..ucu...', '..uuu...', '.yyyyy..', '..yyy...']);
+  const FIRE = ['................', '.......r........', '......rr........', '......rrr.......', '.....rrrr...r...', '.....ryrrr..rr..',
+    '....rryyrr.rrr..', '....ryyyrrrrrr..', '...rryywyyrrr...', '...ryywwyyyrr...', '..rryywwwyyrr...', '..ryyywwwyyyr...',
+    '..ryywwwwwyyr...', '...ryywwwyyr....', '....rryyyrr.....', '......rrrr......'];
+  S.fire = [spr(FIRE), flipH(spr(FIRE))];
+  S.wand = spr(['..ccc...', '.cwwcc..', '.cwccc..', '..ccc...', '...u....', '...u....', '...u....', '...u....', '...u....', '...u....', '...u....', '...u....', '...u....', '..UUU...']);
+  S.wandDir = { up: S.wand, right: rotCW(S.wand), down: flipV(S.wand), left: flipH(rotCW(S.wand)) };
+  const MAGIC = ['...c....', '..cwc...', '.cwwwc..', '.cwawc..', 'cwwawwc.', 'cwaaawc.', 'cwwawwc.', '.cwawc..', '.cwwwc..', '..cwc...', '...c....'];
+  S.magic = dirSet(spr(MAGIC)); S.magic2 = dirSet(spr(MAGIC, { c:'P', a:'p' }));
+  S.bible = spr(['................', '..kkkkkkkkkkk...', '..kRRRRRRRRRkw..', '..kRRRRyRRRRkw..', '..kRRRRyRRRRkw..', '..kRRyyyyyRRkw..',
+    '..kRRRRyRRRRkw..', '..kRRRRyRRRRkw..', '..kRRRRyRRRRkw..', '..kRRRRyRRRRkw..', '..kRRRRRRRRRkw..', '..kRRRRRRRRRkw..',
+    '..kkkkkkkkkkkw..', '...wwwwwwwwww...']);
+  S.map = spr(['nyyyyyyn', 'yYYYYYYy', 'yYbYYbYy', 'yYYbbYYy', 'yYYYYbYy', 'yYbYYYYy', 'yYYbYYYy', 'yYYYbbYy', 'yYbYYYYy', 'yYYYYYYy', 'nyyyyyyn']);
+  S.compass = spr(['................', '................', '.....kkkkkk.....', '....kyyyyyyk....', '...kywwwwwwyk...', '...kywwrwwwyk...',
+    '...kywwrwwwyk...', '...kywwkwwwyk...', '...kywwGwwwyk...', '...kywwGwwwyk...', '...kywwwwwwyk...', '....kyyyyyyk....', '.....kkkkkk.....']);
+  S.shard = spr(['................', '.......k........', '......kyk.......', '......kywk......', '.....kyywk......', '.....kyyywk.....',
+    '....kyyyyywk....', '....kyyyyyywk...', '...knyyyyyyyk...', '...knnyyyyyyk...', '....knnyyyyk....', '.....knnyyk.....',
+    '......knnk......', '.......kk.......']);
+  S.fairy = [spr(['........', 'ww.ss.ww', 'wwwppwww', '.wwppww.', '...pp...', '..p..p..']),
+             spr(['........', '...ss...', '...pp...', 'wwwppwww', 'ww.pp.ww', '..p..p..'])];
+  S.rock = spr(['..bbbb..', '.bobbBb.', 'bobbbbBb', 'bbbbbbBb', 'bbbbbBBb', '.bbBBBb.', '..bbbb..']);
+  S.fireball = [spr(['..rrrr..', '.ryyyyr.', 'ryywwyyr', 'rywwwwyr', 'rywwwwyr', 'ryywwyyr', '.ryyyyr.', '..rrrr..']),
+                spr(['..yyyy..', '.yrrrry.', 'yrrwwrry', 'yrwwwwry', 'yrwwwwry', 'yrrwwrry', '.yrrrry.', '..yyyy..'])];
+  const BURST = ['................', '..w.........w...', '...w.......w....', '....w.....w.....', '.......r........', '......rwr.......',
+    '.....rwwwr......', '....rwwwwwr.....', '.....rwwwr......', '......rwr.......', '.......r........', '....w.....w.....',
+    '...w.......w....', '..w.........w...'];
+  S.burst = [spr(BURST), spr(BURST, { r:'y', w:'r' })];
+  const PUFF = ['................', '................', '.....gggggg.....', '....gwwwwwwg....', '...gwwggggwwg...', '...gwgg..ggwg...',
+    '...gwg....gwg...', '...gwg....gwg...', '...gwgg..ggwg...', '...gwwggggwwg...', '....gwwwwwwg....', '.....gggggg.....'];
+  S.puff = [spr(PUFF), spr(PUFF, { g:'c', w:'w' })];
+  S.smoke = [spr(['................', '.....gggg.......', '...ggwwwwgg.....', '..gwwggggwwg....', '..gwg....gwg.g..', '.gwg..gg..gwgwg.',
+    '.gwg.gwwg.gwgwg.', '.gwg.gwwg.gwg.g.', '.gwg..gg..gwg...', '..gwg....gwg....', '..gwwggggwwg....', '...ggwwwwgg.....', '.....gggg.......'])];
+
+  // ---------------- NPCs ----------------
+  const SAGE = ['......ssss......', '.....ssssss.....', '....wsssssssw...', '....wskssksw....', '....wssssssw....', '....wwwwwwww....',
+    '...rwwwwwwwwr...', '..rrrwwwwwwrrr..', '..rrrrwwwwrrrr..', '.srrrrrwwrrrrrs.', '.srrrrrrrrrrrrs.', '..rrrrrrrrrrrr..',
+    '..rrrRrrrrRrrr..', '..rrrRrrrrRrrr..', '..RRRRRRRRRRRR..', '..bbbb....bbbb..'];
+  S.sage = spr(SAGE); S.hermit = spr(SAGE, { r:'u', R:'U' }); S.elder = spr(SAGE, { r:'P', R:'U' });
+  S.monk = spr(['................', '.....bbbbbb.....', '....bbbbbbbb....', '...bbssssssbb...', '...bskssssksb...', '...bbssssssbb...',
+    '....bbssssbb....', '...bbbbbbbbbb...', '..bbbbbwwbbbbb..', '.sbbbwwwwwwbbbs.', '.sbbbbbwwbbbbbs.', '..bbbbbwwbbbbb..',
+    '..bbbbbbbbbbbb..', '..bBbbbbbbbbBb..', '..BBBBBBBBBBBB..', '...BB......BB...']);
+  S.merchant = spr(['................', '.....eeeeee.....', '....eeeeeeee....', '...EEEEEEEEEE...', '....ssssssss....', '....skssssks....',
+    '....sBBBBBBs....', '.....ssssss.....', '...eeeeyyeeee...', '..seeeeyyeeees..', '..seeeeeeeeees..', '...eeeeeeeeee...',
+    '...EEEEEEEEEE...', '....bb....bb....', '....bb....bb....', '...BBB....BBB...']);
+  S.princess = spr(['......yyyy......', '.....ynyyny.....', '....yyyyyyyy....', '....ysssssssy...', '....yskssksy....', '....yssssssy....',
+    '....yyssssyy....', '...ppppwwpppp...', '..sppppwwpppps..', '..sppwwwwwwpps..', '...ppppwwpppp...', '...pppppppppp...',
+    '..pppppppppppp..', '..pppppppppppp..', '.pppppppppppppp.', '.PPPPPPPPPPPPPP.']);
+
+  // ---------------- ENEMIES ----------------
+  const SPIT = ['................', '.....kk..kk.....', '......k..k......', '....rrrrrrrr....', '...rrwkrrwkrr...', '..rrrrrrrrrrrr..',
+    '..rRrrrrrrrrRr..', '..rRRrrrrrrRRr..', '..rrRRRrrRRRrr..', '..rrrrRRRRrrrr..', '...rrrrrrrrrr...', '....rrrrrrrr....'];
+  const spitA = SPIT.concat(['...k.k....k.k...', '..k..k....k..k..']), spitB = SPIT.concat(['....k.k..k.k....', '....k..kk..k....']);
+  // spitter faces "down" in art; build sets that face each direction
+  const sdn = [spr(spitA), spr(spitB)];
+  const sup = sdn.map(flipV), srt = sup.map(rotCW), slt = srt.map(flipH);
+  S.spitter = { down: sdn, up: sup, right: srt, left: slt };
+  const sb = { r:'u', R:'U' };
+  const bdn = [spr(spitA, sb), spr(spitB, sb)], bup = bdn.map(flipV), brt = bup.map(rotCW);
+  S.spitterBlue = { down: bdn, up: bup, right: brt, left: brt.map(flipH) };
+  S.bat = [spr(['................', '................', '................', '................', '................', '..k..........k..',
+    '.kP...kkkk...Pk.', 'kPPk.kPPPPk.kPPk', 'kPPPkPwPPwPkPPPk', '.kPPPPPPPPPPPPk.', '..kk..kPPk..kk..']),
+    spr(['................', '................', '................', '................', '................', '................',
+    '......kkkk......', '.....kPPPPk.....', '..kkkPwPPwPkkk..', '.kPPPPPPPPPPPPk.', 'kPPk..kPPk..kPPk', 'kk............kk'])];
+  S.blob = [spr(['................', '................', '................', '................', '................', '................',
+    '................', '................', '................', '......eeee......', '.....eeeeee.....', '....eewkeewke...',
+    '....eeeeeeeee...', '...eeeeeeeeeee..', '...EEEEEEEEEEE..']),
+    spr(['................', '................', '................', '................', '................', '................',
+    '................', '................', '................', '................', '................', '....eeeeeeee....',
+    '...eewkeeewkee..', '..eeeeeeeeeeeee.', '..EEEEEEEEEEEEE.'])];
+  const BONE = ['................', '.....wwwwww.....', '....wwwwwwww....', '....wkkwwkkw....', '....wkkwwkkw....', '....wwwkkwww....',
+    '.....wkwkwk.....', '......wwww......', '...w.wwwwww.w...', '...wwkwwwwkww...', '....wkwwwwkw....', '......wkkw......'];
+  S.bone = [spr(BONE.concat(['.....ww..ww.....', '.....w....w.....', '....ww....ww....'])),
+            spr(BONE.concat(['.....ww..ww.....', '......w..w......', '.....ww..ww.....']))];
+  const BOAR = ['....b......b....', '....bb....bb....', '....bbbbbbbb....', '...bbkbbbbkbb...', '...bbbbbbbbbb...', '...bbbsssssbbb..',
+    '...bbbskksbbb...', '....bwbssbwb....', '...EEbbbbbbEE...', '..sEEEEEEEEEEs..', '..sEEeeeeeeEEs..', '...EEeeeeeeEE...', '....EEEEEEEE....'];
+  S.boar = [spr(BOAR.concat(['....bb....bb....', '....bb....bb....', '...BBB....BBB...'])),
+            spr(BOAR.concat(['....bb.....bb...', '...BBB.....bb...', '...........BBB..']))];
+  S.hopper = [spr(['................', '................', '................', '................', '................', '.....uuuuuu.....',
+    '....uuuuuuuu....', '...uuwkuuwkuu...', '...uuuuuuuuuu...', '...cuuuuuuuuc...', '..k.cuuuuuuc.k..', '.k..k......k..k.',
+    '.k..k......k..k.', 'k...k......k...k']),
+    spr(['................', '................', '................', '................', '................', '................',
+    '................', '.....uuuuuu.....', '....uuuuuuuu....', '...uuwkuuwkuu...', '...uuuuuuuuuu...', '..kcuuuuuuuuck..',
+    '.k.kcuuuuuuck.k.', 'k..k........k..k'])];
+  const FANG = ['................', '.....rrrrrr.....', '....rrrrrrrr....', '...rrssssssrr...', '...rskssssksr...', '...rrsswwssrr...',
+    '....rrssssrr....', '...rrrrrrrrrr...', '..srrRrrrrRrrs..', '..srrRRrrRRrrs..', '...rrrRRRRrrr...', '....rrrrrrrr....'];
+  S.fang = [spr(FANG.concat(['....BB....BB....', '....BB....BB....', '...BBB....BBB...'])),
+            spr(FANG.concat(['....BB.....BB...', '...BBB.....BB...', '...........BBB..']))];
+  const RAM = ['.bbb........bbb.', 'bBBBb......bBBBb', 'bB..bb....bb..Bb', 'bB...bggggb...Bb', '.bb.gggggggg.bb.', '...gggggggggg...',
+    '..ggrrggggrrgg..', '..ggrkggggkrgg..', '..gggggggggggg..', '...gggGGGGggg...', '...ggGkGGkGgg...', '....gGGGGGGg....',
+    '..GGggggggggGG..', '.GGGGggggggGGGG.', '.GG.GGGGGGGG.GG.'];
+  S.ram = [spr(RAM.concat(['.kk..kk..kk..kk.'])), spr(RAM.concat(['..kk..kk..kk..kk']))];
+
+  // ---------------- LEVEL-2 additions ----------------
+  S.ladder = spr(['b......b', 'bbbbbbbb', 'b......b', 'b......b', 'bbbbbbbb', 'b......b', 'b......b', 'bbbbbbbb', 'b......b', 'b......b', 'bbbbbbbb', 'b......b']);
+  const WRAP = ['................', '.....gwwwwg.....', '....gwwgwwwg....', '....wkwwwkww....', '....wwgwwgww....', '.....wwwwww.....',
+    '...gwwgwwgwwg...', '..wwgwwwwwwgww..', '..wg.wwgwwwg.gw.', '....wwwwgwww....', '....wgwwwwgw....', '....wwgwwwwg....'];
+  S.wrap = [spr(WRAP.concat(['....ww...ww.....', '....ww...ww.....', '...gww...wwg....'])),
+            spr(WRAP.concat(['....ww....ww....', '...gww....ww....', '..........wwg...']))];
+  const WISP = ['................', '.......p........', '......ppp.......', '.....pwwwp......', '....pwwcwwp.....', '...pwwcccwwp....',
+    '...pwccwccwp....', '...pwccwccwp....', '...pwwcccwwp....', '....pwwcwwp.....', '.....pwwwp......', '......ppp.......', '.......p........'];
+  S.wisp = [spr(WISP), spr(WISP, { p:'c', c:'p' })];
+  S.serpHead = dirSet(spr(['....w......w....', '....w......w....', '...nyyyyyyyyn...', '..nyyyyyyyyyyn..', '..yrryyyyyyrry..',
+    '..yrkyyyyyykry..', '..yyyyyyyyyyyy..', '.nyyyyyyyyyyyyn.', '.nyynnyyyynnyyn.', '.nyyyyyyyyyyyyn.', '..nyynnyynnyyn..',
+    '..nyyyyyyyyyyn..', '...nyyyyyyyyn...', '....nnyyyynn....', '......nnnn......'], { y:'q', n:'E' }));
+  S.serpBody = spr(['................', '.....nnnnnn.....', '...nnyyyyyynn...', '..nyyynnnnyyyn..', '..nyynyyyynyyn..', '.nyynyyyyyynyyn.',
+    '.nyynyyyyyynyyn.', '.nyynyyyyyynyyn.', '.nyynyyyyyynyyn.', '..nyynyyyynyyn..', '..nyyynnnnyyyn..', '...nnyyyyyynn...', '.....nnnnnn.....'], { y:'q', n:'E' });
+
+  // ---------------- LEVEL-3 additions ----------------
+  const KS = { B:'k', b:'G', s:'g', k:'r', u:'U', U:'k', w:'G', r:'G', g:'P' };
+  const kd = [spr(HERO_DOWN.concat(HERO_LEGS_A), KS), spr(HERO_DOWN.concat(HERO_LEGS_B), KS)];
+  const ku = [spr(HERO_UP.concat(HERO_LEGS_A), KS), spr(HERO_UP.concat(HERO_LEGS_B), KS)];
+  const kr = [spr(HERO_SIDE.concat(SIDE_LEGS_A), KS), spr(HERO_SIDE.concat(SIDE_LEGS_B), KS)];
+  S.knight = { down: kd, up: ku, right: kr, left: kr.map(flipH) };
+  const SHADE = ['................', '.....wwwwww.....', '....wwwwwwww....', '...wwkkwwkkww...', '...wwkkwwkkww...', '...wwwwwwwwww...',
+    '...wwwwkkwwww...', '..wwwwwkkwwwww..', '..wwwwwwwwwwww..', '..wwwwwwwwwwww..', '..wwwwwwwwwwww..'];
+  S.shade = [spr(SHADE.concat(['..ww.www.www.w..', '..w...w...w.....'])), spr(SHADE.concat(['..w.www.www.ww..', '.....w...w...w..']))];
+  const LICH = ['.....PPPPPP.....', '....PPPPPPPP....', '...PPwwwwwwPP...', '...PwkkwwkkwP...', '...PwkrwwrkwP...', '...PwwwkkwwwP...',
+    '....PwkwkwkP....', '...PPPwwwwPPP...', '..PPPPPPPPPPPP..', '.gPPPrPPPPrPPPg.', '.gwPPPrrrrPPPwg.', '..gPPPPrrPPPPg..',
+    '...PPPPrrPPPP...', '...PPPPPPPPPP...', '..PPPPPPPPPPPP..'];
+  S.lich = [spr(LICH.concat(['.UUUUUUUUUUUUUU.'])), spr(LICH.concat(['..UUUUUUUUUUUU..']))];
+  S.raft = tileCanvas(g => { px(g, 'n', 1, 1, 14, 14); for (let x = 3; x < 15; x += 3) px(g, 'B', x, 1, 1, 14); px(g, 'Y', 1, 3, 14, 1); px(g, 'Y', 1, 12, 14, 1); px(g, 'B', 1, 15, 14, 1); });
+  const SW = ['.......w........', '......wcw.......', '......wcw.......', '......wcw.......', '......wcw.......', '......wcw.......',
+    '......wcw.......', '......wcw.......', '......wcw.......', '....ggggggg.....', '.......P........', '.......P........', '......ggg.......'];
+  S.swordItem2 = spr(SW); S.sword2 = dirSet(spr(SW));
+
+  // ---------------- LEVEL-4 additions ----------------
+  const CRAB = ['................', '..rr........rr..', '.r..r......r..r.', '.rr.r.w..w.r.rr.', '..rrr.k..k.rrr..', '....rrrrrrrr....',
+    '...rrorrrrorr...', '..rrrrrrrrrrrr..', '..rRrrrrrrrrRr..', '...rRRRRRRRRr...'];
+  S.crab = [spr(CRAB.concat(['..r.r......r.r..', '.r..r......r..r.', '.r...r....r...r.'])),
+            spr(CRAB.concat(['...r.r....r.r...', '..r..r....r..r..', '..r...r..r...r..']))];
+  S.brine = S.crab.map(c => spr(CRAB.concat(['..r.r......r.r..', '.r..r......r..r.', '.r...r....r...r.']), { r:'P', R:'U', o:'p' }));
+  S.brine[1] = spr(CRAB.concat(['...r.r....r.r...', '..r..r....r..r..', '..r...r..r...r..']), { r:'P', R:'U', o:'p' });
+  const LURK = ['................', '......eeee......', '....eeeeeeee....', '...eewkeewkee...', '...eekkeekkee...', '..eeeeeeeeeeee..',
+    '..eqqeeeeeeqqe..', '..eeerrrrrreee..', '...eerwrrwree...', '...eeerrrreee...', '..qeeeeeeeeeeq..', '.qq.eeeeeeee.qq.'];
+  S.lurker = [spr(LURK.concat(['cccccccccccccccc', '.cccc.cccc.cccc.'])), spr(LURK.concat(['.cccc.cccc.cccc.', 'cccccccccccccccc']))];
+  S.ripple = [spr(['', '', '', '', '', '', '....cc....cc....', '..cc..cccc..cc..', '....cc....cc....']),
+              spr(['', '', '', '', '', '..c..........c..', '.c..cc....cc..c.', 'c..c..cccc..c..c', '.c..cc....cc..c.', '..c..........c..'])];
+  S.bubble = spr(['..cccc..', '.cwwccc.', 'cwcccccc', 'cccccccc', 'cccccccc', 'cccccccc', '.cccccc.', '..cccc..']);
+  S.candleRed = spr(['...r....', '..ryr...', '..ryr...', '...y....', '..rrr...', '..ror...', '..ror...', '..ror...', '..ror...', '..rrr...', '.yyyyy..', '..yyy...']);
+
+  // ---------------- LEVEL-5 additions ----------------
+  const GOLEM = ['................', '.....GGGGGG.....', '....GgggggGG....', '....GgrgggrG....', '....GggggggG....', '..GGGGGGGGGGGG..',
+    '.GgggGggggGgggG.', '.GgggGggggGgggG.', '.GGGGGggggGGGGG.', '..GG.GggggG.GG..', '.....GGGGGG.....'];
+  S.golem = [spr(GOLEM.concat(['....GgG..GgG....', '....GgG..GgG....', '...GGGG..GGGG...'])),
+             spr(GOLEM.concat(['....GgG...GgG...', '...GGGG...GgG...', '..........GGGG..']))];
+  S.flame = S.wisp.map((c, i) => spr(['................', '.......r........', '......rrr.......', '.....rwwwr......', '....rwwywwr.....', '...rwwyyywwr....',
+    '...rwyywyywr....', '...rwyywyywr....', '...rwwyyywwr....', '....rwwywwr.....', '.....rwwwr......', '......rrr.......', '.......r........'], i ? { r:'y', y:'r' } : null));
+  const GLOOM = ['.....kkkkkk.....', '...kkPPPPPPkk...', '..kPPPPPPPPPPk..', '.kPPPPPPPPPPPPk.', '.kPPwwPPPPwwPPk.', 'kPPPwrPPPPrwPPPk',
+    'kPPPPPPPPPPPPPPk', 'kPPPPkkkkkkPPPPk', 'kPPPkwkwwkwkPPPk', 'kPPPPkkkkkkPPPPk', '.kPPPPPPPPPPPPk.', '.kPUPPUPPUPPUPk.'];
+  S.gloom = [spr(GLOOM.concat(['..kUUkUUkUUkUk..', '...k..k..k..k...'])), spr(GLOOM.concat(['..kUkUUkUUkUUk..', '..k..k..k..k....']))];
+  S.orb = spr(['..PPPP..', '.PppPPP.', 'PpPPPPPP', 'PPPPPPPP', 'PPPPPPPP', 'PPPPPPPP', '.PPPPPP.', '..PPPP..']);
+  S.harp = spr(['................', '..yy........yy..', '.y..y......y..y.', '.y...yyyyyy...y.', '..y..w.w.w.w.y..', '..y..w.w.w.w.y..',
+    '..y..w.w.w.w.y..', '...y.w.w.w.wy...', '...y.w.w.w.wy...', '....yw.w.w.y....', '....yyyyyyyy....', '.....nnnnnn.....', '......nnnn......']);
+  S.note = spr(['..yy', '..yw', '..y.', '..y.', 'yyy.', 'yyy.']);
+
+  // ---------------- LEVEL-6 additions ----------------
+  const THORN = ['.......E........', '...E..eEe..E....', '....E.eee.E.....', '..E.eeeeeee.E...', '...eeleeeeeee...', '.Eeeleerreeeee..',
+    '..eeeerkkreeeE..', '.Eeeeerkkreeee..', '..eeeeerreeeeE..', '...eeeeeeeeee...', '..E.eeeeeee.E...', '.....bbbbb......', '....bBbbbBb.....', '...bbBBBBBbb....'];
+  S.thorn = [spr(THORN), flipH(spr(THORN))];
+  S.seed = spr(['..ee....', '.eqqe...', 'eqllqe..', 'eqlqqe..', '.eqqe...', '..ee....']);
+  const MOLE = ['................', '................', '.....bbbbbb.....', '....bbbbbbbb....', '...bbkbbbbkbb...', '...bbbbppbbbb...',
+    '..wbbbbppbbbbw..', '..bbbbwbbwbbbb..', '.sbbbbbbbbbbbbs.', '.ssbbbbbbbbbbss.', '..bbbbbbbbbbbb..', '.nnnnnnnnnnnnnn.', 'nBnnBnnnBnnBnnBn'];
+  S.mole = [spr(MOLE), flipH(spr(MOLE))];
+  const MOUND = ['', '', '', '', '', '', '', '', '', '', '.....nnnnn......', '...nnBnnnBnn....', '..nnnnBnnnnnn...', '.nBnnnnnBnnnBn..'];
+  S.mound = [spr(MOUND), flipH(spr(MOUND))];
+  const BR_TOP = ['E..E...EE...E..E', '.E.eE.eEEe.Ee.E.', '..eeeeeeeeeeee..', '.eeleeeeeeeeeee.', 'eelleeeeeeeeeeee', 'eleeeeeeeeeeeeee'];
+  const BR_BOT = ['Eeeeeeeeeeeeeeee', '.eeeeeeeeeeeeee.', '..EeeeeeeeeeeE..', '.bbbbBbbbbBbbbb.', 'bBbbbbBbbbbbBbbb', 'BbBbBbbBbBbbBbBb'];
+  S.bramble = [spr(BR_TOP.concat(['eeeeeqqqqqqeeeee', 'eeeeqEEEEEEqeeee', 'eeeeeqqqqqqeeeee'], BR_BOT)),
+               spr(BR_TOP.concat(['eeeeewwwwwweeeee', 'eeeewwrkkrwweeee', 'eeeeewwwwwweeeee'], BR_BOT))];
+  S.boomerangBlue = spr(['bbbbbb..', 'bBBBBb..', 'bb......', 'bb......', 'bb......', 'bb......', '........', '........'], { b:'c', B:'u' });
+  S.mantle = spr(['......yyyy......', '....uuyyyyuu....', '...uccccccccu...', '...uccccccccu...', '..uccccccccccu..', '..uccccccccccu..',
+    '..uccccccccccu..', '.uccccccccccccu.', '.uccccccccccccu.', '.uccccccccccccu.', 'uccccccccccccccu', 'uUUUUUUUUUUUUUUu']);
+  const MS = { u:'c', U:'u' };
+  const md = [spr(HERO_DOWN.concat(HERO_LEGS_A), MS), spr(HERO_DOWN.concat(HERO_LEGS_B), MS)];
+  const mu = [spr(HERO_UP.concat(HERO_LEGS_A), MS), spr(HERO_UP.concat(HERO_LEGS_B), MS)];
+  const mr = [spr(HERO_SIDE.concat(SIDE_LEGS_A), MS), spr(HERO_SIDE.concat(SIDE_LEGS_B), MS)];
+  S.heroMantle = { down: md, up: mu, right: mr, left: mr.map(flipH) };
+
+  buildTiles();
+}
+
+// ---------------- OVERWORLD TILES ----------------
+const T = {};
+const TREE = ['....eeeeeeee....', '..eeelleeeeeee..', '.eellleeeeeEeee.', '.elleeeeeeeEEee.', 'eelleeeEeeeeEeee', 'eleeeeEEeeeeeeee',
+  'eeeeeEEeeeeeeEee', 'eeeeeeeeeeeeEEee', 'EeeeeeeeeEeeeeeE', '.EeeeeeeEEeeeeE.', '.EEeeeeeeeeeeEE.', '..EEEeeeeeEEEE..',
+  '....EEEbbEEE....', '......bbbb......', '......bBBb......', '.....BBBBBB.....'];
+const BUSH = ['................', '................', '....eeeeeeee....', '..eeelleeeeeee..', '.eellleeeeeEeee.', '.elleeeeeeeEEee.',
+  'eelleeeEeeeeEeee', 'eleeeeEEeeeeeeee', 'eeeeeEEeeeeeeEee', 'eeeeeeeeeeeeEEee', 'EeeeeeeeeEeeeeeE', '.EeeeeeeEEeeeeE.',
+  '.EEeeeeeeeeeeEE.', '..EEEeeeeeEEEE..', '....EEEEEEEE....'];
+const ROCK = ['obbbbbbbBobbbbbB', 'obbbbbbBBobbbbbB', 'obbbbbBBoobbbbBB', 'BBbbbBBoobbbbBBo', 'obBBBBoobbbbBBoo', 'obbbbBobbbbBBobb',
+  'obbbbBobbbBBobbb', 'BBbbbBobbBBobbbb', 'oBBbBBobBBobbbbb', 'obBBBoobBobbbbbB', 'obbBoobbBobbbBBB', 'obbBobbbBBbbBBob',
+  'BbbBobbbbBBBBobb', 'oBBBobbbbbBBobbb', 'obbBBobbbbBobbbb', 'BBBBBBBBBBBBBBBB'];
+const GRAVE = ['................', '....GGGGGGGG....', '...GwwwwwwwwG...', '..GwwwwGGwwwwG..', '..GwwwwGGwwwwG..', '..GwwGGGGGGwwG..',
+  '..GwwGGGGGGwwG..', '..GwwwwGGwwwwG..', '..GwwwwGGwwwwG..', '..GwwwwGGwwwwG..', '..GwwwwwwwwwwG..', '..GggggggggggG..',
+  '.GGGGGGGGGGGGGG.', '.BBBBBBBBBBBBBB.'];
+const CROSS = ['......GGGG......', '......GwwG......', '......GwgG......', '..GGGGGwgGGGGG..', '..GwwwwwgwwwwG..', '..GggggggggggG..',
+  '..GGGGGwgGGGGG..', '......GwgG......', '......GwgG......', '......GwgG......', '......GwgG......', '......GwgG......',
+  '.....GGwgGG.....', '....GGGGGGGG....', '....BBBBBBBB....'];
+function tileCanvas(fn) { const c = mkCanvas(16, 16), g = c.getContext('2d'); fn(g); return c; }
+function px(g, col, x, y, w, h) { g.fillStyle = C[col] || col; g.fillRect(x, y, w || 1, h || 1); }
+function buildTiles() {
+  const ground = g => px(g, 't', 0, 0, 16, 16);
+  T['.'] = tileCanvas(ground);
+  T['T'] = tileCanvas(g => { ground(g); g.drawImage(spr(TREE), 0, 0); });
+  T['S'] = T['b'] = tileCanvas(g => { ground(g); g.drawImage(spr(BUSH), 0, 0); });
+  T['R'] = T['B'] = spr(ROCK);
+  T['G'] = tileCanvas(g => { ground(g); g.drawImage(spr(GRAVE), 0, 1); });
+  T['+'] = tileCanvas(g => { ground(g); g.drawImage(spr(CROSS), 0, 1); });
+  T['s'] = tileCanvas(g => { px(g, 'Y', 0, 0, 16, 16); [[2, 3], [9, 1], [13, 6], [5, 9], [11, 12], [1, 13], [7, 14]].forEach(([x, y]) => px(g, 'o', x, y, 2, 1)); });
+  T['V'] = tileCanvas(g => { ground(g); [[3, 4, 'r'], [10, 2, 'w'], [7, 9, 'y'], [12, 11, 'r'], [2, 12, 'w']].forEach(([x, y, c]) => { px(g, 'e', x, y + 1, 1, 2); px(g, c, x - 1, y, 3, 1); px(g, c, x, y - 1, 1, 3); }); });
+  T['C'] = tileCanvas(g => { g.drawImage(T['R'], 0, 0); px(g, 'k', 5, 4, 6, 1); px(g, 'k', 4, 5, 8, 1); px(g, 'k', 3, 6, 10, 10); });
+  T['Z'] = tileCanvas(g => { px(g, 'k', 0, 0, 16, 16); for (let i = 0; i < 4; i++) { px(g, 'G', 2, 2 + i * 4, 12, 2); px(g, 'g', 2, 2 + i * 4, 12, 1); } });
+  T['K'] = tileCanvas(g => { px(g, 'G', 0, 0, 16, 16); px(g, 'g', 0, 0, 16, 1); for (let y = 0; y < 16; y += 4) { px(g, 'k', 0, y + 3, 16, 1); const o = (y / 4) % 2 ? 4 : 0; for (let x = o; x < 16; x += 8) px(g, 'k', x, y, 1, 3); } });
+  T['E'] = tileCanvas(g => { px(g, 'G', 0, 0, 16, 4); px(g, 'k', 0, 3, 16, 1); px(g, 'k', 0, 4, 16, 12); });
+  T['L'] = tileCanvas(g => { px(g, 'k', 0, 0, 16, 16); for (let x = 1; x < 16; x += 4) px(g, 'G', x, 0, 2, 16); px(g, 'r', 4, 4, 8, 8); px(g, 'y', 7, 5, 2, 6); px(g, 'y', 5, 7, 6, 2); });
+  T['A'] = tileCanvas(g => { for (let y = 0; y < 16; y += 4) { px(g, 'r', 0, y, 16, 3); px(g, 'R', 0, y + 3, 16, 1); for (let x = (y / 4) % 2 ? 4 : 0; x < 16; x += 8) px(g, 'R', x, y, 1, 3); } });
+  T['X'] = tileCanvas(g => { g.drawImage(T['A'], 0, 0); px(g, 'n', 8, 2, 2, 13); px(g, 'n', 5, 6, 8, 2); px(g, 'y', 7, 1, 2, 13); px(g, 'y', 4, 5, 8, 2); });
+  T['H'] = tileCanvas(g => { px(g, 'g', 0, 0, 16, 16); for (let y = 0; y < 16; y += 4) { px(g, 'G', 0, y + 3, 16, 1); for (let x = (y / 4) % 2 ? 4 : 0; x < 16; x += 8) px(g, 'G', x, y, 1, 3); } });
+  T['h'] = tileCanvas(g => { g.drawImage(T['H'], 0, 0); px(g, 'k', 4, 2, 8, 12); px(g, 'k', 5, 1, 6, 1); px(g, 'c', 5, 3, 6, 10); px(g, 'u', 5, 9, 6, 4); px(g, 'y', 7, 3, 2, 10); px(g, 'y', 5, 6, 6, 2); px(g, 'r', 5, 3, 2, 3); px(g, 'r', 9, 3, 2, 3); });
+  T['D'] = tileCanvas(g => { g.drawImage(T['H'], 0, 0); px(g, 'k', 3, 3, 10, 13); px(g, 'k', 4, 2, 8, 1); px(g, 'b', 4, 4, 8, 12); px(g, 'b', 5, 3, 6, 1); px(g, 'B', 7, 3, 2, 13); px(g, 'y', 10, 10, 1, 2); });
+  T['P'] = tileCanvas(g => { px(g, 'n', 0, 0, 16, 16); for (let y = 3; y < 16; y += 4) px(g, 'B', 0, y, 16, 1); px(g, 'B', 0, 0, 2, 16); px(g, 'B', 14, 0, 2, 16); });
+  T['f'] = tileCanvas(g => { px(g, 'a', 0, 0, 16, 16); px(g, 'w', 3, 3, 1, 1); px(g, 'w', 11, 6, 1, 1); px(g, 'w', 6, 12, 1, 1); px(g, 'c', 0, 15, 16, 1); });
+  T.dock = [0, 1].map(f => tileCanvas(g => { px(g, 'u', 0, 0, 16, 16); px(g, 'n', 1, 0, 14, 16); for (let y = 3; y < 16; y += 4) px(g, 'B', 1, y, 14, 1); px(g, 'B', 1, 0, 1, 16); px(g, 'B', 14, 0, 1, 16); }));
+  T.water = [0, 1].map(f => tileCanvas(g => { px(g, 'u', 0, 0, 16, 16); px(g, 'c', (2 + f * 3) % 12, 3, 4, 1); px(g, 'c', (3 + f * 3) % 12 + 1, 4, 2, 1); px(g, 'c', (9 + f * 3) % 12, 10, 4, 1); px(g, 'c', (10 + f * 3) % 12 + 1, 11, 2, 1); }));
+}
+// solid overworld tiles
+const OW_SOLID = new Set(['T', 'S', 'b', 'R', 'B', 'G', '+', 'W', 'K', 'L', 'A', 'X', 'H', 'h']);
+
+// ---------------- DUNGEON TILE SET (built per palette) ----------------
+function buildDungeonTiles(p) {
+  const d = {};
+  d.floor = tileCanvas(g => { px(g, p.floor, 0, 0, 16, 16); px(g, p.floorLo, 0, 0, 16, 1); px(g, p.floorLo, 0, 0, 1, 16); px(g, p.floorHi, 4, 4, 8, 8); px(g, p.floor, 5, 5, 6, 6); });
+  d.O = tileCanvas(g => { px(g, p.wallLo, 0, 0, 16, 16); px(g, p.wallHi, 0, 0, 16, 3); px(g, p.wallHi, 0, 0, 3, 16); px(g, p.wall, 3, 3, 10, 10); px(g, 'k', 0, 15, 16, 1); px(g, 'k', 15, 0, 1, 16); });
+  d.Q = d.O;
+  d.S = tileCanvas(g => { px(g, p.floor, 0, 0, 16, 16); px(g, p.wallLo, 3, 2, 10, 14); px(g, p.wallHi, 4, 1, 8, 4); px(g, 'k', 5, 2, 2, 2); px(g, 'k', 9, 2, 2, 2); px(g, p.wall, 4, 6, 8, 8); px(g, p.wallHi, 2, 13, 12, 3); });
+  d.W = [0, 1].map(f => tileCanvas(g => { px(g, '#0000BC', 0, 0, 16, 16); px(g, '#3CBCFC', (2 + f * 5) % 12, 4, 4, 1); px(g, '#3CBCFC', (8 + f * 5) % 12, 11, 4, 1); }));
+  d.Z = T['Z'];
+  d.k = tileCanvas(g => px(g, 'k', 0, 0, 16, 16));
+  return d;
+}
+// ============================================================
+//  WORLD DATA — the Kingdom of Elderhaven
+//  Overworld: 4 x 4 screens (16 x 11 tiles each).
+//  Tile legend:  . ground   T tree   S bush   b burnable bush (secret)
+//   R rock   B bombable rock (secret)   C cave   W water   s sand
+//   G gravestone   + stone cross   V flowers   P bridge   f fairy pool
+//   K dungeon stone   E dungeon entrance   L holy seal gate
+//   A/X chapel roof (X has a cross)   H/h chapel wall/window   D chapel door
+// ============================================================
+const START = { sx: 1, sy: 3, x: 7 * 16, y: 6 * 16 };
+
+const OW = {
+  // ---- row 0: the northern mountains ----
+  '0,0': { name: 'mountain', enemies: ['hopper', 'hopper', 'hopper'], caves: { '3,2': 'sage_mtn' }, map: [
+    'RRRRRRRRRRRRRRRR', 'RRRRRRRRRRRRRRRR', 'RRRCRRR.....RRRR', 'RR.............R', 'R...............', 'R...RR....RR....',
+    'R...............', 'RR...........RRR', 'RRR..........RRR', 'RRRR........RRRR', 'RRRRRR....RRRRRR'] },
+  '1,0': { name: 'seal', enemies: ['boar', 'boar', 'hopper', 'hopper'], gate: true, map: [
+    'RRRRRRRRRRRRRRRR', 'RRRRRRKKKKRRRRRR', 'RRRRRRKLLKRRRRRR', 'RRR...........RR', '................', '..RR........RR..',
+    '................', 'RR............RR', 'RRR..........RRR', 'RRRR........RRRR', 'RRRRRR....RRRRRR'] },
+  '2,0': { name: 'peaks', enemies: ['hopper', 'hopper', 'hopper', 'golem'], secrets: { '10,1': 'heart_cave' }, dungeon: { '7,7': 5, '8,7': 5 }, map: [
+    'RRRRRRRRRRRRRRRR', 'RRRRRRRRRRBRRRRR', 'RRR........RRRRR', 'RR...RR.......RR', '................', '.....RR....RR...',
+    '......KKKK......', 'RR....KEEK....RR', 'RRRR........RRRR', 'RRRRRRRRRRRRRRRR', 'RRRRRRRRRRRRRRRR'] },
+  '3,0': { name: 'highlake', enemies: ['boar', 'boar', 'boar'], caves: { '13,1': 'island_cave' }, map: [
+    'RRRRRRRRRRRRRRRR', 'RR..........RCRR', 'R..........WW.WR', 'R...T......WWWWR', '...........WW.WR', '......T....WW.WR',
+    '...............R', 'R..T........T..R', 'R..............R', 'RRR...........RR', 'RRRRRR....RRRRRR'] },
+  // ---- row 1 ----
+  '0,1': { name: 'graveyard', enemies: ['bone', 'bone', 'shade', 'bat'], secrets: { '13,1': 'gem_cave' }, dungeon: { '3,2': 3, '4,2': 3 }, map: [
+    'RRRRRR....RRRRRR', 'R.KKKK......RBRR', 'R.KEEK.........R', 'R.....G..G..G..R', 'R...............', 'R..G..+..G..G...',
+    'R...............', 'R..G..G..G..G..R', 'R..............R', 'R...TT....TT...R', 'RRRRRR....RRRRRR'] },
+  '1,1': { name: 'forest', enemies: ['spitter', 'spitter', 'spitter', 'spitter'], secrets: { '3,1': 'shop2' }, map: [
+    'TTTTTT....TTTTTT', 'TT.b......T..TTT', 'T.........T....T', 'T..TT.TT....TT.T', '................', '..TT..TT..TT..T.',
+    '................', 'T..TT....TT..T.T', 'T..............T', 'TT.T........T.TT', 'TTTTTT....TTTTTT'] },
+  '2,1': { name: 'fairylake', enemies: ['spitter', 'spitter', 'spitterBlue'], fairy: true, map: [
+    'TTTTTTTTTTTTTTTT', 'T......WWWW....T', 'T.....WWWWWW...T', 'T....WWWffWWW..T', '.....WWWffWWW...', '......WW..WW....',
+    '................', 'T..T..........TT', 'T..............T', 'TT..T......T..TT', 'TTTTTT....TTTTTT'] },
+  '3,1': { name: 'river', enemies: ['boar', 'boar', 'spitter', 'lurker'], dungeon: { '11,2': 4, '12,2': 4 }, map: [
+    'RRRRRR....RRRRRR', 'R........WKKKKWR', 'R...T....WKEEKWR', 'R........WW.dWWR', '.........WWWWWWR', '...T.....WWWWWWR',
+    '............dWWR', 'WWWWWWWPPWWWWWWW', 'WWWWWWWPPWWWWWWW', 'T..............T', 'TTTTTT....TTTTTT'] },
+  // ---- row 2 ----
+  '0,2': { name: 'desert', enemies: ['hopper', 'hopper', 'hopper', 'spitterBlue'], caves: { '6,3': 'sage_desert' }, dungeon: { '11,8': 2, '12,8': 2 }, map: [
+    'RRRRRR....RRRRRR', 'Rsssss....sssssR', 'Rss.sss..sss.ssR', 'Rs..RRCR...s.ssR', 'Rss.............', 'Rs...s...s....s.',
+    'Rss.............', 'Rs....ss..KKKK.R', 'Rss..s....KEEK.R', 'Rsss........sssR', 'RRRRRR....RRRRRR'] },
+  '1,2': { name: 'deepwood', enemies: ['spitter', 'spitter', 'spitter', 'boar'], dungeon: { '11,2': 1, '12,2': 1 }, map: [
+    'TTTTTT....TTTTTT', 'TT........KKKKTT', 'T.........KEEK.T', 'T....T.........T', '................', '..T..TT..TT..T..',
+    '................', 'T...T......T...T', 'T..............T', 'TT..T......T..TT', 'TTTTTT....TTTTTT'] },
+  '2,2': { name: 'chapel', enemies: [], peaceful: true, caves: { '4,3': 'chapel' }, map: [
+    'TTTTTT....TTTTTT', 'T..AXA.........T', 'T..HhH.........T', 'T..HDH...+.....T', '................', '....V.V....VV...',
+    '................', 'T....V....V....T', 'T..T........T..T', 'TT............TT', 'TTTTTT....TTTTTT'] },
+  '3,2': { name: 'eastwood', enemies: ['boar', 'boar', 'boar', 'mole'], secrets: { '3,3': 'wand_cave', '12,3': 'dun6' }, map: [
+    'TTTTTT....TTTTTT', 'T..............T', 'T.TTT.TT..TTTT.T', 'T.TbT......Tb..T', '...............T', '..TT..TT..TT...T',
+    '...............T', 'T..T.T..T..T...T', 'T..............T', 'TT..TT....TT..TT', 'TTTTTT....TTTTTT'] },
+  // ---- row 3 ----
+  '0,3': { name: 'hermitage', enemies: ['spitter', 'spitter', 'hopper'], caves: { '6,3': 'hermit' }, map: [
+    'RRRRRR....RRRRRR', 'RR............RR', 'R...RRRR.......R', 'R...RRCR.......R', 'R...............', 'R....T..........',
+    'R...............', 'R.......T......R', 'R..T...........R', 'R.........T....R', 'RRRRRRRRRRRRRRRR'] },
+  '1,3': { name: 'start', enemies: [], caves: { '2,1': 'sword' }, map: [
+    'RRRRRR....RRRRRR', 'RRCRR.....RRRRRR', 'RR..........RRRR', 'R....V.....V...R', '................', '.....T....T.....',
+    '................', 'T..............T', 'T..T..T..T..T..T', 'T..............T', 'TTTTTTTTTTTTTTTT'] },
+  '2,3': { name: 'market', enemies: ['spitter', 'spitter', 'spitter'], caves: { '7,6': 'shop' }, map: [
+    'TTTTTT....TTTTTT', 'T..............T', 'T..TT......TT..T', 'T..............T', '................', '......RRRR......',
+    '......RCRR......', 'T..............T', 'T..TT......TT..T', 'T...V..V..V....T', 'TTTTTTTTTTTTTTTT'] },
+  '3,3': { name: 'shore', enemies: ['spitter', 'spitter', 'spitter', 'spitterBlue'], caves: { '13,0': 'raft_cave' }, map: [
+    'TTTTTT....TTRCRR', 'T..........Td..W', 'T...........WWWW', 'T...........WWWW', '...ss.......WWWW', '..sss.......WWWW',
+    '...ss.......WWWW', 'T...........WWWW', 'T....ss.....WWWW', 'T...........dWWW', 'TTTTTTTTTTTTWWWW'] }
+};
+
+// ---------------- CAVES & BUILDINGS ----------------
+// npc: sprite key; lines: text shown (\n = new line). items: {id, price}. price 0 = gift.
+const CAVES = {
+  sword: { npc: 'sage', items: [{ id: 'sword', price: 0 }],
+    lines: 'BE BRAVE, CHILD.\nTAKE THIS BLADE AND\nDEFEND THE WEAK.',
+    after: 'COURAGE IS NOT THE\nABSENCE OF FEAR. GO\nWITH GOD.' },
+  shop: { npc: 'merchant', lines: 'WELCOME, TRAVELER.\nHONEST SCALES AND\nFAIR PRICES.',
+    items: [{ id: 'candle', price: 60 }, { id: 'bombs', price: 20 }, { id: 'key', price: 80 }] },
+  shop2: { npc: 'merchant', lines: 'A HIDDEN SHOP FOR\nA CLEVER EYE!',
+    items: [{ id: 'silver', price: 90 }, { id: 'bombs', price: 20 }, { id: 'heartpot', price: 40 }] },
+  hermit: { npc: 'hermit', items: [{ id: 'gems30', price: 0 }],
+    lines: 'BLESSED ARE THE\nMERCIFUL. TAKE WHAT\nYOU NEED, CHILD.',
+    after: 'A LAMP IN THE DARK\nIS WORTH MORE THAN\nGOLD. SEEK A CANDLE.' },
+  sage_desert: { npc: 'sage', lines: 'SOME ROCKS ARE NOT\nWHAT THEY SEEM. A\nBOMB REVEALS TRUTH.' },
+  sage_mtn: { npc: 'elder', lines: 'THE MONK OF THE\nCHAPEL GUARDS A\nHOLY BOOK FOR THE BRAVE.' },
+  gem_cave: { npc: 'hermit', items: [{ id: 'gems30', price: 0 }], lines: 'PATIENCE IS ALSO\nA KIND OF COURAGE.\nTHIS IS FOR YOU.', after: 'GO IN PEACE.' },
+  island_cave: { npc: 'elder', items: [{ id: 'heartc', price: 0 }], lines: 'BLESSED ARE THE MEEK:\nFOR THEY SHALL INHERIT\nTHE EARTH.', after: 'BLESSED ARE THE MEEK.' },
+  raft_cave: { npc: 'elder', items: [{ id: 'sword2', price: 0 }],
+    lines: 'THE WORD OF GOD IS\nSHARPER THAN ANY\nTWOEDGED SWORD.', after: 'HEBREWS 4:12. GO\nBOLDLY, CHILD.' },
+  heart_cave: { npc: 'elder', items: [{ id: 'heartc', price: 0 }], lines: 'BE STRONG AND OF\nGOOD COURAGE.', after: 'BE STRONG AND OF\nGOOD COURAGE.' },
+  wand_cave: { npc: 'elder', items: [{ id: 'wand', price: 0 }],
+    lines: 'THIS WAND CASTS A\nBEAM OF LIGHT. THE\nHOLY BOOK KINDLES IT.',
+    after: 'LIGHT SHINES IN THE\nDARKNESS.' },
+  chapel: { npc: 'monk', chapel: true } // dialog handled in game logic
+};
+
+// item catalog (names shown on pickup / in shops)
+const ITEMS = {
+  sword: { name: 'THE SWORD', spr: 'swordItem', big: true },
+  candle: { name: 'THE BLUE CANDLE', spr: 'candle', big: true },
+  bombs: { name: '4 BOMBS', spr: 'bomb' },
+  key: { name: 'A KEY', spr: 'key' },
+  silver: { name: 'THE SILVER SHIELD', spr: 'shieldSilver', big: true },
+  heartpot: { name: 'FULL HEALTH', spr: 'heartBig' },
+  gems30: { name: '30 GEMS', spr: 'gem5' },
+  heartc: { name: 'A HEART CONTAINER', spr: 'heartBig', big: true },
+  wand: { name: 'THE WAND', spr: 'wand', big: true },
+  ladder: { name: 'THE LADDER', spr: 'ladder', big: true },
+  raft: { name: 'THE RAFT', spr: 'raft', big: true },
+  redcandle: { name: 'THE RED CANDLE', spr: 'candleRed', big: true },
+  bombbag: { name: 'THE BOMB BAG', spr: 'bomb', big: true },
+  harp: { name: "THE SHEPHERD'S HARP", spr: 'harp', big: true },
+  boomerang2: { name: 'THE BLUE BOOMERANG', spr: 'boomerangBlue', big: true },
+  mantle: { name: 'THE BLUE MANTLE', spr: 'mantle', big: true },
+  sword2: { name: 'THE SILVER SWORD', spr: 'swordItem2', big: true },
+  bible: { name: 'THE HOLY BIBLE', spr: 'bible', big: true },
+  bow: { name: 'THE BOW', spr: 'bow', big: true },
+  boomerang: { name: 'THE BOOMERANG', spr: 'boomerang', big: true },
+  map: { name: 'THE MAP', spr: 'map' },
+  compass: { name: 'THE COMPASS', spr: 'compass' },
+  shard: { name: 'A SHARD OF WISDOM', spr: 'shard', big: true }
+};
+
+// ---------------- DUNGEONS ----------------
+// Room interior is 12 x 7 tiles. Doors: open | locked | shutter | push | bomb | exit.
+// item: {id, c, r, when:'now'|'clear'}  (c,r = interior tile coords)
+const LAYOUT = {
+  empty: ['............', '............', '............', '............', '............', '............', '............'],
+  pillars: ['............', '.O........O.', '............', '............', '............', '.O........O.', '............'],
+  center: ['............', '............', '....OOOO....', '....OOOO....', '....OOOO....', '............', '............'],
+  statues: ['S..........S', '............', '..O......O..', '............', '..O......O..', '............', 'S..........S'],
+  rows: ['............', '.OO.O..O.OO.', '............', '............', '............', '.OO.O..O.OO.', '............'],
+  push: ['............', '.OOOO..OOOO.', '............', '.....Q......', '............', '.OOOO..OOOO.', '............'],
+  channel: ['............', 'WWWWWWWWWWWW', '............', '..O......O..', '............', '............', '............'],
+  island: ['............', '.WWWWWWWWWW.', '.W........W.', '.W..O..O..W.', '.W........W.', '.WWWWWWWWWW.', '............'],
+  sand: ['............', '..S......S..', '............', '............', '............', '..S......S..', '............'],
+  crypt: ['............', '.S..S..S..S.', '............', '............', '............', '.S..S..S..S.', '............'],
+  tomb: ['............', '..OO....OO..', '..OO....OO..', '............', '..OO....OO..', '..OO....OO..', '............'],
+  pool: ['............', '............', '....WWWW....', '....WWWW....', '....WWWW....', '............', '............'],
+  canals: ['...W....W...', '...W....W...', '...W....W...', '...W....W...', '...W....W...', '...W....W...', '...W....W...'],
+  moat: ['............', '..WWWWWWWW..', '..W......W..', '..W......W..', '..W......W..', '..WWW..WWW..', '............'],
+  boss: ['S..........S', '............', '............', '............', '............', '............', 'S..........S'],
+  sage: ['............', '............', '............', '............', '............', '............', '............']
+};
+const DUNGEONS = {
+  1: {
+    name: 'LEVEL-1', title: 'THE DEEPWOOD HOLD',
+    pal: { wall: '#00788C', wallHi: '#3CBCFC', wallLo: '#004058', floor: '#0088A8', floorHi: '#3CBCFC', floorLo: '#005870' },
+    start: '2,4', exitTo: { sx: 1, sy: 2, x: 11 * 16 + 8, y: 3 * 16 }, bossRoom: '2,0',
+    rooms: {
+      '2,4': { doors: { n: 'open', w: 'open', e: 'open', s: 'exit' }, layout: 'pillars', enemies: [] },
+      '1,4': { doors: { e: 'open' }, layout: 'empty', enemies: ['blob', 'blob', 'blob', 'blob', 'blob'], item: { id: 'key', c: 5, r: 3, when: 'clear' } },
+      '3,4': { doors: { w: 'open' }, layout: 'center', enemies: ['bat', 'bat', 'bat'], item: { id: 'key', c: 6, r: 5, when: 'now' } },
+      '2,3': { doors: { s: 'open', n: 'locked', w: 'open' }, layout: 'rows', enemies: ['bone', 'bone', 'bone'], item: { id: 'map', c: 6, r: 3, when: 'clear' } },
+      '1,3': { doors: { e: 'open' }, layout: 'statues', dark: true, enemies: ['bat', 'bat', 'bat', 'blob'], item: { id: 'compass', c: 6, r: 3, when: 'now' } },
+      '2,2': { doors: { s: 'locked', n: 'locked', w: 'shutter', e: 'bomb' }, layout: 'pillars', enemies: ['bone', 'bone', 'bone', 'bone'], item: { id: 'key', c: 6, r: 3, when: 'clear' } },
+      '1,2': { doors: { e: 'shutter' }, layout: 'center', enemies: ['fang', 'fang'], item: { id: 'boomerang', c: 6, r: 5, when: 'clear' } },
+      '3,2': { doors: { w: 'bomb' }, layout: 'sage', sage: 'PUSH THE LONELY BLOCK\nWHEN THE WAY IS SHUT.', item: { id: 'gems30', c: 6, r: 4, when: 'now' } },
+      '2,1': { doors: { s: 'locked', e: 'locked', n: 'push' }, layout: 'push', enemies: ['blob', 'blob', 'blob'] },
+      '3,1': { doors: { w: 'locked' }, layout: 'moat', enemies: ['bone', 'bone', 'bat', 'bat'], item: { id: 'bow', c: 5, r: 3, when: 'clear' } },
+      '2,0': { doors: { s: 'shutter', w: 'shutter' }, layout: 'boss', enemies: ['ram'], boss: true, item: { id: 'heartc', c: 6, r: 4, when: 'clear' } },
+      '1,0': { doors: { e: 'open' }, layout: 'empty', item: { id: 'shard', c: 5, r: 3, when: 'now' } }
+    }
+  },
+  2: {
+    name: 'LEVEL-2', title: 'THE SAND TOMB',
+    pal: { wall: '#887000', wallHi: '#FCD8A8', wallLo: '#503000', floor: '#B07838', floorHi: '#E0B070', floorLo: '#704818' },
+    start: '1,4', exitTo: { sx: 0, sy: 2, x: 184, y: 136 }, bossRoom: '1,0',
+    rooms: {
+      '1,4': { doors: { n: 'open', s: 'exit' }, layout: 'sand', enemies: [] },
+      '1,3': { doors: { s: 'open', w: 'open', e: 'open', n: 'locked' }, layout: 'pillars', enemies: ['wrap', 'wrap', 'bat', 'bat'] },
+      '0,3': { doors: { e: 'open' }, layout: 'center', enemies: ['blob', 'blob', 'blob', 'blob', 'blob', 'blob'], item: { id: 'key', c: 1, r: 3, when: 'clear' } },
+      '2,3': { doors: { w: 'open', n: 'bomb' }, layout: 'statues', enemies: ['wisp', 'wisp', 'bone', 'bone'], item: { id: 'map', c: 6, r: 3, when: 'now' } },
+      '1,2': { doors: { s: 'locked', e: 'locked', w: 'open', n: 'open' }, layout: 'channel', enemies: ['wisp', 'wisp', 'bat', 'bat'], item: { id: 'key', c: 5, r: 5, when: 'now' } },
+      '0,2': { doors: { e: 'open', n: 'open' }, layout: 'rows', enemies: ['wrap', 'wrap', 'wrap'], item: { id: 'compass', c: 6, r: 3, when: 'now' } },
+      '0,1': { doors: { s: 'open' }, layout: 'sand', dark: true, enemies: ['bat', 'bat', 'bat', 'bat'], item: { id: 'key', c: 6, r: 3, when: 'clear' } },
+      '2,2': { doors: { w: 'locked', s: 'bomb' }, layout: 'pillars', enemies: ['fang', 'fang', 'wrap'], item: { id: 'ladder', c: 6, r: 3, when: 'clear' } },
+      '1,1': { doors: { s: 'open', n: 'locked', e: 'shutter' }, layout: 'island', enemies: ['bone', 'bone', 'bone', 'wisp'] },
+      '2,1': { doors: { w: 'open' }, layout: 'sage', sage: "ONLY THE SERPENT'S HEAD\nCAN BE WOUNDED.", item: { id: 'gems30', c: 6, r: 4, when: 'now' } },
+      '1,0': { doors: { s: 'shutter', w: 'shutter' }, layout: 'empty', enemies: ['serpent'], boss: true, item: { id: 'heartc', c: 6, r: 4, when: 'clear' } },
+      '0,0': { doors: { e: 'open' }, layout: 'sand', item: { id: 'shard', c: 5, r: 3, when: 'now' } }
+    }
+  },
+  3: {
+    name: 'LEVEL-3', title: 'THE CATACOMBS',
+    pal: { wall: '#4428BC', wallHi: '#9878F8', wallLo: '#24188C', floor: '#6C6C6C', floorHi: '#A8A8A8', floorLo: '#404040' },
+    start: '1,4', exitTo: { sx: 0, sy: 1, x: 56, y: 40 }, bossRoom: '1,0',
+    rooms: {
+      '1,4': { doors: { n: 'open', s: 'exit' }, layout: 'statues', enemies: [] },
+      '1,3': { doors: { s: 'open', n: 'shutter', e: 'open' }, layout: 'crypt', enemies: ['bone', 'bone', 'shade'], item: { id: 'map', c: 6, r: 3, when: 'now' } },
+      '2,3': { doors: { w: 'open' }, layout: 'crypt', dark: true, enemies: ['bat', 'bat', 'bat', 'bat', 'bat'], item: { id: 'key', c: 6, r: 3, when: 'clear' } },
+      '1,2': { doors: { s: 'open', w: 'bomb', e: 'open', n: 'locked' }, layout: 'tomb', enemies: ['shade', 'shade', 'wrap', 'wrap'] },
+      '2,2': { doors: { w: 'open', n: 'push' }, layout: 'push', enemies: ['knight', 'knight'], item: { id: 'key', c: 2, r: 3, when: 'clear' } },
+      '2,1': { doors: { s: 'open', w: 'locked' }, layout: 'tomb', enemies: ['knight', 'knight', 'wrap', 'wrap'], item: { id: 'raft', c: 6, r: 3, when: 'clear' } },
+      '0,2': { doors: { e: 'bomb', n: 'open' }, layout: 'pillars', enemies: ['bat', 'bat', 'bat'], item: { id: 'compass', c: 6, r: 3, when: 'now' } },
+      '0,1': { doors: { s: 'open', e: 'open' }, layout: 'empty', dark: true, enemies: ['shade', 'shade', 'bone', 'bone'], item: { id: 'key', c: 6, r: 3, when: 'clear' } },
+      '1,1': { doors: { s: 'locked', e: 'locked', w: 'open', n: 'open' }, layout: 'crypt', enemies: ['knight', 'knight', 'knight'] },
+      '1,0': { doors: { s: 'shutter', w: 'shutter' }, layout: 'boss', enemies: ['lich'], boss: true, item: { id: 'heartc', c: 6, r: 4, when: 'clear' } },
+      '0,0': { doors: { e: 'open' }, layout: 'statues', item: { id: 'shard', c: 5, r: 3, when: 'now' } }
+    }
+  },
+  4: {
+    name: 'LEVEL-4', title: 'THE RIVER SHRINE',
+    pal: { wall: '#2C6C24', wallHi: '#88D870', wallLo: '#14381A', floor: '#3C7C9C', floorHi: '#78B8D8', floorLo: '#204860' },
+    start: '2,4', exitTo: { sx: 3, sy: 1, x: 184, y: 40 }, bossRoom: '2,0',
+    rooms: {
+      '2,4': { doors: { n: 'open', s: 'exit' }, layout: 'pool', enemies: [] },
+      '2,3': { doors: { s: 'open', n: 'locked', e: 'open' }, layout: 'pool', enemies: ['crab', 'crab', 'crab', 'lurker'], item: { id: 'map', c: 1, r: 1, when: 'now' } },
+      '3,3': { doors: { w: 'open' }, layout: 'statues', dark: true, enemies: ['bat', 'bat', 'bat', 'bat'], item: { id: 'key', c: 6, r: 3, when: 'clear' } },
+      '2,2': { doors: { s: 'locked', w: 'open', e: 'locked', n: 'shutter' }, layout: 'pillars', enemies: ['knight', 'knight', 'crab', 'crab'], item: { id: 'key', c: 6, r: 3, when: 'clear' } },
+      '1,2': { doors: { e: 'open', n: 'open' }, layout: 'canals', enemies: ['wisp', 'wisp', 'bone'], item: { id: 'compass', c: 6, r: 3, when: 'now' } },
+      '1,1': { doors: { s: 'open', e: 'push' }, layout: 'push', enemies: ['bone', 'bone', 'bone'], item: { id: 'key', c: 2, r: 3, when: 'clear' } },
+      '2,1': { doors: { w: 'open', s: 'open', n: 'locked', e: 'bomb' }, layout: 'pool', enemies: ['lurker', 'lurker', 'crab', 'crab'] },
+      '3,1': { doors: { w: 'bomb' }, layout: 'sage', sage: 'THE GREAT CRAB IS SOFT\nONLY WHEN IT RESTS.', item: { id: 'bombbag', c: 6, r: 4, when: 'now' } },
+      '3,2': { doors: { w: 'locked' }, layout: 'pool', enemies: ['lurker', 'lurker', 'crab', 'knight'], item: { id: 'redcandle', c: 6, r: 5, when: 'clear' } },
+      '2,0': { doors: { s: 'shutter', w: 'shutter' }, layout: 'boss', enemies: ['brine'], boss: true, item: { id: 'heartc', c: 6, r: 5, when: 'clear' } },
+      '1,0': { doors: { e: 'open' }, layout: 'pool', item: { id: 'shard', c: 5, r: 5, when: 'now' } }
+    }
+  },
+  5: {
+    name: 'LEVEL-5', title: 'THE HIGH KEEP',
+    pal: { wall: '#6C4C2C', wallHi: '#C8A070', wallLo: '#3C2810', floor: '#7C7C7C', floorHi: '#B4B4B4', floorLo: '#505050' },
+    start: '2,4', exitTo: { sx: 2, sy: 0, x: 120, y: 120 }, bossRoom: '2,0',
+    rooms: {
+      '2,4': { doors: { n: 'open', s: 'exit' }, layout: 'statues', enemies: [] },
+      '2,3': { doors: { s: 'open', n: 'locked', e: 'open' }, layout: 'rows', enemies: ['flame', 'flame', 'boar', 'boar'], item: { id: 'map', c: 0, r: 0, when: 'now' } },
+      '3,3': { doors: { w: 'open' }, layout: 'center', enemies: ['golem', 'golem', 'bat'], item: { id: 'key', c: 6, r: 5, when: 'clear' } },
+      '2,2': { doors: { s: 'locked', w: 'open', e: 'open', n: 'shutter' }, layout: 'pillars', enemies: ['knight', 'knight', 'golem'], item: { id: 'key', c: 6, r: 3, when: 'clear' } },
+      '3,2': { doors: { w: 'open' }, layout: 'sand', dark: true, enemies: ['flame', 'bat', 'bat', 'bat'], item: { id: 'compass', c: 6, r: 3, when: 'now' } },
+      '1,2': { doors: { e: 'open', w: 'locked', n: 'open' }, layout: 'crypt', enemies: ['flame', 'flame', 'flame', 'wrap'] },
+      '0,2': { doors: { e: 'locked' }, layout: 'tomb', enemies: ['golem', 'golem', 'knight', 'knight'], item: { id: 'harp', c: 6, r: 3, when: 'clear' } },
+      '1,1': { doors: { s: 'open', e: 'push' }, layout: 'push', enemies: ['wrap', 'wrap', 'bone'], item: { id: 'key', c: 2, r: 3, when: 'clear' } },
+      '2,1': { doors: { s: 'open', w: 'open', n: 'locked', e: 'bomb' }, layout: 'statues', enemies: ['golem', 'flame', 'knight'] },
+      '3,1': { doors: { w: 'bomb' }, layout: 'sage', sage: "DARKNESS FLEES WHEN THE\nSHEPHERD'S HARP PLAYS.", item: { id: 'gems30', c: 6, r: 4, when: 'now' } },
+      '2,0': { doors: { s: 'shutter', w: 'shutter' }, layout: 'boss', enemies: ['gloom'], boss: true, item: { id: 'heartc', c: 6, r: 5, when: 'clear' } },
+      '1,0': { doors: { e: 'open' }, layout: 'statues', item: { id: 'shard', c: 5, r: 3, when: 'now' } }
+    }
+  },
+  6: {
+    name: 'LEVEL-6', title: 'THE THORN HOLLOW',
+    pal: { wall: '#3C5C1C', wallHi: '#9CC860', wallLo: '#1C2C0C', floor: '#6C4C2C', floorHi: '#9C7C4C', floorLo: '#3C2810' },
+    start: '1,4', exitTo: { sx: 3, sy: 2, x: 192, y: 56 }, bossRoom: '1,0',
+    rooms: {
+      '1,4': { doors: { n: 'open', s: 'exit' }, layout: 'statues', enemies: [] },
+      '1,3': { doors: { s: 'open', e: 'open', w: 'open' }, layout: 'pillars', enemies: ['thorn', 'thorn', 'mole', 'mole'], item: { id: 'map', c: 0, r: 0, when: 'now' } },
+      '0,3': { doors: { e: 'open' }, layout: 'sand', dark: true, enemies: ['bat', 'bat', 'bat', 'flame'], item: { id: 'key', c: 6, r: 3, when: 'clear' } },
+      '2,3': { doors: { w: 'open', n: 'locked' }, layout: 'tomb', enemies: ['mole', 'mole', 'mole', 'boar'] },
+      '2,2': { doors: { s: 'locked', w: 'open', n: 'bomb' }, layout: 'pillars', enemies: ['knight', 'knight', 'thorn'], item: { id: 'key', c: 6, r: 3, when: 'clear' } },
+      '2,1': { doors: { s: 'bomb' }, layout: 'sage', sage: 'STRIKE THE GREAT EYE\nWHEN IT OPENS.', item: { id: 'mantle', c: 6, r: 4, when: 'now' } },
+      '1,2': { doors: { e: 'open', w: 'locked', n: 'shutter' }, layout: 'crypt', enemies: ['golem', 'flame', 'flame', 'thorn'], item: { id: 'compass', c: 6, r: 3, when: 'now' } },
+      '0,2': { doors: { e: 'locked', n: 'open' }, layout: 'center', enemies: ['fang', 'fang', 'fang', 'mole'], item: { id: 'boomerang2', c: 6, r: 5, when: 'clear' } },
+      '0,1': { doors: { s: 'open', e: 'push' }, layout: 'push', enemies: ['wrap', 'wrap', 'bone', 'bone'], item: { id: 'key', c: 2, r: 3, when: 'clear' } },
+      '1,1': { doors: { s: 'open', w: 'open', n: 'locked' }, layout: 'statues', enemies: ['golem', 'knight', 'thorn'] },
+      '1,0': { doors: { s: 'shutter', w: 'shutter' }, layout: 'boss', enemies: ['bramble'], boss: true, item: { id: 'heartc', c: 6, r: 5, when: 'clear' } },
+      '0,0': { doors: { e: 'open' }, layout: 'sand', item: { id: 'shard', c: 5, r: 3, when: 'now' } }
+    }
+  }
+};
+
+// ---------------- ENEMY STATS ----------------
+const ENEMY = {
+  spitter: { hp: 1, dmg: 1, speed: 0.5, ai: 'walker', shoots: 'rock', art: 'spitter', dirArt: true },
+  spitterBlue: { hp: 2, dmg: 1, speed: 0.75, ai: 'walker', shoots: 'rock', art: 'spitterBlue', dirArt: true },
+  boar: { hp: 2, dmg: 1, speed: 0.5, ai: 'walker', shoots: 'spear', art: 'boar' },
+  hopper: { hp: 1, dmg: 1, speed: 0, ai: 'hopper', art: 'hopper' },
+  bat: { hp: 1, dmg: 1, speed: 0, ai: 'bat', art: 'bat', fly: true },
+  blob: { hp: 1, dmg: 1, speed: 0, ai: 'blob', art: 'blob' },
+  bone: { hp: 2, dmg: 1, speed: 0.5, ai: 'walker', art: 'bone' },
+  fang: { hp: 3, dmg: 1, speed: 0.6, ai: 'walker', shoots: 'boomer', art: 'fang' },
+  wrap: { hp: 3, dmg: 1, speed: 0.5, ai: 'walker', art: 'wrap' },
+  wisp: { hp: 2, dmg: 1, speed: 0.9, ai: 'wisp', art: 'wisp' },
+  serpent: { hp: 8, dmg: 2, speed: 1, ai: 'serpent', art: 'serpHead', boss: true, segs: 5 },
+  knight: { hp: 4, dmg: 2, speed: 0.6, ai: 'walker', art: 'knight', dirArt: true, frontShield: true },
+  shade: { hp: 2, dmg: 1, speed: 0.35, ai: 'shade', art: 'shade', fly: true },
+  lich: { hp: 10, dmg: 2, speed: 0, ai: 'lich', art: 'lich', boss: true, size: 32 },
+  crab: { hp: 2, dmg: 1, speed: 1, ai: 'crab', art: 'crab' },
+  lurker: { hp: 2, dmg: 1, speed: 0, ai: 'lurker', art: 'lurker', water: true, still: true },
+  thorn: { hp: 3, dmg: 1, speed: 0, ai: 'thorn', art: 'thorn', still: true },
+  mole: { hp: 2, dmg: 1, speed: 0.7, ai: 'mole', art: 'mole' },
+  bramble: { hp: 10, dmg: 2, speed: 0, ai: 'bramble', art: 'bramble', boss: true, size: 32 },
+  brine: { hp: 10, dmg: 2, speed: 0, ai: 'brine', art: 'brine', boss: true, size: 32 },
+  golem: { hp: 6, dmg: 2, speed: 0.4, ai: 'walker', art: 'golem' },
+  flame: { hp: 3, dmg: 1, speed: 1.3, ai: 'wisp', art: 'flame' },
+  gloom: { hp: 6, dmg: 2, speed: 0, ai: 'gloom', art: 'gloom', boss: true, size: 32 },
+  ram: { hp: 10, dmg: 2, speed: 0.5, ai: 'ram', art: 'ram', boss: true, size: 32 }
+};
+// ============================================================
+//  ENTITIES — hero, enemies, weapons, projectiles, pickups, fx
+//  Coordinates are playfield pixels (0..255 x 0..175); HUD offset added when drawn.
+// ============================================================
+function dr(img, x, y) { if (img) ctx.drawImage(img, Math.round(x), Math.round(y) + HUD); }
+function boxSolid(x, y, w, h, who) {
+  const xs = [x, x + (w >> 1), x + w - 1], ys = [y, y + (h >> 1), y + h - 1];
+  for (const px of xs) for (const py of ys) if (G.solidPx(px, py, who)) return true;
+  return false;
+}
+function dirToward(dx, dy) { return Math.abs(dx) > Math.abs(dy) ? (dx > 0 ? 'right' : 'left') : (dy > 0 ? 'down' : 'up'); }
+function outOfBounds(x, y, w, h) { const b = G.bounds; return x + w < b.x0 - 8 || x > b.x1 + 24 || y + h < b.y0 - 8 || y > b.y1 + 24; }
+
+// ---------------- HERO ----------------
+class Player {
+  constructor() { this.x = START.x; this.y = START.y; this.dir = 'up'; this.anim = 0; this.atk = 0; this.inv = 0; this.kb = null; this.useT = 0; this.frame = 0; this.swordBox = null; this.wandT = 0; }
+  hitbox() { return { x: this.x + 3, y: this.y + 3, w: 10, h: 11 }; }
+  feetSolid(x, y) { return boxSolid(x + 2, y + 8, 12, 8, 'p'); }
+  tryMove(dx, dy) { const nx = this.x + dx, ny = this.y + dy; if (this.feetSolid(nx, ny)) return false; this.x = nx; this.y = ny; return true; }
+  front(dist) { const [dx, dy] = DV[this.dir]; return [this.x + dx * dist, this.y + dy * dist]; }
+  update() {
+    this.frame++;
+    if (this.inv > 0) this.inv--;
+    if (!this.kb && this.feetSolid(this.x, this.y)) {
+      search: for (let r = 1; r <= 24; r++) for (const [ox, oy] of [[0, r], [0, -r], [-r, 0], [r, 0]])
+        if (!this.feetSolid(this.x + ox, this.y + oy)) { this.x += ox; this.y += oy; break search; }
+    }
+    if (this.kb) {
+      for (let i = 0; i < 4; i++) if (!this.tryMove(this.kb.dx, this.kb.dy)) { this.kb.t = 0; break; }
+      G.clampPlayer();
+      if (--this.kb.t <= 0) this.kb = null;
+      return;
+    }
+    if (this.atk > 0) { this.atk--; this.updateSword(); if (this.atk === 0) this.swordBox = null; return; }
+    if (this.useT > 0) { this.useT--; if (this.useT === 0) this.wandT = 0; return; }
+    if (Input.pressed.a && G.prof.sword) { this.attack(); return; }
+    if (Input.pressed.b && this.useItem()) return;
+    const d = Input.dir(); if (!d) return;
+    this.dir = d;
+    const [dx, dy] = DV[d], steps = (this.frame & 1) ? 1 : 2;
+    for (let s = 0; s < steps; s++) {
+      if (dx) { const r = ((this.y % 8) + 8) % 8; if (r) { const ny = r < 4 ? this.y - 1 : this.y + 1; if (!this.feetSolid(this.x, ny)) this.y = ny; } }
+      else { const r = ((this.x % 8) + 8) % 8; if (r) { const nx = r < 4 ? this.x - 1 : this.x + 1; if (!this.feetSolid(nx, this.y)) this.x = nx; } }
+      if (!this.tryMove(dx, dy)) { G.bump(d); break; }
+    }
+    this.anim++;
+    G.afterMove(d);
+  }
+  attack() {
+    this.atk = 12; this.swordHits = new Set(); Snd.sfx('sword');
+    this.beamPending = G.prof.hp >= G.prof.maxHp && !G.pprojs.some(p => p.kind === 'beam');
+  }
+  swordPos() {
+    const x = this.x, y = this.y;
+    switch (this.dir) {
+      case 'up': return { sx: x - 1, sy: y - 11, box: { x: x + 4, y: y - 11, w: 7, h: 12 } };
+      case 'down': return { sx: x + 1, sy: y + 11, box: { x: x + 5, y: y + 15, w: 7, h: 12 } };
+      case 'right': return { sx: x + 11, sy: y + 1, box: { x: x + 15, y: y + 6, w: 12, h: 6 } };
+      default: return { sx: x - 11, sy: y + 1, box: { x: x - 11, y: y + 6, w: 12, h: 6 } };
+    }
+  }
+  updateSword() {
+    const t = 12 - this.atk;
+    if (t >= 2 && t <= 9) {
+      this.swordBox = this.swordPos().box;
+      for (const e of G.ents) if (!e.dead && !this.swordHits.has(e) && overlap(this.swordBox, e.hitbox())) { if (e.damage(G.prof.sword >= 2 ? 2 : 1, this.dir)) this.swordHits.add(e); }
+    } else this.swordBox = null;
+    if (t === 4 && this.beamPending) { this.beamPending = false; G.pprojs.push(new Beam(this.x, this.y, this.dir)); Snd.sfx('beam'); }
+  }
+  useItem() {
+    const p = G.prof, it = p.bsel; if (!it) return false;
+    const [fx, fy] = this.front(16);
+    switch (it) {
+      case 'boomerang':
+        if (!p.items.boomerang || G.pprojs.some(q => q.kind === 'boomerang')) return false;
+        G.pprojs.push(new Boomerang(this.x + 4, this.y + 4, this.dir)); this.useT = 8; return true;
+      case 'bomb':
+        if (p.bombs <= 0 || G.pprojs.some(q => q.kind === 'bomb')) return false;
+        p.bombs--; G.pprojs.push(new Bomb(fx, fy)); Snd.sfx('bomb_drop'); this.useT = 8; return true;
+      case 'bow':
+        if (!p.items.bow || G.pprojs.some(q => q.kind === 'arrow')) return false;
+        if (p.gems <= 0) { Snd.sfx('deny'); return false; }
+        p.gems--; G.pprojs.push(new Arrow(this.x, this.y, this.dir)); Snd.sfx('arrow'); this.useT = 10; return true;
+      case 'candle':
+        if (!p.items.candle && !p.items.redcandle) return false;
+        if (p.items.redcandle ? G.pprojs.filter(q => q.kind === 'fire').length >= 2 : G.candleUsed) return false;
+        G.candleUsed = true; G.pprojs.push(new Fire(fx, fy, this.dir, true)); Snd.sfx('fire'); G.lightRoom(); this.useT = 8; return true;
+      case 'harp':
+        if (!p.items.harp || G.harpT) return false;
+        G.harpT = 96; Snd.sfx('harp'); this.useT = 4; return true;
+      case 'wand':
+        if (!p.items.wand) return false;
+        G.pprojs.push(new Magic(this.x, this.y, this.dir)); Snd.sfx('magic'); this.useT = 12; this.wandT = 12; return true;
+    }
+    return false;
+  }
+  draw() {
+    if (G.harpT) {
+      dr(S.heroHold, this.x, this.y); dr(S.harp, this.x, this.y - 14);
+      for (let i = 0; i < 3; i++) { const k = ((96 - G.harpT) * 0.6 + i * 9) % 26; dr(S.note, this.x + 2 + i * 5 + Math.sin((G.harpT + i * 20) / 6) * 3, this.y - 18 - k); }
+      return;
+    }
+    if (G.holdItem) { let img = S.heroHold; dr(img, this.x, this.y); const it = S[ITEMS[G.holdItem].spr]; dr(it, this.x + 8 - (it.width >> 1), this.y - it.height + 1); return; }
+    const ltx = Math.floor((this.x + 8) / 16), lty = Math.floor((this.y + 12) / 16);
+    if (G.tiles[lty] && G.tiles[lty][ltx] === 'W') ctx.drawImage(S.ladder, ltx * 16, lty * 16 + HUD, 16, 16);
+    const set = (G.prof.items.mantle ? S.heroMantle : S.hero)[this.dir], f = (this.atk > 0 || this.useT > 0) ? 0 : ((this.anim >> 3) & 1);
+    let img = set[f];
+    if (this.inv > 0 && (this.inv & 4)) img = tint(img, (this.inv & 8) ? C.r : C.w);
+    if (G.raft) dr(S.raft, this.x, this.y + 2);
+    if (this.atk > 0) { const t = 12 - this.atk; if (t >= 1 && t <= 10) { const sp = this.swordPos(); dr((G.prof.sword >= 2 ? S.sword2 : S.sword)[this.dir], sp.sx, sp.sy); } }
+    if (this.wandT > 0) { const sp = this.swordPos(); dr(S.wandDir[this.dir], sp.sx + 4, sp.sy); }
+    if (G.fade && G.fade.sink && G.fade.t < 16) { const k = G.fade.t; if (k < 16) ctx.drawImage(img, 0, 0, 16, 16 - k, Math.round(this.x), Math.round(this.y) + k + HUD, 16, 16 - k); return; }
+    dr(img, this.x, this.y);
+  }
+}
+
+// ---------------- PLAYER PROJECTILES ----------------
+class Beam {
+  constructor(x, y, dir) { this.kind = 'beam'; this.x = x; this.y = y; this.dir = dir; this.t = 0; }
+  box() { return this.dir === 'up' || this.dir === 'down' ? { x: this.x + 5, y: this.y + 2, w: 6, h: 12 } : { x: this.x + 2, y: this.y + 5, w: 12, h: 6 }; }
+  update() {
+    this.t++; const [dx, dy] = DV[this.dir]; this.x += dx * 3.5; this.y += dy * 3.5;
+    for (const e of G.ents) if (!e.dead && overlap(this.box(), e.hitbox())) { e.damage(1, this.dir); this.pop(); return; }
+    const b = G.bounds; if (this.x < b.x0 - 4 || this.x > b.x1 + 4 || this.y < b.y0 - 4 || this.y > b.y1 + 4) this.pop();
+  }
+  pop() { this.dead = true; for (const [vx, vy] of [[-1, -1], [1, -1], [-1, 1], [1, 1]]) G.fx.push({ kind: 'spark', x: this.x + 4, y: this.y + 4, vx: vx * 2, vy: vy * 2, t: 0, dur: 14 }); }
+  draw() { dr(((this.t >> 1) & 1 ? S.beamA : S.beamB)[this.dir], this.x, this.y); }
+}
+class Arrow {
+  constructor(x, y, dir) { this.kind = 'arrow'; this.x = x; this.y = y; this.dir = dir; const r = S.arrow[dir]; this.img = r; }
+  box() { return this.dir === 'up' || this.dir === 'down' ? { x: this.x + 6, y: this.y, w: 4, h: 14 } : { x: this.x, y: this.y + 6, w: 14, h: 4 }; }
+  update() {
+    const [dx, dy] = DV[this.dir]; this.x += dx * 4; this.y += dy * 4;
+    for (const e of G.ents) if (!e.dead && overlap(this.box(), e.hitbox())) { e.damage(2, this.dir); this.dead = true; G.fx.push({ kind: 'spark', x: this.x + 4, y: this.y + 4, vx: 0, vy: 0, t: 0, dur: 8 }); return; }
+    if (outOfBounds(this.x, this.y, 16, 16)) this.dead = true;
+  }
+  draw() { const img = this.img; dr(img, this.x + (16 - img.width) / 2, this.y + (16 - img.height) / 2); }
+}
+class Magic {
+  constructor(x, y, dir) { this.kind = 'magic'; this.x = x; this.y = y; this.dir = dir; this.t = 0; }
+  box() { return { x: this.x + 3, y: this.y + 3, w: 10, h: 10 }; }
+  update() {
+    this.t++; const [dx, dy] = DV[this.dir]; this.x += dx * 3; this.y += dy * 3;
+    for (const e of G.ents) if (!e.dead && overlap(this.box(), e.hitbox())) { e.damage(2, this.dir); this.end(); return; }
+    const b = G.bounds; if (this.x < b.x0 || this.x > b.x1 || this.y < b.y0 || this.y > b.y1) this.end();
+  }
+  end() {
+    this.dead = true;
+    // THE HOLY BIBLE: the wand's beam leaves a flame where it lands (original Book of Magic function)
+    if (G.prof.items.bible) { const b = G.bounds; G.pprojs.push(new Fire(clamp(this.x, b.x0, b.x1), clamp(this.y, b.y0, b.y1), this.dir, false)); Snd.sfx('fire'); }
+    else G.fx.push({ kind: 'spark', x: this.x + 4, y: this.y + 4, vx: 0, vy: 0, t: 0, dur: 10 });
+  }
+  draw() { const set = (this.t >> 2) & 1 ? S.magic : S.magic2, img = set[this.dir]; dr(img, this.x + (16 - img.width) / 2, this.y + (16 - img.height) / 2); }
+}
+class Fire {
+  constructor(x, y, dir, moving) { this.kind = 'fire'; this.x = x; this.y = y; this.dir = dir; this.t = 0; this.move = moving ? 16 : 0; this.hits = new Set(); }
+  box() { return { x: this.x + 2, y: this.y + 2, w: 12, h: 12 }; }
+  update() {
+    this.t++;
+    if (this.move > 0) { const [dx, dy] = DV[this.dir]; if (!boxSolid(this.x + dx + 2, this.y + dy + 2, 12, 12, 'proj')) { this.x += dx; this.y += dy; } this.move--; }
+    G.burnAt(this.x + 8, this.y + 8);
+    for (const e of G.ents) if (!e.dead && !this.hits.has(e) && overlap(this.box(), e.hitbox())) { if (e.damage(1, null)) this.hits.add(e); }
+    if (this.t > 70) this.dead = true;
+  }
+  draw() { dr(S.fire[(this.t >> 3) & 1], this.x, this.y); }
+}
+class Bomb {
+  constructor(x, y) { this.kind = 'bomb'; this.x = x; this.y = y; this.t = 0; }
+  update() {
+    this.t++;
+    if (this.t === 50) {
+      Snd.sfx('bomb'); G.flash = 4;
+      const cx = this.x + 8, cy = this.y + 8;
+      for (const [ox, oy] of [[0, 0], [-12, -10], [12, -10], [-12, 10], [12, 10]]) G.fx.push({ kind: 'smoke', x: this.x + ox, y: this.y + oy, vx: 0, vy: 0, t: 0, dur: 26 });
+      for (const e of G.ents) { if (e.dead) continue; const hb = e.hitbox(), ex = hb.x + hb.w / 2, ey = hb.y + hb.h / 2; if (Math.hypot(ex - cx, ey - cy) < 26 + hb.w / 4) e.damage(4, null); }
+      G.bombAt(cx, cy);
+    }
+    if (this.t > 54) this.dead = true;
+  }
+  draw() { if (this.t < 50) dr(S.bomb, this.x, this.y); }
+}
+const BOOM_ROT = [];
+class Boomerang {
+  constructor(x, y, dir) { this.kind = 'boomerang'; this.x = x; this.y = y; this.dir = dir; this.t = 0; this.back = false; this.hits = new Set(); }
+  box() { return { x: this.x, y: this.y, w: 8, h: 8 }; }
+  update() {
+    this.t++;
+    if (this.t % 8 === 1) Snd.sfx('boomerang');
+    if (!this.back) {
+      const blue = G.prof.items.boomerang2, [dx, dy] = DV[this.dir]; this.x += dx * (blue ? 4 : 3); this.y += dy * (blue ? 4 : 3);
+      if (this.t > (blue ? 36 : 22) || outOfBounds(this.x, this.y, 8, 8)) this.back = true;
+    } else {
+      const p = G.player, tx = p.x + 4, ty = p.y + 4, d = Math.hypot(tx - this.x, ty - this.y);
+      if (d < 6) { this.dead = true; return; }
+      const rs = G.prof.items.boomerang2 ? 4.5 : 3.5; this.x += (tx - this.x) / d * rs; this.y += (ty - this.y) / d * rs;
+    }
+    for (const e of G.ents) if (!e.dead && !this.hits.has(e) && overlap(this.box(), e.hitbox())) {
+      this.hits.add(e); this.back = true;
+      if (e.type === 'bat' || e.type === 'blob') e.damage(1, null); else if (!e.st.boss) { e.stun = 120; Snd.sfx('hit'); }
+    }
+    for (const pk of G.pickups) if (!pk.dead && !pk.price && overlap(this.box(), pk.box())) G.collect(pk);
+  }
+  draw() {
+    if (!BOOM_ROT.length) { let c = S.boomerang; for (let i = 0; i < 4; i++) { BOOM_ROT.push(c); c = rotCW(c); } }
+    if (G.prof.items.boomerang2) { if (!S.boomBlueRot) { S.boomBlueRot = []; let c = S.boomerangBlue; for (let i = 0; i < 4; i++) { S.boomBlueRot.push(c); c = rotCW(c); } } dr(S.boomBlueRot[(this.t >> 1) & 3], this.x, this.y); return; }
+    dr(BOOM_ROT[(this.t >> 1) & 3], this.x, this.y);
+  }
+}
+
+// ---------------- ENEMY PROJECTILES ----------------
+class EProj {
+  constructor(kind, x, y, vx, vy, owner) {
+    this.kind = kind; this.x = x; this.y = y; this.vx = vx; this.vy = vy; this.owner = owner; this.t = 0;
+    this.dmg = kind === 'fireball' ? 2 : 1; this.dir = dirToward(vx, vy);
+  }
+  box() { return this.kind === 'spear' ? { x: this.x + 4, y: this.y + 4, w: 8, h: 8 } : { x: this.x, y: this.y, w: 8, h: 8 }; }
+  update() {
+    this.t++;
+    if (this.kind === 'boomer') {
+      if (this.t > 26 || this.ret) { const o = this.owner; if (!o || o.dead) { this.dead = true; return; } const d = Math.hypot(o.x + 4 - this.x, o.y + 4 - this.y); if (d < 5) { this.dead = true; return; } this.x += (o.x + 4 - this.x) / d * 2.5; this.y += (o.y + 4 - this.y) / d * 2.5; }
+      else { this.x += this.vx; this.y += this.vy; }
+    } else { this.x += this.vx; this.y += this.vy; }
+    if (outOfBounds(this.x, this.y, 8, 8)) { this.dead = true; return; }
+    const p = G.player;
+    if (overlap(this.box(), p.hitbox()) && p.inv === 0 && !G.holdItem) {
+      const blockable = this.kind !== 'fireball' || G.prof.items.silver;
+      if (blockable && p.atk === 0 && p.dir === OPP[this.dir]) { Snd.sfx('shield'); if (this.kind === 'boomer') this.ret = true; else this.dead = true; return; }
+      G.hurtPlayer(this.dmg, this.x, this.y); if (this.kind !== 'boomer') this.dead = true;
+    }
+  }
+  draw() {
+    switch (this.kind) {
+      case 'rock': dr(S.rock, this.x, this.y); break;
+      case 'spear': dr(S.spear[this.dir], this.x, this.y); break;
+      case 'fireball': dr(S.fireball[(this.t >> 2) & 1], this.x, this.y); break;
+      case 'orb': dr(S.orb, this.x, this.y); break;
+      case 'seed': dr(S.seed, this.x, this.y); break;
+      case 'bubble': dr(S.bubble, this.x, this.y + Math.sin(this.t / 4)); break;
+      case 'boomer': if (!BOOM_ROT.length) Boomerang.prototype.draw.call({ t: 0, x: -99, y: -99 }); dr(tint(BOOM_ROT[(this.t >> 1) & 3], C.r), this.x, this.y); break;
+    }
+  }
+}
+
+// ---------------- ENEMIES ----------------
+class Enemy {
+  constructor(type, x, y) {
+    this.type = type; this.st = ENEMY[type]; this.x = x; this.y = y; this.hp = this.st.hp;
+    this.size = this.st.size || 16; this.dir = pick(DIRS); this.spawn = this.st.boss ? 0 : 26 + rnd(12);
+    this.inv = 0; this.kb = null; this.stun = 0; this.anim = rnd(32); this.pause = 0; this.t = 0;
+    this.wait = rnd(40); this.move = 0; this.turn = 0; this.vx = 0; this.vy = 0; this.speed = 0; this.z = 0; this.rest = 0;
+  }
+  hitbox() {
+    // hidden foes (sunk lurker, vanished lich) can't be hit and don't stop shots
+    if ((this.type === 'mole' && this.ph === 'under') || (this.type === 'lurker' && this.ph && this.ph !== 'up') || (this.type === 'lich' && this.phase && this.phase !== 'cast' && this.z > 0)) return { x: -999, y: -999, w: 0, h: 0 };
+    if (this.type === 'gloom' && this.small > 0) return { x: this.x + 10, y: this.y + 10, w: 12, h: 12 };
+    if (this.type === 'blob') return { x: this.x + 3, y: this.y + 8, w: 10, h: 7 };
+    if (this.type === 'bat') return { x: this.x + 2, y: this.y + 6, w: 12, h: 6 };
+    if (this.size === 32) return { x: this.x + 4, y: this.y + 4, w: 24, h: 26 };
+    return { x: this.x + 2, y: this.y + 2 - this.z, w: 12, h: 12 };
+  }
+  update() {
+    if (this.spawn > 0) { this.spawn--; return; }
+    this.anim++; this.t++;
+    if (this.inv > 0) this.inv--;
+    if (this.kb) {
+      for (let i = 0; i < 4; i++) { const nx = this.x + this.kb.dx, ny = this.y + this.kb.dy; if (this.st.fly || !boxSolid(nx, ny, 16, 16, 'e')) { this.x = nx; this.y = ny; } else { this.kb.t = 0; break; } }
+      if (--this.kb.t <= 0) { this.kb = null; if (!this.st.fly && !this.jump && this.st.ai !== 'walker') this.snapFree(); }
+    } else if (this.stun > 0) { this.stun--; }
+    else this[this.st.ai]();
+    const p = G.player;
+    if (!G.holdItem && p.inv === 0 && this.z < 6 && overlap(this.hitbox(), p.hitbox())) G.hurtPlayer(this.st.dmg, this.x + this.size / 2 - 8, this.y + this.size / 2 - 8);
+  }
+  damage(n, dir) {
+    if (this.inv > 0 || this.spawn > 0 || this.dead) return false;
+    if (this.type === 'lich' && this.phase !== 'cast') return false;
+    if (this.type === 'lurker' && this.ph !== 'up') return false;
+    if (this.type === 'gloom' && !(this.small > 0)) { Snd.sfx('shield'); this.inv = 10; return false; }
+    if (this.type === 'bramble' && this.ph !== 'open') { Snd.sfx('shield'); this.inv = 10; return false; }
+    if (this.type === 'brine' && this.ph !== 'rest') { Snd.sfx('shield'); this.inv = 10; return false; }
+    if (this.st.frontShield && dir && dir === OPP[this.dir] && !this.stun) { Snd.sfx('shield'); this.inv = 8; return false; }
+    this.hp -= n; this.inv = this.st.boss ? 24 : 16;
+    if (!this.st.boss && !this.st.still && dir && !this.jump) { const [dx, dy] = DV[dir]; this.kb = { dx, dy, t: 4 }; }
+    Snd.sfx(this.st.boss ? 'bosshit' : 'hit');
+    if (this.hp <= 0) this.die();
+    return true;
+  }
+  die() {
+    this.dead = true; Snd.sfx(this.st.boss ? 'bossdie' : 'kill');
+    if (this.type === 'serpent') this.segments().forEach(([sx, sy], i) => G.fx.push({ kind: 'burst', x: sx, y: sy, vx: 0, vy: 0, t: -i * 5, dur: 20 }));
+    if (this.st.boss) for (const e of G.ents) if (e !== this && !e.dead) { e.dead = true; G.fx.push({ kind: 'burst', x: e.x, y: e.y, vx: 0, vy: 0, t: 0, dur: 16 }); }
+    if (this.st.boss) { for (let i = 0; i < 4; i++) G.fx.push({ kind: 'burst', x: this.x + (i & 1) * 16, y: this.y + (i >> 1) * 16, vx: 0, vy: 0, t: -i * 6, dur: 22 }); G.bossDefeated(); }
+    else { G.fx.push({ kind: 'burst', x: this.x, y: this.y, vx: 0, vy: 0, t: 0, dur: 16 }); G.rollDrop(this.x, this.y); }
+  }
+  // --- AI: grid walker (spitters, boarkin, bonewalkers, fanglings) ---
+  walker() {
+    const st = this.st, sp = st.speed;
+    if (this.pause > 0) { this.pause--; if (this.pause === 8) this.shoot(); return; }
+    const [mx, my] = DV[this.dir];
+    const glide = (v) => { const g = Math.round(v / 16) * 16; return Math.sign(g - v) * Math.min(sp, Math.abs(g - v)); };
+    if (mx && this.y % 16) { const s = glide(this.y); if (!boxSolid(this.x, this.y + s, 16, 16, 'e')) this.y += s; }
+    if (my && this.x % 16) { const s = glide(this.x); if (!boxSolid(this.x + s, this.y, 16, 16, 'e')) this.x += s; }
+    const gx = Math.round(this.x / 16) * 16, gy = Math.round(this.y / 16) * 16;
+    if (Math.abs(this.x - gx) <= sp / 2 + 0.01 && Math.abs(this.y - gy) <= sp / 2 + 0.01) {
+      this.x = gx; this.y = gy;
+      if (rnd(100) < 14) this.chooseDir();
+      if (st.shoots && rnd(100) < 7 && !G.eprojs.some(q => q.owner === this)) { this.pause = 28; return; }
+    }
+    const [dx, dy] = DV[this.dir], nx = this.x + dx * sp, ny = this.y + dy * sp;
+    if (boxSolid(nx, ny, 16, 16, 'e')) { if (!this.snapFree()) this.dir = OPP[this.dir]; this.chooseDir(); }
+    else { this.x = nx; this.y = ny; }
+  }
+  snapFree() {
+    const f = v => Math.floor(v / 16) * 16, c = v => Math.ceil(v / 16) * 16, r = v => Math.round(v / 16) * 16;
+    for (const [x, y] of [[r(this.x), r(this.y)], [f(this.x), f(this.y)], [c(this.x), f(this.y)], [f(this.x), c(this.y)], [c(this.x), c(this.y)]])
+      if (!boxSolid(x, y, 16, 16, 'e')) { this.x = x; this.y = y; return true; }
+    return false;
+  }
+  chooseDir() {
+    const opts = DIRS.filter(d => { const [dx, dy] = DV[d]; return !boxSolid(this.x + dx, this.y + dy, 16, 16, 'e'); });
+    if (!opts.length) return;
+    let pref = null;
+    if (rnd(100) < 35) { const p = G.player; pref = dirToward(p.x - this.x, p.y - this.y); }
+    this.dir = pref && opts.includes(pref) ? pref : pick(opts);
+  }
+  shoot() {
+    const [dx, dy] = DV[this.dir], k = this.st.shoots, x = this.x + 4 + dx * 8, y = this.y + 4 + dy * 8;
+    if (k === 'rock') G.eprojs.push(new EProj('rock', x, y, dx * 2.2, dy * 2.2, this));
+    else if (k === 'spear') G.eprojs.push(new EProj('spear', this.x + dx * 8, this.y + dy * 8, dx * 2.6, dy * 2.6, this));
+    else if (k === 'boomer') G.eprojs.push(new EProj('boomer', x, y, dx * 2.5, dy * 2.5, this));
+  }
+  // --- AI: hopper (leaping spider) ---
+  hopper() {
+    const j = this.jump;
+    if (j) {
+      j.t++; const k = j.t / j.dur; this.x = j.x0 + (j.x1 - j.x0) * k; this.y = j.y0 + (j.y1 - j.y0) * k; this.z = Math.sin(Math.PI * k) * j.h;
+      if (j.t >= j.dur) { this.jump = null; this.z = 0; this.wait = 16 + rnd(50); }
+      return;
+    }
+    if (this.wait-- > 0) return;
+    const b = G.bounds, p = G.player;
+    for (let i = 0; i < 8; i++) {
+      let tx = this.x + (rnd(5) - 2) * 16, ty = this.y + (rnd(3) - 1) * 16;
+      if (rnd(2)) tx += Math.sign(p.x - this.x) * 16;
+      tx = clamp(tx, b.x0, b.x1); ty = clamp(ty, b.y0, b.y1);
+      if ((tx !== this.x || ty !== this.y) && !boxSolid(tx, ty, 16, 16, 'e')) { this.jump = { x0: this.x, y0: this.y, x1: tx, y1: ty, t: 0, dur: 28, h: 14 + rnd(10) }; return; }
+    }
+    this.wait = 20;
+  }
+  // --- AI: bat (erratic flyer) ---
+  bat() {
+    if (this.rest > 0) { this.rest--; this.speed = Math.max(0, this.speed - 0.05); }
+    else {
+      this.speed = Math.min(1.4, this.speed + 0.04);
+      if (--this.turn <= 0) { this.turn = 16 + rnd(32); const a = rnd(8) * Math.PI / 4; this.vx = Math.cos(a); this.vy = Math.sin(a); if (rnd(100) < 12) this.rest = 40 + rnd(40); }
+    }
+    this.x += this.vx * this.speed; this.y += this.vy * this.speed;
+    const b = G.bounds;
+    if (this.x < b.x0) { this.x = b.x0; this.vx = Math.abs(this.vx); } if (this.x > b.x1) { this.x = b.x1; this.vx = -Math.abs(this.vx); }
+    if (this.y < b.y0) { this.y = b.y0; this.vy = Math.abs(this.vy); } if (this.y > b.y1) { this.y = b.y1; this.vy = -Math.abs(this.vy); }
+  }
+  // --- AI: blob (short hops) ---
+  blob() {
+    if (this.move > 0) { this.move--; const [dx, dy] = DV[this.dir]; if (!boxSolid(this.x + dx, this.y + dy, 16, 16, 'e')) { this.x += dx; this.y += dy; } else { this.x = Math.round(this.x / 16) * 16; this.y = Math.round(this.y / 16) * 16; this.move = 0; } return; }
+    if (--this.wait <= 0) { this.dir = pick(DIRS); this.move = 16; this.wait = 18 + rnd(50); }
+  }
+  // --- AI: wisp (bouncing desert spirit) ---
+  wisp() {
+    if (!this.vx) { this.vx = rnd(2) ? 0.9 : -0.9; this.vy = rnd(2) ? 0.9 : -0.9; }
+    if (boxSolid(this.x + this.vx, this.y, 16, 16, 'e')) this.vx = -this.vx; else this.x += this.vx;
+    if (boxSolid(this.x, this.y + this.vy, 16, 16, 'e')) this.vy = -this.vy; else this.y += this.vy;
+  }
+  // --- AI: Kharun the Sand Serpent (Level-2 guardian): only the head can be wounded ---
+  serpent() {
+    if (!this.trail) { this.trail = []; this.dir = 'left'; }
+    const sp = this.hp <= 3 ? 2 : 1;
+    if (this.x % 16 === 0 && this.y % 16 === 0) {
+      const free = d => { const [dx, dy] = DV[d]; return !boxSolid(this.x + dx * 16, this.y + dy * 16, 16, 16, 'e'); };
+      let opts = DIRS.filter(d => d !== OPP[this.dir] && free(d));
+      if (!opts.length) opts = DIRS.filter(free);
+      const p = G.player, pref = dirToward(p.x - this.x, p.y - this.y);
+      if (opts.length && (rnd(100) < 25 || !opts.includes(this.dir))) this.dir = rnd(100) < 45 && opts.includes(pref) ? pref : pick(opts);
+    }
+    const [dx, dy] = DV[this.dir]; this.x += dx * sp; this.y += dy * sp;
+    this.trail.unshift([this.x, this.y]); if (this.trail.length > 120) this.trail.pop();
+    const p = G.player;
+    if (p.inv === 0) for (const [sx, sy] of this.segments()) if (overlap({ x: sx + 3, y: sy + 3, w: 10, h: 10 }, p.hitbox())) { G.hurtPlayer(this.st.dmg, sx, sy); break; }
+  }
+  segments() {
+    const out = [], k = this.hp <= 3 ? 7 : 14, t = this.trail || [];
+    for (let i = 1; i <= this.st.segs; i++) { const q = t[Math.min(i * k, t.length - 1)]; if (q) out.push(q); }
+    return out;
+  }
+  // --- AI: shade (drifts through walls toward the hero) ---
+  shade() {
+    const p = G.player, dx = p.x - this.x, dy = p.y - this.y, d = Math.hypot(dx, dy) || 1, b = G.bounds;
+    this.x = clamp(this.x + dx / d * this.st.speed + Math.sin(this.t / 18) * 0.4, b.x0, b.x1);
+    this.y = clamp(this.y + dy / d * this.st.speed + Math.cos(this.t / 23) * 0.3, b.y0, b.y1);
+  }
+  // --- AI: Morrow the Lich (Level-3 guardian): vulnerable only while casting ---
+  lich() {
+    if (!this.phase) { this.phase = 'cast'; this.pt = 0; }
+    this.pt++;
+    if (this.phase === 'appear') { this.z = 99; if (this.pt > 30) { this.phase = 'cast'; this.pt = 0; } }
+    else if (this.phase === 'cast') {
+      this.z = 0;
+      if (this.pt === 45 || (this.hp <= 5 && this.pt === 85)) {
+        const cx = this.x + 12, cy = this.y + 12, a0 = this.pt === 45 ? 0 : Math.PI / 6;
+        for (let i = 0; i < 6; i++) { const a = a0 + i * Math.PI / 3; G.eprojs.push(new EProj('fireball', cx, cy, Math.cos(a) * 1.3, Math.sin(a) * 1.3, this)); }
+        Snd.sfx('magic');
+      }
+      if (this.pt > 115) { this.phase = 'vanish'; this.pt = 0; }
+    }
+    else if (this.phase === 'vanish') { this.z = 99; if (this.pt > 30) { this.phase = 'hidden'; this.pt = 0; } }
+    else if (this.pt > 40) {
+      const p = G.player, spots = [[48, 40], [160, 40], [48, 96], [160, 96], [104, 64]].filter(([x, y]) => Math.hypot(x - p.x, y - p.y) > 56);
+      [this.x, this.y] = pick(spots.length ? spots : [[104, 64]]); this.phase = 'appear'; this.pt = 0;
+    }
+  }
+  // --- AI: crab (scuttles sideways) ---
+  crab() {
+    if (!this.cdir) this.cdir = rnd(2) ? 'left' : 'right';
+    const [dx] = DV[this.cdir], nx = this.x + dx * this.st.speed;
+    if (boxSolid(nx, this.y, 16, 16, 'e') || rnd(240) === 0) this.cdir = OPP[this.cdir]; else this.x = nx;
+  }
+  // --- AI: lurker (rises from water, spits a bubble, sinks) ---
+  lurker() {
+    if (!this.ph) { this.ph = 'under'; this.pt = rnd(60); }
+    this.pt++;
+    if (this.ph === 'under') {
+      this.z = 99;
+      if (this.pt > 80) {
+        const p = G.player, ws = [];
+        // surface only beside the shore, so a sword can reach
+        const shore = (c, r) => { const t = G.tiles[r] && G.tiles[r][c]; return t && t !== 'W' && !G.solidPx(c * 16 + 8, r * 16 + 8, 'e'); };
+        for (let r = 0; r < ROWS; r++) for (let c = 0; c < COLS; c++)
+          if (G.tiles[r][c] === 'W' && Math.hypot(c * 16 - p.x, r * 16 - p.y) > 40 && (shore(c - 1, r) || shore(c + 1, r) || shore(c, r - 1) || shore(c, r + 1))) ws.push([c * 16, r * 16]);
+        if (ws.length) [this.x, this.y] = pick(ws);
+        this.ph = 'rise'; this.pt = 0;
+      }
+    } else if (this.ph === 'rise') { this.z = 99; if (this.pt > 24) { this.ph = 'up'; this.pt = 0; } }
+    else {
+      this.z = 0;
+      if (this.pt === 18) { const p = G.player, dx = p.x - this.x, dy = p.y - this.y, d = Math.hypot(dx, dy) || 1; G.eprojs.push(new EProj('bubble', this.x + 4, this.y + 4, dx / d * 1.5, dy / d * 1.5, this)); }
+      if (this.pt > 64) { this.ph = 'under'; this.pt = 0; }
+    }
+  }
+  // --- AI: Brinehorn the Giant Crab (Level-4 guardian): soft only while resting ---
+  brine() {
+    if (!this.ph) { this.ph = 'scuttle'; this.pt = 0; this.tx = 48; }
+    this.pt++;
+    if (this.ph === 'scuttle') {
+      const sp = this.hp <= 4 ? 2 : 1.5;
+      if (Math.abs(this.x - this.tx) < sp) { this.tx = this.tx < 112 ? 160 + rnd(3) * 8 : 40 + rnd(3) * 8; }
+      this.x += Math.sign(this.tx - this.x) * sp;
+      if (this.pt > 140) { this.ph = 'rest'; this.pt = 0; }
+    } else {
+      if (this.pt === 20 || this.pt === 55) {
+        const p = G.player, cx = this.x + 12, cy = this.y + 20, a = Math.atan2(p.y + 4 - cy, p.x + 4 - cx);
+        for (const o of [-0.4, 0, 0.4]) G.eprojs.push(new EProj('bubble', cx, cy, Math.cos(a + o) * 1.4, Math.sin(a + o) * 1.4, this));
+      }
+      if (this.pt > 90) { this.ph = 'scuttle'; this.pt = 0; }
+    }
+  }
+  // --- AI: Gloomhulk the Shadow (Level-5 guardian): only the Shepherd's Harp shrinks it ---
+  gloom() {
+    const b = G.bounds;
+    if (this.small > 0) {
+      this.small--;
+      if (!this.vx) { this.vx = 1.3; this.vy = 1.1; }
+      this.x += this.vx; this.y += this.vy;
+      if (this.x < b.x0 - 8 || this.x > b.x1 - 8) { this.vx = -this.vx; this.x = clamp(this.x, b.x0 - 8, b.x1 - 8); }
+      if (this.y < b.y0 - 8 || this.y > b.y1 - 8) { this.vy = -this.vy; this.y = clamp(this.y, b.y0 - 8, b.y1 - 8); }
+      if (this.small === 0) { Snd.sfx('magic'); this.x = clamp(this.x, 32, 192); this.y = clamp(this.y, 32, 112); }
+    } else {
+      const p = G.player, dx = p.x - 8 - this.x, dy = p.y - 8 - this.y, d = Math.hypot(dx, dy) || 1;
+      this.x = clamp(this.x + dx / d * 0.45, 32, 192); this.y = clamp(this.y + dy / d * 0.45, 32, 112);
+      if (this.t % 110 === 0) { const cx = this.x + 12, cy = this.y + 12; for (const [vx, vy] of [[1, 1], [-1, 1], [1, -1], [-1, -1]]) G.eprojs.push(new EProj('orb', cx, cy, vx, vy, this)); Snd.sfx('magic'); }
+    }
+  }
+  // --- AI: thorn plant (rooted, spits seeds four ways) ---
+  thorn() {
+    if (this.t % 120 === 60) for (const d of DIRS) { const [dx, dy] = DV[d]; G.eprojs.push(new EProj('seed', this.x + 4 + dx * 8, this.y + 4 + dy * 8, dx * 1.6, dy * 1.6, this)); }
+  }
+  // --- AI: mole (burrows toward the hero, pops up to bite) ---
+  mole() {
+    if (!this.ph) { this.ph = 'under'; this.pt = rnd(40); }
+    this.pt++;
+    if (this.ph === 'under') {
+      this.z = 99;
+      const p = G.player, dx = p.x - this.x, dy = p.y - this.y, d = Math.hypot(dx, dy) || 1, sp = this.st.speed;
+      if (!boxSolid(this.x + dx / d * sp, this.y, 16, 16, 'e')) this.x += dx / d * sp;
+      if (!boxSolid(this.x, this.y + dy / d * sp, 16, 16, 'e')) this.y += dy / d * sp;
+      if ((this.pt > 70 && d < 36) || this.pt > 170) { this.snapFree(); this.ph = 'up'; this.pt = 0; Snd.sfx('push'); }
+    } else { this.z = 0; if (this.pt > 75) { this.ph = 'under'; this.pt = 0; } }
+  }
+  // --- AI: Mother Bramble (Level-6 guardian): strike the great eye when it opens ---
+  bramble() {
+    if (!this.ph) { this.ph = 'closed'; this.pt = 0; this.x = 112; this.y = 32; }
+    this.pt++;
+    if (this.ph === 'closed') {
+      if (this.pt === 40 || this.pt === 95) {
+        const p = G.player, cx = this.x + 12, cy = this.y + 24, a = Math.atan2(p.y + 4 - cy, p.x + 4 - cx);
+        for (const o of [-0.6, -0.3, 0, 0.3, 0.6]) G.eprojs.push(new EProj('seed', cx, cy, Math.cos(a + o) * 1.5, Math.sin(a + o) * 1.5, this));
+      }
+      if (this.pt === 120 && G.ents.filter(e => e.type === 'blob' && !e.dead).length < 2) { const b = new Enemy('blob', 96 + rnd(5) * 16, 80); b.spawn = 16; G.ents.push(b); }
+      if (this.pt > 150) { this.ph = 'open'; this.pt = 0; Snd.sfx('door'); }
+    } else if (this.pt > (this.hp <= 4 ? 55 : 75)) { this.ph = 'closed'; this.pt = 0; }
+  }
+  // --- AI: Gorrak the Stone Ram (Level-1 guardian) ---
+  ram() {
+    const p = G.player;
+    if (!this.tx || (Math.abs(this.x - this.tx) < 1 && Math.abs(this.y - this.ty) < 1)) {
+      this.tx = 96 + rnd(7) * 16; this.ty = 32 + rnd(5) * 16; this.rs = 0.6;
+      if (rnd(100) < 25) { this.tx = clamp(Math.round(p.x / 16) * 16 - 8, 32, 192); this.ty = clamp(Math.round(p.y / 16) * 16 - 8, 32, 96); this.rs = 1.4; }
+    }
+    const dx = this.tx - this.x, dy = this.ty - this.y, d = Math.hypot(dx, dy) || 1;
+    this.x += dx / d * Math.min(this.rs, d); this.y += dy / d * Math.min(this.rs, d);
+    if (this.t % 100 === 0) {
+      const cx = this.x + 12, cy = this.y + 12, a = Math.atan2(p.y + 4 - cy, p.x + 4 - cx);
+      for (const o of [-0.35, 0, 0.35]) G.eprojs.push(new EProj('fireball', cx, cy, Math.cos(a + o) * 1.7, Math.sin(a + o) * 1.7, this));
+      Snd.sfx('fire');
+    }
+  }
+  draw() {
+    if (this.spawn > 0) { dr(S.puff[(this.spawn >> 2) & 1], this.x, this.y); return; }
+    if (this.type === 'serpent') {
+      const segs = this.segments();
+      for (let i = segs.length - 1; i >= 0; i--) dr(S.serpBody, segs[i][0], segs[i][1]);
+      let h = S.serpHead[this.dir]; if (this.inv > 0 && (this.inv & 2)) h = tint(h, (this.inv & 4) ? C.w : C.r);
+      dr(h, this.x, this.y); return;
+    }
+    const art = S[this.st.art];
+    let f = (this.anim >> (this.type === 'bat' ? 2 : 3)) & 1, img;
+    if (this.st.dirArt) img = art[this.dir][f];
+    else { img = art[f]; if (this.st.ai === 'walker' && this.dir === 'left') img = flipCache(img); }
+    if (this.stun > 0 && (this.stun & 8)) img = tint(img, C.c);
+    if (this.inv > 0 && (this.inv & 2)) img = tint(img, (this.inv & 4) ? C.w : C.r);
+    if (this.type === 'lich') {
+      const ph = this.phase, k = ph === 'appear' ? this.pt / 30 : ph === 'vanish' ? 1 - this.pt / 30 : ph === 'hidden' ? 0 : 1;
+      if (k <= 0) return; ctx.globalAlpha = Math.max(0.15, Math.round(k * 4) / 4);
+      ctx.drawImage(img, Math.round(this.x), Math.round(this.y) + HUD, 32, 32); ctx.globalAlpha = 1; return;
+    }
+    if (this.type === 'shade') { ctx.globalAlpha = 0.75; dr(img, this.x, this.y); ctx.globalAlpha = 1; return; }
+    if (this.type === 'lurker') { if (this.ph === 'rise') dr(S.ripple[(this.pt >> 3) & 1], this.x, this.y); else if (this.ph === 'up') dr(img, this.x, this.y); return; }
+    if (this.type === 'brine' && this.ph === 'scuttle' && !(this.inv > 0)) img = tint(img, C.G);
+    if (this.type === 'gloom' && this.small > 0) { dr(img, this.x + 8, this.y + 8); return; }
+    if (this.type === 'mole' && this.ph === 'under') { dr(S.mound[(this.anim >> 3) & 1], this.x, this.y); return; }
+    if (this.type === 'bramble') { let b = S.bramble[this.ph === 'open' ? 1 : 0]; if (this.inv > 0 && (this.inv & 2)) b = tint(b, (this.inv & 4) ? C.w : C.r); ctx.drawImage(b, Math.round(this.x), Math.round(this.y) + HUD, 32, 32); return; }
+    if (this.size === 32) { ctx.drawImage(img, Math.round(this.x), Math.round(this.y) + HUD, 32, 32); return; }
+    if (this.z > 0) { ctx.fillStyle = 'rgba(0,0,0,0.35)'; ctx.fillRect(Math.round(this.x) + 4, Math.round(this.y) + HUD + 13, 8, 2); }
+    dr(img, this.x, this.y - this.z);
+  }
+}
+const _flipC = new Map();
+function flipCache(img) { let f = _flipC.get(img); if (!f) { f = flipH(img); _flipC.set(img, f); } return f; }
+
+// ---------------- PICKUPS ----------------
+class Pickup {
+  constructor(kind, x, y, opts) {
+    opts = opts || {}; this.kind = kind; this.x = x; this.y = y; this.t = 0; this.life = opts.life || 0;
+    this.flag = opts.flag || null; this.price = opts.price || 0; this.shop = !!opts.shop;
+    if (kind === 'fairy') { this.vx = 0.6; this.vy = 0.4; }
+  }
+  img() {
+    switch (this.kind) {
+      case 'gem': return (this.t >> 3) & 1 ? S.gem : S.gem5;
+      case 'gem5': return S.gem5; case 'heart': return (this.t >> 3) & 1 ? S.heart : tint(S.heart, C.u);
+      case 'bomb': return S.bomb; case 'fairy': return S.fairy[(this.t >> 2) & 1];
+      default: return S[ITEMS[this.kind] ? ITEMS[this.kind].spr : 'gem'];
+    }
+  }
+  box() { const i = this.img(); return { x: this.x + 8 - i.width / 2, y: this.y + 16 - i.height, w: i.width, h: i.height }; }
+  update() {
+    this.t++;
+    if (this.kind === 'fairy') {
+      if (this.t % 40 === 0) { this.vx = (Math.random() - 0.5) * 1.6; this.vy = (Math.random() - 0.5) * 1.6; }
+      const b = G.bounds; this.x = clamp(this.x + this.vx, b.x0, b.x1); this.y = clamp(this.y + this.vy, b.y0, b.y1);
+    }
+    if (this.life && this.t > this.life) { this.dead = true; return; }
+    if (overlap(this.box(), G.player.hitbox())) G.collect(this);
+  }
+  draw() {
+    if (this.life && this.t > this.life - 120 && (this.t & 4)) return;
+    const i = this.img(); dr(i, this.x + 8 - i.width / 2, this.y + 16 - i.height);
+    if (this.price) { dr(S.gem, this.x - 2, this.y + 22); text(String(this.price), this.x + 8, this.y + 26 + HUD, C.w); }
+  }
+}
+
+// ---------------- FX ----------------
+function updateFx() {
+  for (const f of G.fx) { f.t++; f.x += f.vx || 0; f.y += f.vy || 0; if (f.t >= f.dur) f.dead = true; }
+  G.fx = G.fx.filter(f => !f.dead);
+}
+function drawFx() {
+  for (const f of G.fx) {
+    if (f.t < 0) continue;
+    if (f.kind === 'burst') dr(S.burst[(f.t >> 2) & 1], f.x, f.y);
+    else if (f.kind === 'spark') dr(S.spark, f.x, f.y);
+    else if (f.kind === 'smoke') dr(S.smoke[0], f.x, f.y);
+    else if (f.kind === 'puff') dr(S.puff[(f.t >> 2) & 1], f.x, f.y);
+  }
+}
+// ============================================================
+//  ROOMS — overworld screens, caves/chapel, dungeon rooms,
+//  collision, secrets, doors, scrolling, item handling
+// ============================================================
+const G = {
+  state: 'title', t: 0, prof: null, slot: 0, profiles: Store.load(),
+  player: null, ents: [], pprojs: [], eprojs: [], pickups: [], fx: [],
+  area: 'ow', sx: 1, sy: 3, tiles: [], bounds: { x0: 0, y0: 0, x1: 240, y1: 160 },
+  candleUsed: false, lit: true, holdItem: null, holdT: 0, msg: null, flash: 0, scroll: null, fade: null,
+  autoWalk: null, npc: null, caveText: null, textT: 0, roomCanvas: mkCanvas(256, 176), dirty: true, pushT: 0, bumped: false,
+  dunKilled: new Set(), visited: new Set(), roomClear: true, gateMsgT: 0
+};
+
+// ---------------- profile & flags ----------------
+function newProfile(name) {
+  return { name, maxHp: 6, hp: 6, gems: 0, keys: 0, bombs: 0, maxBombs: 8, sword: 0, bsel: '',
+    items: { boomerang: 0, bow: 0, candle: 0, wand: 0, bible: 0, silver: 0, bombbag: 0, ladder: 0, raft: 0 },
+    shards: [], dmap: {}, dcomp: {}, flags: {}, deaths: 0, pos: { sx: START.sx, sy: START.sy, x: START.x, y: START.y } };
+}
+const flag = k => !!G.prof.flags[k];
+const setFlag = k => { G.prof.flags[k] = 1; };
+function saveGame() {
+  const p = G.prof, pl = G.player;
+  if (G.area === 'ow' && pl) p.pos = { sx: G.sx, sy: G.sy, x: Math.round(pl.x / 8) * 8, y: Math.round(pl.y / 8) * 8 };
+  else if (G.area === 'cave' && G.caveRet) p.pos = { ...G.caveRet };
+  else if (G.area === 'dun') p.pos = { ...G.dun.exitTo, y: G.dun.exitTo.y + 8 };
+  G.profiles[G.slot] = JSON.parse(JSON.stringify(p));
+  const ok = Store.save(G.profiles); if (ok) G.savedT = 90;
+  return ok;
+}
+function say(text, frames) { G.msg = { text, t: frames || 180 }; }
+
+// ---------------- collision ----------------
+G.solidPx = function (px, py, who) {
+  const tx = Math.floor(px / 16), ty = Math.floor(py / 16);
+  if (tx < 0 || ty < 0 || tx >= COLS || ty >= ROWS) return who !== 'p';
+  const ch = G.tiles[ty][tx];
+  if (ch === 'W' && who === 'p' && G.prof.items.ladder && ladderOK(tx, ty)) return false;
+  if (G.area === 'dun') {
+    if ('^v<>'.includes(ch)) { if (who !== 'p') return true; return doorState({ '^': 'up', 'v': 'down', '<': 'left', '>': 'right' }[ch]) !== 'open'; }
+    if (who === 'proj') return ch === '#';
+    return ch === '#' || 'OQSWNF'.includes(ch);
+  }
+  if (G.area === 'cave') return ch !== '.';
+  if (OW_SOLID.has(ch)) return true;
+  if (who === 'e' && ('CZDEfd'.includes(ch) || tx === 0 || ty === 0 || tx === 15 || ty === 10)) return true;
+  return false;
+};
+// THE LADDER bridges a single water tile that has dry ground on both opposite sides
+function ladderOK(tx, ty) {
+  const dry = (x, y) => { const c = G.tiles[y] && G.tiles[y][x]; if (!c || c === 'W') return false; return G.area === 'dun' ? c === '.' || '^v<>'.includes(c) : !OW_SOLID.has(c); };
+  return (dry(tx, ty - 1) && dry(tx, ty + 1)) || (dry(tx - 1, ty) && dry(tx + 1, ty));
+}
+G.clampPlayer = function () {
+  const p = G.player;
+  if (G.area === 'ow') { p.x = clamp(p.x, 0, 240); p.y = clamp(p.y, 0, 160); }
+  else if (G.area === 'dun') { p.x = clamp(p.x, 24, 216); p.y = clamp(p.y, 24, 136); }
+};
+
+// ---------------- room loading ----------------
+function clearRoomObjects() { G.raft = null; G.ents = []; G.pprojs = []; G.eprojs = []; G.pickups = []; G.fx = []; G.candleUsed = false; G.npc = null; G.caveText = null; G.dirty = true; }
+function loadOW(sx, sy) {
+  G.area = 'ow'; G.sx = sx; G.sy = sy; G.scr = OW[`${sx},${sy}`];
+  G.tiles = G.scr.map.map(r => r.split(''));
+  for (const k in (G.scr.secrets || {})) if (flag(`sec:${sx},${sy},${k}`)) { const [tx, ty] = k.split(',').map(Number); G.tiles[ty][tx] = G.tiles[ty][tx] === 'b' ? 'Z' : 'C'; }
+  G.bounds = { x0: 0, y0: 0, x1: 240, y1: 160 }; G.lit = true;
+  clearRoomObjects();
+}
+function reachableTiles() {
+  const p = G.player, seen = new Set(), q = [[Math.floor((p.x + 8) / 16), Math.floor((p.y + 12) / 16)]];
+  while (q.length) {
+    const [x, y] = q.pop(), k = x + ',' + y;
+    if (seen.has(k) || x < 0 || y < 0 || x >= COLS || y >= ROWS || G.solidPx(x * 16 + 8, y * 16 + 8, 'p')) continue;
+    seen.add(k); q.push([x + 1, y], [x - 1, y], [x, y + 1], [x, y - 1]);
+  }
+  return seen;
+}
+function spawnEnemies(list, region) {
+  const p = G.player, reach = reachableTiles();
+  for (const type of list) {
+    for (let tries = 0; tries < 40; tries++) {
+      const tx = region.c0 + rnd(region.c1 - region.c0 + 1), ty = region.r0 + rnd(region.r1 - region.r0 + 1);
+      const x = tx * 16, y = ty * 16;
+      if (ENEMY[type].water) { if (G.tiles[ty][tx] !== 'W') continue; }
+      else {
+        if (G.solidPx(x + 8, y + 8, 'e')) continue;
+        if (!ENEMY[type].fly && reach.size > 4 && !reach.has(tx + ',' + ty)) continue;
+      }
+      if (Math.hypot(x - p.x, y - p.y) < 56) continue;
+      if (G.ents.some(e => e.x === x && e.y === y)) continue;
+      G.ents.push(new Enemy(type, x, y)); break;
+    }
+  }
+}
+function owEnter() { spawnEnemies(G.scr.enemies, { c0: 2, c1: 13, r0: 2, r1: 8 }); Snd.play('overworld'); }
+
+// caves are 16x11 rooms of black floor and rock walls
+function loadCave(id, ret) {
+  G.area = 'cave'; G.caveId = id; G.caveRet = ret; clearRoomObjects();
+  const rows = [];
+  for (let r = 0; r < ROWS; r++) { let s = ''; for (let c = 0; c < COLS; c++) { const wall = r === 0 || c < 2 || c > 13 || (r === 10 && c !== 7 && c !== 8); s += wall ? '#' : '.'; } rows.push(s.split('')); }
+  G.tiles = rows; G.tiles[4][7] = G.tiles[4][8] = 'N';
+  G.bounds = { x0: 32, y0: 16, x1: 208, y1: 144 }; G.lit = true;
+  const cv = CAVES[id], p = G.prof;
+  let lines = cv.lines, items = cv.items || [];
+  if (cv.chapel) {
+    if (p.hp < p.maxHp) { p.hp = p.maxHp; Snd.sfx('fairy'); }
+    if (!p.items.bible && flag('boss:1')) { lines = 'YOU FACED THE DARKNESS\nWITH COURAGE. RECEIVE\nTHE HOLY BIBLE.'; items = [{ id: 'bible', price: 0 }]; }
+    else if (!p.shards.includes(1)) lines = 'PEACE BE WITH YOU. REST\nHERE, THEN FACE THE\nDEEPWOOD HOLD.';
+    else if (!p.shards.includes(2)) lines = 'A TOMB LIES BURIED IN\nTHE WESTERN DESERT.\nTHE LORD GO WITH YOU.';
+    else if (!p.shards.includes(3)) lines = 'CATACOMBS LIE BENEATH\nTHE OLD GRAVEYARD. FEAR\nNOT, FOR HE IS WITH YOU.';
+    else if (!p.shards.includes(5) && p.shards.includes(4)) lines = 'A KEEP STANDS ON THE\nNORTHERN PEAKS. BE\nSTRONG IN THE LORD.';
+    else if (!p.shards.includes(4)) lines = 'A SHRINE RISES FROM THE\nEASTERN RIVER. TAKE\nYOUR RAFT AND GO.';
+    else if (!p.shards.includes(6)) lines = 'THORNS HIDE A HOLLOW IN\nTHE EASTERN WOOD. LET\nYOUR LIGHT SHINE.';
+    else lines = 'THY WORD IS A LAMP UNTO\nMY FEET, AND A LIGHT\nUNTO MY PATH.  PS 119';
+  }
+  const gift = items.length && items.every(i => i.price === 0);
+  if (gift && flag(`cave:${id}`)) { items = []; lines = cv.after || lines; }
+  if (!cv.chapel) G.tiles[4][4] = G.tiles[4][11] = 'F';
+  G.npc = { spr: cv.npc, x: 120, y: 64, chapel: !!cv.chapel };
+  G.caveText = lines; G.textT = 0;
+  const xs = items.length === 1 ? [120] : items.length === 2 ? [96, 144] : [80, 120, 160];
+  G.pendingItems = items.map((it, i) => new Pickup(it.id, xs[i], 96, { price: it.price, shop: it.price > 0, flag: it.price === 0 ? `cave:${id}` : null }));
+  G.player.x = 120; G.player.y = 144; G.player.dir = 'up';
+  Snd.play(cv.chapel ? 'chapel' : null);
+  if (!cv.chapel) Snd.stop();
+}
+
+// ---------------- dungeons ----------------
+function doorKey(dir) {
+  const [rx, ry] = G.rkey.split(',').map(Number), [dx, dy] = DV[dir], other = `${rx + dx},${ry + dy}`;
+  return `door:${G.dnum}:${[G.rkey, other].sort().join('|')}`;
+}
+function doorState(dir) {
+  const t = G.rm.doors[{ up: 'n', down: 's', left: 'w', right: 'e' }[dir]];
+  if (!t) return 'wall';
+  if (G.autoWalk && G.autoWalk.from === dir) return 'open';
+  switch (t) {
+    case 'open': case 'exit': return 'open';
+    case 'locked': return flag(doorKey(dir)) ? 'open' : 'locked';
+    case 'bomb': return flag(doorKey(dir)) ? 'open' : 'wall';
+    case 'shutter': return G.roomClear ? 'open' : 'shut';
+    case 'push': return flag(`push:${G.dnum}:${G.rkey}`) ? 'open' : 'shut';
+  }
+  return 'wall';
+}
+function loadDungeon(n) {
+  G.dnum = n; G.dun = DUNGEONS[n]; G.dtiles = buildDungeonTiles(G.dun.pal); G.dunKilled = new Set();
+  G.visited = G.prof.flags[`vis:${n}`] ? new Set(G.prof.flags[`vis:${n}`].split(';')) : new Set();
+  loadRoom(G.dun.start);
+  G.player.x = 120; G.player.y = 144; G.player.dir = 'up';
+  roomEnter('up');
+}
+function loadRoom(key) {
+  G.area = 'dun'; G.rkey = key; G.rm = G.dun.rooms[key]; clearRoomObjects();
+  G.visited.add(key); G.prof.flags[`vis:${G.dnum}`] = [...G.visited].join(';');
+  const lay = LAYOUT[G.rm.layout || 'empty'];
+  const rows = [];
+  for (let r = 0; r < ROWS; r++) { const row = []; for (let c = 0; c < COLS; c++) row.push(r < 2 || r > 8 || c < 2 || c > 13 ? '#' : lay[r - 2][c - 2]); rows.push(row); }
+  rows[0][7] = rows[0][8] = rows[1][7] = rows[1][8] = '^';
+  rows[9][7] = rows[9][8] = rows[10][7] = rows[10][8] = 'v';
+  rows[5][0] = rows[5][1] = '<'; rows[5][14] = rows[5][15] = '>';
+  if (flag(`push:${G.dnum}:${key}`)) for (let r = 0; r < ROWS; r++) for (let c = 0; c < COLS; c++) if (rows[r][c] === 'Q') { rows[r][c] = '.'; rows[r - 1][c] = 'O'; }
+  G.tiles = rows; G.bounds = { x0: 32, y0: 32, x1: 208, y1: 128 };
+  G.lit = !G.rm.dark;
+  if (G.rm.sage) { G.tiles[4][7] = G.tiles[4][8] = 'N'; G.tiles[4][4] = G.tiles[4][11] = 'F'; G.npc = { spr: 'sage', x: 120, y: 64 }; G.caveText = G.rm.sage; G.textT = 0; }
+  G.roomClear = true;
+}
+function roomEnter(fromDir) {
+  const rm = G.rm, killed = G.dunKilled.has(G.rkey) || (rm.boss && flag(`boss:${G.dnum}`));
+  if (!killed && rm.enemies && rm.enemies.length) {
+    if (rm.boss) G.ents.push(new Enemy(rm.enemies[0], 160, 48));
+    else spawnEnemies(rm.enemies, { c0: 3, c1: 12, r0: 3, r1: 7 });
+  }
+  G.roomClear = G.ents.length === 0;
+  const it = rm.item;
+  if (it && !flag(`di:${G.dnum}:${G.rkey}`) && (it.when === 'now' || G.roomClear)) spawnRoomItem();
+  G.autoWalk = fromDir ? { dir: fromDir, from: OPP[fromDir], n: 20 } : null;
+  Snd.play(rm.boss && !flag(`boss:${G.dnum}`) ? 'boss' : dunSong());
+}
+function spawnRoomItem() {
+  const it = G.rm.item; if (G.pickups.some(p => p.flag === `di:${G.dnum}:${G.rkey}`)) return;
+  G.pickups.push(new Pickup(it.id, (it.c + 2) * 16, (it.r + 2) * 16, { flag: `di:${G.dnum}:${G.rkey}` }));
+}
+function checkRoomClear() {
+  if (G.area !== 'dun' || G.roomClear) return;
+  if (G.ents.some(e => !e.dead)) return;
+  G.roomClear = true; G.dunKilled.add(G.rkey);
+  const it = G.rm.item;
+  if (it && it.when === 'clear' && !flag(`di:${G.dnum}:${G.rkey}`)) { spawnRoomItem(); Snd.sfx('heart'); }
+  if (Object.values(G.rm.doors).includes('shutter')) Snd.sfx('door');
+}
+function dunSong() { return SONGS['dungeon' + G.dnum] ? 'dungeon' + G.dnum : 'dungeon'; }
+G.bossDefeated = function () { setFlag(`boss:${G.dnum}`); Snd.play(dunSong()); };
+
+// ---------------- movement triggers ----------------
+G.afterMove = function (d) {
+  const p = G.player;
+  if (G.area === 'ow') {
+    const key = (x, y) => OW[`${x},${y}`];
+    if (p.x < 0) { if (key(G.sx - 1, G.sy)) return startScroll('left'); p.x = 0; }
+    if (p.x > 240) { if (key(G.sx + 1, G.sy)) return startScroll('right'); p.x = 240; }
+    if (p.y < 0) { if (key(G.sx, G.sy - 1)) return startScroll('up'); p.y = 0; }
+    if (p.y > 160) { if (key(G.sx, G.sy + 1)) return startScroll('down'); p.y = 160; }
+    const tx = Math.floor((p.x + 8) / 16), ty = Math.floor((p.y + 11) / 16), ch = G.tiles[ty] && G.tiles[ty][tx], k = `${tx},${ty}`;
+    if ((ch === 'C' || ch === 'D') && d === 'up' || ch === 'Z') {
+      const id = (G.scr.caves && G.scr.caves[k]) || (G.scr.secrets && G.scr.secrets[k]);
+      if (id && id.startsWith('dun')) { const n = +id.slice(3); Snd.sfx('stairs'); fadeTo(() => { loadDungeon(n); saveGame(); say(DUNGEONS[n].title, 150); }, true); }
+      else if (id) { Snd.sfx('stairs'); const ret = { sx: G.sx, sy: G.sy, x: tx * 16, y: ty * 16 + 16 }; fadeTo(() => loadCave(id, ret), true); }
+    } else if (ch === 'E' && d === 'up' && G.scr.dungeon) {
+      const n = G.scr.dungeon[k]; Snd.sfx('stairs'); fadeTo(() => { loadDungeon(n); saveGame(); say(DUNGEONS[n].title, 150); }, true);
+    } else if (ch === 'f' && G.prof.hp < G.prof.maxHp && !G.fairyT) { G.fairyT = 1; Snd.sfx('fairy'); }
+  } else if (G.area === 'cave') {
+    if (p.y > 148) { const r = G.caveRet; Snd.stop(); fadeTo(() => { loadOW(r.sx, r.sy); p.x = r.x; p.y = r.y; p.dir = 'down'; owEnter(); saveGame(); }); }
+  } else if (G.area === 'dun') {
+    if (p.y < 6) return dunExit('up'); if (p.y > 150) return dunExit('down');
+    if (p.x < 6) return dunExit('left'); if (p.x > 234) return dunExit('right');
+  }
+};
+function dunExit(dir) {
+  const t = G.rm.doors[{ up: 'n', down: 's', left: 'w', right: 'e' }[dir]];
+  if (t === 'exit') { const e = G.dun.exitTo; fadeTo(() => { loadOW(e.sx, e.sy); G.player.x = e.x; G.player.y = e.y + 8; G.player.dir = 'down'; owEnter(); saveGame(); }); return; }
+  startScroll(dir);
+}
+G.bump = function (d) {
+  const p = G.player; G.bumped = true;
+  const [dx, dy] = DV[d], fx = p.x + 8 + dx * 9, fy = p.y + 12 + dy * 6;
+  const tx = Math.floor(fx / 16), ty = Math.floor(fy / 16), ch = G.tiles[ty] && G.tiles[ty][tx];
+  if (G.area === 'ow' && ch === 'L' && G.gateMsgT <= 0) {
+    G.gateMsgT = 200; say(`A HOLY SEAL BARS THE WAY.\nBRING ALL 8 SHARDS OF\nWISDOM.  YOU HAVE ${G.prof.shards.length}/8`, 200);
+  }
+  // THE RAFT: from a dock, walking toward open water sets sail
+  if (G.area === 'ow' && ch === 'W' && G.prof.items.raft && !G.raft) {
+    const cx = Math.floor((p.x + 8) / 16), cy = Math.floor((p.y + 12) / 16);
+    // only sail if open water leads straight to another shore within this screen
+    let x = cx + dx, y = cy + dy; while (G.tiles[y] && G.tiles[y][x] === 'W') { x += dx; y += dy; }
+    if (G.tiles[cy][cx] === 'd' && G.tiles[y] && G.tiles[y][x] !== undefined && !OW_SOLID.has(G.tiles[y][x])) { if (dx) p.y = cy * 16; else p.x = cx * 16; G.raft = { dir: d, n: 0 }; Snd.sfx('boomerang'); }
+  }
+  if (G.area !== 'dun') return;
+  const doorCh = { up: '^', down: 'v', left: '<', right: '>' }[d];
+  if (ch === doorCh && doorState(d) === 'locked') {
+    if (G.prof.keys > 0) { G.prof.keys--; setFlag(doorKey(d)); Snd.sfx('unlock'); }
+    else if (G.gateMsgT <= 0) { G.gateMsgT = 120; say('THE DOOR IS LOCKED.', 100); }
+  }
+  if (ch === 'Q') {
+    G.pushT++;
+    if (G.pushT > 14) {
+      const nx = tx + dx, ny = ty + dy;
+      if (G.tiles[ny] && G.tiles[ny][nx] === '.' && !G.ents.some(e => !e.dead && Math.floor((e.x + 8) / 16) === nx && Math.floor((e.y + 8) / 16) === ny)) {
+        G.tiles[ty][tx] = '.'; G.tiles[ny][nx] = 'O'; G.dirty = true; G.pushT = 0;
+        Snd.sfx('push'); setFlag(`push:${G.dnum}:${G.rkey}`); setTimeout(() => Snd.sfx('secret'), 300);
+      }
+    }
+  }
+};
+
+// ---------------- secrets: bombs & fire ----------------
+G.bombAt = function (cx, cy) {
+  if (G.area === 'ow') {
+    for (const k in (G.scr.secrets || {})) {
+      const [tx, ty] = k.split(',').map(Number);
+      if (G.tiles[ty][tx] === 'B' && Math.hypot(tx * 16 + 8 - cx, ty * 16 + 8 - cy) < 28) { G.tiles[ty][tx] = 'C'; setFlag(`sec:${G.sx},${G.sy},${k}`); G.dirty = true; Snd.sfx('secret'); }
+    }
+  } else if (G.area === 'dun') {
+    const centers = { up: [128, 16], down: [128, 160], left: [16, 88], right: [240, 88] };
+    for (const d of DIRS) {
+      const t = G.rm.doors[{ up: 'n', down: 's', left: 'w', right: 'e' }[d]];
+      if (t === 'bomb' && !flag(doorKey(d)) && Math.hypot(centers[d][0] - cx, centers[d][1] - cy) < 40) { setFlag(doorKey(d)); G.dirty = true; Snd.sfx('secret'); }
+    }
+  }
+};
+G.burnAt = function (x, y) {
+  if (G.area !== 'ow') return;
+  const tx = Math.floor(x / 16), ty = Math.floor(y / 16), k = `${tx},${ty}`;
+  if (G.tiles[ty] && G.tiles[ty][tx] === 'b' && G.scr.secrets && G.scr.secrets[k]) { G.tiles[ty][tx] = 'Z'; setFlag(`sec:${G.sx},${G.sy},${k}`); G.dirty = true; Snd.sfx('secret'); }
+};
+G.lightRoom = function () { if (G.area === 'dun' && !G.lit) { G.lit = true; G.dirty = true; } };
+
+// ---------------- damage, drops, items ----------------
+G.hurtPlayer = function (dmg, sx, sy) {
+  const p = G.player; if (p.inv > 0 || G.state !== 'play') return;
+  if (G.prof.items.mantle) dmg = Math.max(1, dmg >> 1);
+  if (G.prof.gentle) dmg = Math.max(1, dmg >> 1);
+  try { if (navigator.vibrate) navigator.vibrate(35); } catch (e) {}
+  G.prof.hp = Math.max(0, G.prof.hp - dmg); p.inv = 64; Snd.sfx('hurt');
+  const d = dirToward(p.x - sx, p.y - sy), [dx, dy] = DV[d];
+  p.kb = { dx, dy, t: 4 }; p.atk = 0; p.swordBox = null;
+  if (G.prof.hp <= 0) startDeath();
+};
+G.rollDrop = function (x, y) {
+  const r = rnd(100); let k = null;
+  if (r < 30) k = 'gem'; else if (r < 46) k = 'heart'; else if (r < 51) k = 'gem5'; else if (r < 58) k = 'bomb'; else if (r < 60) k = 'fairy';
+  if (k) G.pickups.push(new Pickup(k, x, y, { life: 480 }));
+};
+G.collect = function (pk) {
+  const p = G.prof;
+  if (pk.price) {
+    if (p.gems < pk.price) { if (!G.denyT) { Snd.sfx('deny'); say('YOU NEED MORE GEMS.', 90); G.denyT = 60; } return; }
+    p.gems -= pk.price; Snd.sfx('buy');
+  }
+  pk.dead = true;
+  if (pk.shop) { for (const o of G.pickups) if (o.shop) o.dead = true; G.caveText = 'THANK YOU, FRIEND.\nGOD BLESS YOUR ROAD.'; G.textT = 999; }
+  if (pk.flag) setFlag(pk.flag);
+  switch (pk.kind) {
+    case 'gem': p.gems = Math.min(255, p.gems + 1); Snd.sfx('gem'); return;
+    case 'gem5': p.gems = Math.min(255, p.gems + 5); Snd.sfx('gem5'); return;
+    case 'heart': p.hp = Math.min(p.maxHp, p.hp + 2); Snd.sfx('heart'); return;
+    case 'bomb': p.bombs = Math.min(p.maxBombs, p.bombs + 4); if (!p.bsel) p.bsel = 'bomb'; Snd.sfx('heart'); return;
+    case 'fairy': G.fairyT = 1; Snd.sfx('fairy'); return;
+  }
+  giveItem(pk.kind);
+};
+function giveItem(id) {
+  const p = G.prof, it = ITEMS[id];
+  switch (id) {
+    case 'sword': p.sword = Math.max(p.sword, 1); break;
+    case 'bombs': p.bombs = Math.min(p.maxBombs, p.bombs + 4); if (!p.bsel) p.bsel = 'bomb'; break;
+    case 'key': p.keys++; break;
+    case 'heartpot': p.hp = p.maxHp; break;
+    case 'sword2': p.sword = 2; break;
+    case 'boomerang2': p.items.boomerang = 1; p.items.boomerang2 = 1; if (!p.bsel) p.bsel = 'boomerang'; break;
+    case 'bombbag': p.items.bombbag = 1; p.maxBombs = 12; p.bombs = 12; if (!p.bsel) p.bsel = 'bomb'; break;
+    case 'gems30': p.gems = Math.min(255, p.gems + 30); break;
+    case 'heartc': p.maxHp = Math.min(32, p.maxHp + 2); p.hp = p.maxHp; break;
+    case 'map': p.dmap[G.dnum] = 1; break;
+    case 'compass': p.dcomp[G.dnum] = 1; break;
+    case 'shard': if (!p.shards.includes(G.dnum)) p.shards.push(G.dnum); p.hp = p.maxHp; break;
+    default: p.items[id] = 1;
+      if (id === 'redcandle') { if (!p.bsel) p.bsel = 'candle'; else if (p.bsel !== 'candle') G.equipHint = true; }
+      if (['boomerang', 'bow', 'candle', 'wand', 'harp'].includes(id)) { if (!p.bsel) p.bsel = id; else G.equipHint = true; }
+  }
+  if (it && it.big) {
+    G.holdItem = id; G.holdT = id === 'shard' ? 200 : 110; Snd.sfx(id === 'shard' ? 'shard' : 'item');
+    let m = `YOU GOT ${it.name}!`;
+    if (id === 'bible') m += '\nTHE WAND\'S LIGHT WILL NOW\nLEAVE A HOLY FLAME.';
+    if (id === 'wand' && !G.equipHint) m += '\nPRESS B TO CAST LIGHT.';
+    if (id === 'candle') m += '\nIT LIGHTS DARK ROOMS AND\nBURNS AWAY BUSHES.';
+    if (id === 'boomerang2') m += '\nIT FLIES FASTER AND\nFARTHER THAN BEFORE.';
+    if (id === 'mantle') m += "\nLIKE ELIJAH'S MANTLE, IT\nWAS PASSED ON TO YOU.\nFOES NOW HURT YOU LESS.";
+    if (id === 'harp') m += '\nWHEN DAVID PLAYED, THE\nDARKNESS DEPARTED.';
+    if (id === 'redcandle') m += '\nIT BURNS AS OFTEN AS\nYOU LIKE.';
+    if (id === 'bombbag') m += '\nNOW YOU CAN CARRY 12.';
+    if (id === 'raft') m += '\nSTAND ON A DOCK AND WALK\nTOWARD THE WATER.';
+    if (id === 'sword2') m += '\nIT STRIKES TWICE AS HARD.';
+    if (id === 'ladder') m += '\nIT BRIDGES A NARROW\nSTREAM OF WATER.';
+    if (G.equipHint) { m += '\nPRESS START TO EQUIP IT.'; G.equipHint = false; }
+    if (id === 'shard') m = `A SHARD OF WISDOM!\n${p.shards.length} OF 8 RECOVERED.`;
+    say(m, 240);
+    saveGame();
+  } else { Snd.sfx(id === 'key' ? 'unlock' : 'gem5'); if (it) say(`YOU GOT ${it.name}.`, 90); }
+}
+
+// ---------------- THE SHEPHERD'S HARP ----------------
+function harpEffect() {
+  const p = G.prof;
+  if (G.area === 'dun') {
+    const g = G.ents.filter(e => e.type === 'gloom' && !e.dead);
+    if (g.length) { g.forEach(e => { e.small = 360; e.vx = 0; }); Snd.sfx('secret'); say('THE DARKNESS SHRINKS AWAY!', 120); }
+    else say('THE MUSIC ECHOES IN THE HALLS.', 100);
+    return;
+  }
+  if (G.area !== 'ow') return;
+  // outdoors the harp's song carries you to the doorway of a dungeon you have already won
+  const spots = p.shards.slice().sort((a, b) => a - b).filter(n => DUNGEONS[n]).map(n => DUNGEONS[n].exitTo);
+  if (!spots.length) { say('A PEACEFUL SONG. NOTHING\nMORE HAPPENS... YET.', 120); return; }
+  const t = spots[(p.harpIdx || 0) % spots.length]; p.harpIdx = ((p.harpIdx || 0) + 1) % spots.length;
+  Snd.sfx('stairs');
+  fadeTo(() => { loadOW(t.sx, t.sy); G.player.x = t.x; G.player.y = t.y + 8; G.player.dir = 'down'; owEnter(); saveGame(); say('THE WIND CARRIES YOU.', 100); });
+}
+
+// ---------------- transitions ----------------
+function fadeTo(fn, sink) { G.fade = { t: 0, fn, done: false, sink: !!sink }; }
+function startScroll(dir) {
+  const p = G.player, old = mkCanvas(256, 176); drawRoom(old.getContext('2d'));
+  if (G.area === 'ow') {
+    const [dx, dy] = DV[dir]; loadOW(G.sx + dx, G.sy + dy);
+    if (dir === 'left') p.x = 240; if (dir === 'right') p.x = 0; if (dir === 'up') p.y = 160; if (dir === 'down') p.y = 0;
+  } else {
+    const [rx, ry] = G.rkey.split(',').map(Number), [dx, dy] = DV[dir]; loadRoom(`${rx + dx},${ry + dy}`);
+    if (dir === 'left') p.x = 220; if (dir === 'right') p.x = 20; if (dir === 'up') p.y = 140; if (dir === 'down') p.y = 20;
+  }
+  G.autoWalk = G.area === 'dun' ? { dir, from: OPP[dir], n: 0 } : null;
+  const nw = mkCanvas(256, 176); drawRoom(nw.getContext('2d'));
+  G.scroll = { dir, t: 0, dur: dir === 'left' || dir === 'right' ? 64 : 44, old, nw };
+  p.kb = null;
+}
+function endScroll() {
+  const d = G.scroll.dir; G.scroll = null;
+  if (G.area === 'ow') owEnter(); else roomEnter(d);
+}
+// ============================================================
+//  RENDER — rooms, HUD, cave interiors, overlays
+// ============================================================
+function drawRoom(g) {
+  if (G.area === 'dun') return drawDungeonRoom(g);
+  const wf = (G.t >> 4) & 1;
+  for (let r = 0; r < ROWS; r++) for (let c = 0; c < COLS; c++) {
+    const ch = G.tiles[r][c], x = c * 16, y = r * 16;
+    if (G.area === 'cave') {
+      if (ch === '#') g.drawImage(G.npc && G.npc.chapel ? T['H'] : T['R'], x, y);
+      else { g.fillStyle = G.npc && G.npc.chapel ? '#3C2810' : '#000'; g.fillRect(x, y, 16, 16); }
+      continue;
+    }
+    if (ch === 'W') g.drawImage(T.water[wf], x, y);
+    else if (ch === 'd') g.drawImage(T.dock[wf], x, y);
+    else g.drawImage(T[ch] || T['.'], x, y);
+  }
+  if (G.area === 'cave' && G.npc && G.npc.chapel) {
+    g.fillStyle = '#7C2010'; g.fillRect(112, 80, 32, 96);           // red aisle carpet
+    g.fillStyle = '#C84C0C'; g.fillRect(114, 80, 28, 96);
+    g.drawImage(S.altar || (S.altar = spr(CROSS)), 120, 48);           // altar cross
+    for (const wx of [40, 200]) {                                   // stained glass windows
+      g.fillStyle = '#000'; g.fillRect(wx, 52, 16, 28); g.fillStyle = C.c; g.fillRect(wx + 2, 54, 12, 24);
+      g.fillStyle = C.y; g.fillRect(wx + 7, 54, 2, 24); g.fillRect(wx + 2, 61, 12, 2); g.fillStyle = C.r; g.fillRect(wx + 2, 54, 5, 7); g.fillRect(wx + 9, 54, 5, 7);
+    }
+  }
+}
+function drawDungeonRoom(g) {
+  const p = G.dun.pal, d = G.dtiles, wf = (G.t >> 4) & 1;
+  g.fillStyle = p.wall; g.fillRect(0, 0, 256, 176);
+  g.fillStyle = p.wallLo;
+  for (let y = 0; y < 176; y += 8) { g.fillRect(0, y + 7, 256, 1); for (let x = (y / 8) % 2 ? 0 : 8; x < 256; x += 16) g.fillRect(x, y, 1, 7); }
+  g.fillStyle = p.wallHi; g.fillRect(26, 26, 204, 124); g.fillStyle = '#000'; g.fillRect(29, 29, 198, 118);
+  for (let r = 2; r <= 8; r++) for (let c = 2; c <= 13; c++) {
+    const ch = G.tiles[r][c], x = c * 16, y = r * 16;
+    g.drawImage(d.floor, x, y);
+    if (ch === 'O' || ch === 'Q') g.drawImage(d.O, x, y); else if (ch === 'S') g.drawImage(d.S, x, y);
+    else if (ch === 'W') g.drawImage(d.W[wf], x, y); else if (ch === 'F' || ch === 'N') g.fillStyle = '#000', g.fillRect(x, y, 16, 16);
+  }
+  const R = { up: [112, 0, 32, 32], down: [112, 144, 32, 32], left: [0, 72, 32, 32], right: [224, 72, 32, 32] };
+  for (const dir of DIRS) {
+    const st = doorState(dir); if (st === 'wall') continue;
+    const [x, y, w, h] = R[dir];
+    g.fillStyle = p.wallHi; g.fillRect(x, y, w, h); g.fillStyle = '#000'; g.fillRect(x + 3, y + 3, w - 6, h - 6);
+    if (dir === 'up') g.fillRect(x + 3, 0, w - 6, 3); if (dir === 'down') g.fillRect(x + 3, y + h - 3, w - 6, 3);
+    if (dir === 'left') g.fillRect(0, y + 3, 3, h - 6); if (dir === 'right') g.fillRect(x + w - 3, y + 3, 3, h - 6);
+    if (st === 'locked') { g.fillStyle = '#AC7C00'; g.fillRect(x + 4, y + 4, w - 8, h - 8); g.fillStyle = '#503000'; g.fillRect(x + 14, y + 10, 4, 4); g.fillRect(x + 15, y + 14, 2, 7); }
+    if (st === 'shut') { g.fillStyle = p.wallLo; g.fillRect(x + 4, y + 4, w - 8, h - 8); g.fillStyle = p.wallHi; for (let i = 0; i < 4; i++) dir === 'up' || dir === 'down' ? g.fillRect(x + 7 + i * 6, y + 4, 2, h - 8) : g.fillRect(x + 4, y + 7 + i * 6, w - 8, 2); }
+  }
+}
+
+function renderPlayfield() {
+  if (G.dirty || (G.t & 15) === 0) { drawRoom(G.roomCanvas.getContext('2d')); G.dirty = false; }
+  if (G.scroll) {
+    const s = G.scroll, k = s.t / s.dur, [dx, dy] = DV[s.dir], ox = -dx * 256 * k, oy = -dy * 176 * k;
+    ctx.drawImage(s.old, Math.round(ox), Math.round(oy) + HUD);
+    ctx.drawImage(s.nw, Math.round(ox + dx * 256), Math.round(oy + dy * 176) + HUD);
+    const p = G.player, img = S.hero[p.dir][(G.t >> 3) & 1];
+    // hero rides along with the incoming screen
+    ctx.drawImage(img, Math.round(p.x + ox + dx * 256 - dx * (1 - k) * 0), Math.round(p.y + oy + dy * 176) + HUD);
+    return;
+  }
+  ctx.drawImage(G.roomCanvas, 0, HUD);
+  // animated tile overlays
+  if (G.npc) {
+    const n = G.npc;
+    if (n.chapel) { for (const cx of [72, 168]) { dr(S.candle, cx, 64); if ((G.t >> 3) & 1) ctx.fillStyle = C.y, ctx.fillRect(cx + 3, 63 + HUD, 2, 2); } }
+    else for (const fx of [64, 176]) dr(S.fire[(G.t >> 3) & 1], fx, 64);
+    dr(S[n.spr], n.x + 8 - 8, n.y);
+    if (n.spr && n.x === 112) { /* npc centered between tiles 7 and 8 */ }
+  }
+  if (G.area === 'ow' && G.scr.fairy && (G.fairyT || G.t % 120 < 100)) dr(S.fairy[(G.t >> 2) & 1], 132, 32 + Math.sin(G.t / 10) * 3);
+  for (const pk of G.pickups) pk.draw();
+  for (const e of G.ents) e.draw();
+  for (const q of G.pprojs) q.draw();
+  G.player.draw();
+  for (const q of G.eprojs) q.draw();
+  drawFx();
+  if (G.caveText) drawCaveText();
+  if (G.area === 'dun' && !G.lit) {
+    ctx.fillStyle = 'rgba(0,0,0,0.72)'; ctx.fillRect(28, 28 + HUD, 200, 120);
+  }
+  if (G.flash > 0) { G.flash--; ctx.fillStyle = 'rgba(252,252,252,0.35)'; ctx.fillRect(0, HUD, 256, 176); }
+  if (G.msg) drawMsg();
+}
+function drawCaveText() {
+  const n = Math.floor(G.textT / 3), lines = G.caveText.split('\n');
+  let shown = 0;
+  lines.forEach((ln, i) => {
+    const vis = ln.slice(0, Math.max(0, n - shown)); shown += ln.length;
+    text(vis, Math.round((256 - ln.length * 8) / 2), HUD + 20 + i * 10, C.w);
+  });
+}
+function caveTextDone() { if (!G.caveText) return true; return Math.floor(G.textT / 3) >= G.caveText.replace(/\n/g, '').length; }
+function drawMsg() {
+  const lines = G.msg.text.split('\n'), h = lines.length * 10 + 8, y = HUD + 176 - h - 4;
+  ctx.fillStyle = '#000'; ctx.fillRect(8, y, 240, h); ctx.fillStyle = C.w; ctx.fillRect(8, y, 240, 1); ctx.fillRect(8, y + h - 1, 240, 1);
+  lines.forEach((ln, i) => text(ln, Math.round((256 - ln.length * 8) / 2), y + 5 + i * 10, C.w));
+}
+
+// ---------------- HUD ----------------
+function frame8(x, y, w, h, col) { ctx.fillStyle = col; ctx.fillRect(x, y, w, 2); ctx.fillRect(x, y + h - 2, w, 2); ctx.fillRect(x, y, 2, h); ctx.fillRect(x + w - 2, y, 2, h); }
+function itemIcon(id) { return { boomerang: G.prof && G.prof.items.boomerang2 ? S.boomerangBlue : S.boomerang, bomb: S.bomb, bow: S.bow, candle: G.prof && G.prof.items.redcandle ? S.candleRed : S.candle, wand: S.wand, harp: S.harp }[id]; }
+function drawHUD() {
+  const p = G.prof;
+  ctx.fillStyle = '#000'; ctx.fillRect(0, 0, 256, HUD);
+  // minimap
+  if (G.area === 'dun') {
+    text(G.dun.name, 16, 6, C.w);
+    const hasMap = p.dmap[G.dnum];
+    for (const k in G.dun.rooms) {
+      if (!hasMap && !G.visited.has(k)) continue;
+      const [rx, ry] = k.split(',').map(Number);
+      ctx.fillStyle = hasMap ? C.u : C.G; ctx.fillRect(16 + rx * 10, 16 + ry * 7, 8, 5);
+    }
+    if (p.dcomp[G.dnum] && !p.shards.includes(G.dnum) && (G.t & 16)) { const [bx, by] = G.dun.bossRoom.split(',').map(Number); ctx.fillStyle = C.r; ctx.fillRect(19 + bx * 10, 17 + by * 7, 3, 3); }
+    const [cx, cy] = G.rkey.split(',').map(Number); ctx.fillStyle = C.l; ctx.fillRect(19 + cx * 10, 17 + cy * 7, 3, 3);
+  } else {
+    ctx.fillStyle = C.G; ctx.fillRect(16, 16, 64, 32);
+    const pl = G.player, sx = G.area === 'cave' ? G.caveRet.sx : G.sx, sy = G.area === 'cave' ? G.caveRet.sy : G.sy;
+    ctx.fillStyle = C.l; ctx.fillRect(16 + sx * 16 + Math.floor((G.area === 'ow' ? pl.x : 120) / 16), 16 + sy * 8 + Math.floor((G.area === 'ow' ? pl.y : 80) / 22), 3, 3);
+  }
+  // counters
+  dr(S.gem, 88, 14 - HUD); text('X' + p.gems, 98, 18, C.w);
+  dr(S.key, 88, 30 - HUD); text('X' + p.keys, 98, 32, C.w);
+  dr(S.bomb, 84, 34 - HUD); text('X' + p.bombs, 98, 42, C.w);
+  // B and A slots
+  text('B', 124, 8, C.w); frame8(116, 16, 20, 30, C.u);
+  const bi = itemIcon(p.bsel); if (bi && (p.bsel !== 'bomb' || p.bombs > 0)) ctx.drawImage(bi, 126 - (bi.width >> 1), 31 - (bi.height >> 1));
+  text('A', 148, 8, C.w); frame8(140, 16, 20, 30, C.u);
+  if (p.sword) ctx.drawImage(p.sword >= 2 ? S.swordItem2 : S.swordItem, 142, 22, 16, 16);
+  if (G.savedT > 0 && G.state === 'play') text('SAVED', 16, 54, C.l);
+  // life
+  text('-LIFE-', 176, 12, C.r);
+  const n = p.maxHp / 2;
+  for (let i = 0; i < n; i++) {
+    const x = 176 + (i % 8) * 8, y = 40 - Math.floor(i / 8) * 8, v = p.hp - i * 2;
+    ctx.drawImage(v >= 2 ? S.heart : v === 1 ? S.heartHalf : S.heartEmpty, x, y);
+  }
+}
+// ============================================================
+//  MAIN — game states, menus, main loop, touch controls
+// ============================================================
+const STORY = [
+  'ELDERHAVEN, A KINGDOM OF', 'PEACE, WAS GUARDED BY THE', 'SACRED CREST.', '',
+  'THE DARK LORD MORGRATH', 'STOLE THE CREST OF POWER', 'AND SPREAD SHADOW OVER', 'THE LAND.', '',
+  'PRINCESS SERAPHINA BROKE', 'THE CREST OF WISDOM INTO', 'EIGHT SHARDS AND HID THEM', 'SO HE COULD NOT TAKE IT.', '',
+  'NOW SHE IS HIS PRISONER', 'BEYOND THE HOLY SEAL ON', 'THE NORTHERN MOUNTAIN.', '',
+  'A YOUNG HERO MUST FIND', 'THE EIGHT SHARDS, OPEN', 'THE SEAL, AND SET THE', 'PRINCESS FREE.', '',
+  'BE STRONG AND OF GOOD', 'COURAGE.'];
+const STARS = Array.from({ length: 50 }, () => [rnd(256), rnd(240), rnd(3)]);
+const INV_ORDER = ['boomerang', 'bomb', 'bow', 'candle', 'wand', 'harp'];
+const NAME_GRID = ['ABCDEFGHIJK', 'LMNOPQRSTUV', "WXYZ-.,!'?&", '0123456789 '];
+
+function blink(n) { return (G.t >> (n || 4)) & 1; }
+function menuMove(cur, n, noSelect) {
+  if (Input.pressed.up) { cur = (cur + n - 1) % n; Snd.sfx('select'); }
+  if (Input.pressed.down || (Input.pressed.select && !noSelect)) { cur = (cur + 1) % n; Snd.sfx('select'); }
+  return cur;
+}
+
+// ---------------- TITLE & STORY ----------------
+function updateTitle() {
+  G.t++; if (G.t === 2) Snd.play('title');
+  if (Input.pressed.start || Input.pressed.a) { Snd.sfx('select'); G.state = 'select'; G.cur = 0; G.t = 0; return; }
+  if (G.t > 720) { G.state = 'story'; G.storyY = 240; }
+}
+function drawStars() { for (const [x, y, k] of STARS) { if (((G.t >> 3) + x) % 7 === 0) continue; ctx.fillStyle = k === 0 ? C.w : k === 1 ? C.c : C.G; ctx.fillRect(x, y, 1, 1); } }
+function drawTitle() {
+  drawStars();
+  ctx.drawImage(S.swordItem, 104, 4, 48, 39);
+  ctx.drawImage(S.shield, 96, 30, 64, 56);
+  text('ELDERHAVEN', 50, 102, C.b, 2); text('ELDERHAVEN', 48, 100, C.y, 2);
+  textC('THE SACRED CREST', 124, C.w);
+  if (blink(5)) textC('PUSH START', 164, C.w);
+  textC('FAMILY ARCADE EDITION', 194, C.G);
+  if (isTouch) textC('A SWORD   B ITEM', 216, C.G);
+  else { textC('ARROWS MOVE  X SWORD  Z ITEM', 212, C.G); textC('ENTER START  SHIFT SELECT', 222, C.G); }
+}
+function updateStory() {
+  G.t++; G.storyY -= 0.35;
+  if (Input.pressed.start || Input.pressed.a) { Snd.sfx('select'); G.state = 'select'; G.cur = 0; G.t = 0; Snd.play('title'); return; }
+  if (G.storyY < -STORY.length * 12 - 20) { G.state = 'title'; G.t = 3; }
+}
+function drawStory() { drawStars(); STORY.forEach((ln, i) => { const y = G.storyY + i * 12; if (y > -8 && y < 240) textC(ln, Math.round(y), i >= STORY.length - 2 ? C.y : C.w); }); }
+
+// ---------------- PROFILE SELECT / REGISTER / ERASE ----------------
+function updateSelect() {
+  G.t++;
+  if (Input.pressed.select && G.cur < 3 && G.profiles[G.cur]) {
+    const pr = G.profiles[G.cur]; pr.gentle = !pr.gentle; Store.save(G.profiles); Snd.sfx(pr.gentle ? 'fairy' : 'select'); return;
+  }
+  G.cur = menuMove(G.cur, 5, true);
+  if (Input.pressed.b && G.state === 'select') { G.state = 'title'; G.t = 3; return; }
+  if (!(Input.pressed.a || Input.pressed.start)) return;
+  Snd.sfx('select');
+  if (G.cur < 3) {
+    if (G.profiles[G.cur]) startGame(G.cur);
+    else { G.state = 'register'; G.regSlot = G.cur; G.regName = ''; G.gx = 0; G.gy = 0; Input.textMode = true; }
+  } else if (G.cur === 3) { G.state = 'erase'; G.cur = 0; G.confirm = false; }
+  else { G.state = 'title'; G.t = 3; }
+}
+function drawSlots(title) {
+  textC(title, 20, C.w);
+  for (let i = 0; i < 3; i++) {
+    const y = 48 + i * 34, pr = G.profiles[i];
+    ctx.drawImage(S.hero.down[0], 56, y);
+    text(`${i + 1}.`, 32, y + 4, C.G);
+    if (pr) {
+      text(pr.name, 80, y, C.w);
+      const n = Math.min(8, pr.maxHp / 2); for (let h = 0; h < n; h++) ctx.drawImage(S.heart, 80 + h * 8, y + 10);
+      text(`SHARDS ${pr.shards.length}/8`, 152, y + 10, C.y);
+      if (pr.gentle) text('GENTLE', 176, y, C.l);
+    } else text('- NEW GAME -', 80, y + 4, C.G);
+  }
+}
+function drawSelect() {
+  drawSlots('- SELECT -');
+  text('ERASE A NAME', 80, 160, C.w); text('BACK', 80, 176, C.w);
+  const cy = G.cur < 3 ? 52 + G.cur * 34 : G.cur === 3 ? 160 : 176;
+  ctx.drawImage(S.heart, 20, cy);
+  textC('A OR ENTER TO CHOOSE', 204, C.G);
+  textC('SELECT: GENTLE MODE ON/OFF', 216, C.G);
+}
+function updateErase() {
+  G.t++;
+  if (G.confirm) {
+    if (Input.pressed.a || Input.pressed.start) { G.profiles[G.cur] = null; Store.save(G.profiles); Snd.sfx('kill'); G.state = 'select'; G.cur = 0; }
+    else if (Input.pressed.b) { G.confirm = false; }
+    return;
+  }
+  G.cur = menuMove(G.cur, 4);
+  if (Input.pressed.b) { G.state = 'select'; G.cur = 3; return; }
+  if (Input.pressed.a || Input.pressed.start) {
+    if (G.cur === 3) { G.state = 'select'; G.cur = 3; return; }
+    if (G.profiles[G.cur]) { G.confirm = true; Snd.sfx('select'); } else Snd.sfx('deny');
+  }
+}
+function drawErase() {
+  drawSlots('- ERASE A NAME -');
+  text('BACK', 80, 160, C.w);
+  ctx.drawImage(tint(S.heart, C.c), 20, G.cur < 3 ? 52 + G.cur * 34 : 160);
+  if (G.confirm) { ctx.fillStyle = '#000'; ctx.fillRect(16, 186, 224, 36); frame8(16, 186, 224, 36, C.r); textC(`ERASE ${G.profiles[G.cur].name}?`, 194, C.w); textC('A = YES    B = NO', 208, C.w); }
+}
+function updateRegister() {
+  G.t++;
+  const rows = NAME_GRID.length + 1;
+  if (Input.pressed.up) { G.gy = (G.gy + rows - 1) % rows; Snd.sfx('select'); }
+  if (Input.pressed.down) { G.gy = (G.gy + 1) % rows; Snd.sfx('select'); }
+  const cols = G.gy === NAME_GRID.length ? 3 : 11;
+  if (Input.pressed.left) { G.gx = (G.gx + cols - 1) % cols; Snd.sfx('select'); }
+  if (Input.pressed.right) { G.gx = (G.gx + 1) % cols; Snd.sfx('select'); }
+  G.gx = Math.min(G.gx, cols - 1);
+  const add = ch => { if (G.regName.length < 8) { G.regName += ch; Snd.sfx('text'); } };
+  const del = () => { G.regName = G.regName.slice(0, -1); Snd.sfx('text'); };
+  for (const ch of Input.typed) { if (ch === 'DEL') del(); else add(ch); }
+  Input.typed.length = 0;
+  if (Input.pressed.b) del();
+  let finish = Input.pressed.start;
+  if (Input.pressed.a) {
+    if (G.gy < NAME_GRID.length) add(NAME_GRID[G.gy][G.gx]);
+    else if (G.gx === 0) del(); else if (G.gx === 1) finish = true; else { Input.textMode = false; G.state = 'select'; G.cur = G.regSlot; return; }
+  }
+  if (finish) {
+    const name = G.regName.trim() || 'HERO';
+    G.profiles[G.regSlot] = newProfile(name); Store.save(G.profiles);
+    Input.textMode = false; Snd.sfx('secret'); G.state = 'select'; G.cur = G.regSlot;
+  }
+}
+function drawRegister() {
+  textC('- REGISTER YOUR NAME -', 20, C.w);
+  frame8(64, 40, 128, 20, C.u); text(G.regName + (blink(3) ? '_' : ' '), 72, 46, C.w);
+  NAME_GRID.forEach((row, y) => { for (let x = 0; x < row.length; x++) text(row[x] === ' ' ? '_' : row[x], 40 + x * 16, 80 + y * 16, C.w); });
+  const by = 80 + NAME_GRID.length * 16;
+  text('DEL', 40, by, C.w); text('END', 104, by, C.w); text('BACK', 168, by, C.w);
+  if (blink(3)) {
+    ctx.fillStyle = C.r;
+    if (G.gy < NAME_GRID.length) { ctx.fillRect(38 + G.gx * 16, 89 + G.gy * 16, 11, 2); }
+    else ctx.fillRect([38, 102, 166][G.gx], by + 9, G.gx === 2 ? 34 : 26, 2);
+  }
+  textC(isTouch ? 'TAP LETTERS TO SPELL' : 'TYPE OR PICK LETTERS', 172, C.G); textC('A ADD  B DELETE  START DONE', 186, C.G);
+}
+
+// ---------------- GAMEPLAY ----------------
+function startGame(slot) {
+  G.slot = slot; G.prof = JSON.parse(JSON.stringify(G.profiles[slot]));
+  const p = G.prof; p.items = Object.assign(newProfile('').items, p.items || {});
+  G.player = new Player();
+  let pos = p.pos; if (!pos || !OW[`${pos.sx},${pos.sy}`]) pos = { sx: START.sx, sy: START.sy, x: START.x, y: START.y };
+  p.hp = Math.max(p.hp, Math.min(6, p.maxHp));
+  loadOW(pos.sx, pos.sy); G.player.x = pos.x; G.player.y = pos.y; G.player.dir = 'up';
+  G.state = 'play'; G.t = 0; owEnter();
+  if (!p.sword) say('FIND THE OLD CAVE TO THE\nNORTHWEST.', 160);
+}
+function updatePlay() {
+  G.t++;
+  if (G.fade) { const f = G.fade; f.t++; if (f.t === 16) f.fn(); if (f.t >= 32) G.fade = null; return; }
+  if (G.scroll) { G.scroll.t++; if (G.scroll.t >= G.scroll.dur) endScroll(); return; }
+  if (Input.pressed.start && !G.holdItem) { G.state = 'inv'; Snd.sfx('pause'); G.invMsg = null; return; }
+  if (G.msg && --G.msg.t <= 0) G.msg = null;
+  if (G.savedT > 0) G.savedT--;
+  if (G.gateMsgT > 0) G.gateMsgT--; if (G.denyT > 0) G.denyT--;
+  if (G.holdItem) {
+    if (--G.holdT <= 0) {
+      const id = G.holdItem; G.holdItem = null;
+      if (id === 'shard') { const e = G.dun.exitTo; Snd.sfx('stairs'); fadeTo(() => { loadOW(e.sx, e.sy); G.player.x = e.x; G.player.y = e.y + 8; G.player.dir = 'down'; owEnter(); saveGame(); }); }
+    }
+    return;
+  }
+  if (G.fairyT) { if (G.t % 5 === 0) { G.prof.hp = Math.min(G.prof.maxHp, G.prof.hp + 1); Snd.sfx('heart'); } if (G.prof.hp >= G.prof.maxHp) G.fairyT = 0; return; }
+  if (G.harpT) { if (--G.harpT === 0) harpEffect(); return; }
+  if (G.caveText && !caveTextDone()) { G.textT++; if (G.textT % 3 === 0) Snd.sfx('text'); return; }
+  if (G.pendingItems) { G.pickups.push(...G.pendingItems); G.pendingItems = null; }
+  const pl = G.player;
+  if (G.autoWalk) {
+    const a = G.autoWalk;
+    if (a.n > 0) { const [dx, dy] = DV[a.dir]; pl.x += dx; pl.y += dy; pl.dir = a.dir; pl.anim++; a.n--; }
+    if (a.n <= 0) { G.autoWalk = null; G.dirty = true; if (!G.roomClear && Object.values(G.rm.doors).includes('shutter')) Snd.sfx('door'); }
+  } else if (G.raft) {
+    const r = G.raft, [dx, dy] = DV[r.dir]; pl.x += dx; pl.y += dy; r.n++; pl.anim++;
+    const tx = Math.floor((pl.x + 8) / 16), ty = Math.floor((pl.y + 8) / 16), ch = G.tiles[ty] && G.tiles[ty][tx];
+    if (r.n >= 16 && ch && ch !== 'W' && (dy ? pl.y % 16 === 0 : pl.x % 16 === 0)) { G.raft = null; Snd.sfx('push'); }
+    if (!ch) G.raft = null;
+  } else { G.bumped = false; pl.update(); if (!G.bumped) G.pushT = 0; }
+  if (G.state !== 'play' || G.fade || G.scroll) return;
+  for (const e of G.ents) if (!e.dead) e.update();
+  for (const q of G.pprojs) if (!q.dead) q.update();
+  for (const q of G.eprojs) if (!q.dead) q.update();
+  for (const k of G.pickups) if (!k.dead) k.update();
+  updateFx();
+  G.ents = G.ents.filter(e => !e.dead); G.pprojs = G.pprojs.filter(q => !q.dead);
+  G.eprojs = G.eprojs.filter(q => !q.dead); G.pickups = G.pickups.filter(k => !k.dead);
+  checkRoomClear();
+  if (G.prof.hp <= 2 && G.t % 30 === 0) Snd.sfx('lowhp');
+}
+function drawPlay() {
+  drawHUD(); renderPlayfield();
+  if (G.fade) { const f = G.fade, a = f.t < 16 ? f.t / 16 : (32 - f.t) / 16; ctx.fillStyle = `rgba(0,0,0,${Math.ceil(a * 4) / 4})`; ctx.fillRect(0, HUD, 256, 176); }
+}
+
+// ---------------- DEATH / GAME OVER ----------------
+function startDeath() { G.state = 'dying'; G.deathT = 0; G.prof.deaths++; Snd.stop(); Snd.sfx('die'); G.msg = null; }
+function updateDying() {
+  G.t++; G.deathT++;
+  if (G.deathT < 70 && G.deathT % 5 === 0) G.player.dir = ['down', 'left', 'up', 'right'][(G.deathT / 5) % 4];
+  if (G.deathT > 120) { G.state = 'gameover'; G.cur = 0; Snd.play('gameover'); }
+}
+function drawDying() {
+  drawHUD(); renderPlayfield();
+  const k = Math.min(1, G.deathT / 60);
+  ctx.fillStyle = G.deathT < 60 ? `rgba(168,0,16,${0.5 * k})` : `rgba(0,0,0,${Math.min(1, (G.deathT - 60) / 50)})`;
+  ctx.fillRect(0, HUD, 256, 176); if (G.deathT >= 60) { dr(S.hero[G.player.dir][0], G.player.x, G.player.y); }
+}
+function respawn() {
+  const p = G.prof; p.hp = p.gentle ? p.maxHp : Math.min(6, p.maxHp);
+  G.player = new Player();
+  if (G.area === 'dun') { loadRoom(G.dun.start); G.player.x = 120; G.player.y = 144; roomEnter('up'); }
+  else { loadOW(START.sx, START.sy); owEnter(); }
+}
+function updateGameOver() {
+  G.t++; G.cur = menuMove(G.cur, 3);
+  if (!(Input.pressed.a || Input.pressed.start)) return;
+  Snd.sfx('select');
+  if (G.cur === 0) { respawn(); G.state = 'play'; }
+  else if (G.cur === 1) { respawn(); saveGame(); Snd.stop(); G.state = 'title'; G.t = 0; }
+  else { Snd.stop(); G.state = 'title'; G.t = 0; G.profiles = Store.load(); }
+}
+function drawGameOver() {
+  textC('GAME OVER', 48, C.r, 2);
+  text('CONTINUE', 96, 104, C.w); text('SAVE AND QUIT', 96, 128, C.w); text('RETRY', 96, 152, C.w);
+  ctx.drawImage(S.heart, 80, 104 + G.cur * 24);
+  textC('RETRY RETURNS TO THE LAST', 196, C.G); textC('SAVE WITHOUT SAVING NOW.', 206, C.G);
+}
+
+// ---------------- INVENTORY (START) ----------------
+function ownedItems() { const p = G.prof; return INV_ORDER.filter(id => id === 'bomb' ? p.bombs > 0 : id === 'candle' ? p.items.candle || p.items.redcandle : p.items[id]); }
+function updateInv() {
+  G.t++;
+  if (G.invMenu != null) {
+    if (Input.pressed.up) { G.invMenu = (G.invMenu + 2) % 3; Snd.sfx('select'); }
+    if (Input.pressed.down || Input.pressed.select) { G.invMenu = (G.invMenu + 1) % 3; Snd.sfx('select'); }
+    if (Input.pressed.b) { G.invMenu = null; return; }
+    if (Input.pressed.a || Input.pressed.start) {
+      const m = G.invMenu; G.invMenu = null;
+      if (m === 0) { G.invMsg = saveGame() ? 'GAME SAVED.' : 'COULD NOT SAVE.'; Snd.sfx('secret'); }
+      else if (m === 1) { saveGame(); Snd.stop(); G.state = 'title'; G.t = 0; }
+    }
+    return;
+  }
+  if (Input.pressed.select) { G.invMenu = 0; G.invMsg = null; Snd.sfx('select'); return; }
+  const own = ownedItems(), p = G.prof;
+  if (own.length) {
+    let i = Math.max(0, own.indexOf(p.bsel));
+    if (Input.pressed.left || Input.pressed.up) { i = (i + own.length - 1) % own.length; Snd.sfx('select'); }
+    if (Input.pressed.right || Input.pressed.down || Input.pressed.b) { i = (i + 1) % own.length; Snd.sfx('select'); }
+    p.bsel = own[i];
+  }
+  if (Input.pressed.start || (Input.pressed.a && G.invMenu == null)) { G.state = 'play'; G.invMenu = null; Snd.sfx('pause'); }
+}
+function drawInv() {
+  const p = G.prof;
+  text('INVENTORY', 24, 12, C.r);
+  frame8(16, 24, 224, 60, C.u);
+  text('USE B BUTTON', 24, 34, C.w); text('FOR THIS', 24, 44, C.w);
+  frame8(36, 54, 24, 26, C.u);
+  const bi = itemIcon(p.bsel); if (bi && ownedItems().includes(p.bsel)) ctx.drawImage(bi, 48 - (bi.width >> 1), 67 - (bi.height >> 1));
+  INV_ORDER.forEach((id, i) => {
+    const x = 128 + i * 18, y = 40, own = ownedItems().includes(id), ic = itemIcon(id);
+    if (own) ctx.drawImage(ic, x + 8 - (ic.width >> 1), y + 8 - (ic.height >> 1));
+    else { ctx.fillStyle = '#202020'; ctx.fillRect(x + 4, y + 4, 8, 8); }
+    if (own && id === p.bsel && blink(3)) frame8(x - 2, y - 4, 20, 24, C.r);
+  });
+  text('TREASURES', 24, 96, C.r); frame8(16, 108, 224, 30, C.u);
+  const tr = [[p.sword, p.sword >= 2 ? S.swordItem2 : S.swordItem], [1, p.items.silver ? S.shieldSilver : S.shield], [p.items.bible, S.bible], [p.items.ladder, S.ladder], [p.items.raft, S.raft], [p.items.mantle, S.mantle]];
+  if (G.area === 'dun') tr.push([p.dmap[G.dnum], S.map], [p.dcomp[G.dnum], S.compass]);
+  let x = 28; for (const [own, img] of tr) { if (own) { ctx.drawImage(img, x, 115); x += 24; } }
+  text('SHARDS OF WISDOM', 24, 148, C.y);
+  for (let i = 0; i < 8; i++) { const img = p.shards.includes(i + 1) ? S.shard : tint(S.shard, '#303030'); ctx.drawImage(img, 28 + i * 26, 160); }
+  textC(`${p.name}   HEARTS ${p.maxHp / 2}   FALLS ${p.deaths}`, 186, C.G);
+  textC('SELECT MENU   START RESUME', 204, C.w);
+  if (G.invMsg) textC(G.invMsg, 222, C.l);
+  if (G.invMenu != null) {
+    ctx.fillStyle = '#000'; ctx.fillRect(56, 120, 144, 64); frame8(56, 120, 144, 64, C.w);
+    ['SAVE', 'SAVE AND QUIT', 'BACK'].forEach((t, i) => text(t, 84, 132 + i * 16, C.w));
+    ctx.drawImage(S.heart, 68, 132 + G.invMenu * 16);
+  }
+}
+
+// ---------------- MAIN LOOP ----------------
+const UPDATE = { title: updateTitle, story: updateStory, select: updateSelect, register: updateRegister, erase: updateErase,
+  play: updatePlay, inv: updateInv, dying: updateDying, gameover: updateGameOver };
+const DRAW = { title: drawTitle, story: drawStory, select: drawSelect, register: drawRegister, erase: drawErase,
+  play: drawPlay, inv: drawInv, dying: drawDying, gameover: drawGameOver };
+let last = performance.now(), acc = 0;
+function loop(now) {
+  acc += Math.min(100, now - last); last = now;
+  while (acc >= 1000 / 60) {
+    Input.update();
+    try { UPDATE[G.state](); } catch (e) { console.error(e); }
+    acc -= 1000 / 60;
+  }
+  ctx.fillStyle = '#000'; ctx.fillRect(0, 0, W, H);
+  try { DRAW[G.state](); } catch (e) { console.error(e); }
+  requestAnimationFrame(loop);
+}
+
+// ---------------- SCREEN FIT & TOUCH ----------------
+let isTouch = ('ontouchstart' in window) || navigator.maxTouchPoints > 0;
+function fit() {
+  // measure the space inside the page's own padding (the hosted page keeps a side gutter)
+  const cs = getComputedStyle(document.body), bw = document.body.clientWidth, bh = document.body.clientHeight;
+  const vw = (bw || window.innerWidth) - parseFloat(cs.paddingLeft || 0) - parseFloat(cs.paddingRight || 0);
+  const vh = (bh || window.innerHeight) - parseFloat(cs.paddingTop || 0) - parseFloat(cs.paddingBottom || 0);
+  const portrait = window.innerHeight > window.innerWidth;
+  document.body.classList.toggle('touch', isTouch); document.body.classList.toggle('portrait', portrait);
+  const availH = isTouch && portrait ? vh * 0.6 : vh;
+  // in landscape, keep the D-pad and A/B buttons beside the picture instead of on top of it
+  const availW = isTouch && !portrait ? Math.max(vw * 0.5, vw - 2 * 186) : vw;
+  let s = Math.min(availW / W, availH / H); if (!isTouch && s >= 2) s = Math.floor(s);
+  screen.style.width = Math.floor(W * s) + 'px'; screen.style.height = Math.floor(H * s) + 'px';
+}
+function setupTouch() {
+  const pad = document.getElementById('dpad');
+  let padId = null;
+  const setDir = (e) => {
+    const r = pad.getBoundingClientRect(), dx = e.clientX - (r.left + r.width / 2), dy = e.clientY - (r.top + r.height / 2);
+    for (const d of DIRS) Input.touch[d] = false;
+    if (Math.hypot(dx, dy) < r.width * 0.12) return;
+    const nd = dirToward(dx, dy); if (!Input.touch[nd]) Input.latch[nd] = true; Input.touch[nd] = true;
+  };
+  pad.addEventListener('pointerdown', e => { Snd.init(); padId = e.pointerId; pad.setPointerCapture(e.pointerId); setDir(e); e.preventDefault(); });
+  pad.addEventListener('pointermove', e => { if (e.pointerId === padId) setDir(e); });
+  const padUp = e => { if (e.pointerId === padId) { padId = null; for (const d of DIRS) Input.touch[d] = false; } };
+  pad.addEventListener('pointerup', padUp); pad.addEventListener('pointercancel', padUp);
+  document.querySelectorAll('[data-btn]').forEach(el => {
+    const b = el.dataset.btn;
+    el.addEventListener('pointerdown', e => { Snd.init(); el.setPointerCapture(e.pointerId); Input.touch[b] = true; Input.latch[b] = true; el.classList.add('on'); e.preventDefault(); });
+    const up = () => { Input.touch[b] = false; el.classList.remove('on'); };
+    el.addEventListener('pointerup', up); el.addEventListener('pointercancel', up); el.addEventListener('lostpointercapture', up);
+  });
+  document.getElementById('fs').addEventListener('click', () => {
+    const d = document, el = d.documentElement;
+    if (d.fullscreenElement || d.webkitFullscreenElement) (d.exitFullscreen || d.webkitExitFullscreen).call(d);
+    else if (el.requestFullscreen) el.requestFullscreen().catch(() => {}); else if (el.webkitRequestFullscreen) el.webkitRequestFullscreen();
+  });
+  const labels = () => document.querySelectorAll('.soundBtn').forEach(b => b.textContent = Snd.label());
+  window.cycleSound = () => { Snd.init(); Snd.setMode((Snd.mode + 1) % 3); labels(); };
+  document.querySelectorAll('.soundBtn').forEach(b => b.addEventListener('click', cycleSound));
+  labels();
+  document.addEventListener('touchmove', e => e.preventDefault(), { passive: false });
+  document.addEventListener('pointerdown', () => Snd.init());
+  // pause (and save) whenever the game is hidden: app switch, lock screen, tab change
+  const autoPause = (save) => {
+    if (G.state === 'play' && !G.scroll && !G.fade) { G.state = 'inv'; G.invMenu = null; G.invMsg = 'PAUSED'; }
+    if (save && G.prof && ['play', 'inv'].includes(G.state)) saveGame();
+  };
+  document.addEventListener('visibilitychange', () => { if (document.hidden) autoPause(true); if (!Snd.ac) return; if (document.hidden) Snd.ac.suspend(); else Snd.ac.resume(); });
+  window.addEventListener('blur', () => autoPause(false));
+  window.addEventListener('pagehide', () => autoPause(true));
+}
+
+// ---------------- TAP TO CHOOSE (menus work by touching the picture) ----------------
+function setupTapMenus() {
+  screen.addEventListener('pointerdown', e => {
+    Snd.init();
+    const r = screen.getBoundingClientRect(), gx = (e.clientX - r.left) / r.width * W, gy = (e.clientY - r.top) / r.height * H;
+    const A = () => { Input.latch.a = true; }, inRow = (y) => gy >= y - 6 && gy < y + 14;
+    switch (G.state) {
+      case 'title': case 'story': Input.latch.start = true; break;
+      case 'select':
+        for (let i = 0; i < 3; i++) if (gy >= 44 + i * 34 && gy < 76 + i * 34) { G.cur = i; A(); return; }
+        if (inRow(160)) { G.cur = 3; A(); } else if (inRow(176)) { G.cur = 4; A(); }
+        break;
+      case 'erase':
+        if (G.confirm) { if (gy > 180) Input.latch[gx < 128 ? 'a' : 'b'] = true; return; }
+        for (let i = 0; i < 3; i++) if (gy >= 44 + i * 34 && gy < 76 + i * 34) { G.cur = i; A(); return; }
+        if (inRow(160)) { G.cur = 3; A(); }
+        break;
+      case 'register': {
+        const row = Math.floor((gy - 76) / 16), col = Math.floor((gx - 36) / 16);
+        if (row >= 0 && row < NAME_GRID.length && col >= 0 && col < 11) { G.gy = row; G.gx = col; A(); }
+        else if (row === NAME_GRID.length) { const b = gx < 80 ? 0 : gx < 150 ? 1 : 2; G.gy = row; G.gx = b; A(); }
+        break;
+      }
+      case 'gameover':
+        for (let i = 0; i < 3; i++) if (inRow(104 + i * 24)) { G.cur = i; A(); }
+        break;
+      case 'inv': {
+        if (G.invMenu != null) { for (let i = 0; i < 3; i++) if (inRow(132 + i * 16) && gx > 56 && gx < 200) { G.invMenu = i; A(); } return; }
+        const own = ownedItems();
+        INV_ORDER.forEach((id, i) => { const x = 128 + i * 18; if (gx >= x - 2 && gx < x + 18 && gy >= 34 && gy < 62 && own.includes(id)) { G.prof.bsel = id; Snd.sfx('select'); } });
+        break;
+      }
+    }
+  });
+}
+
+// ---------------- FAMILY ARCADE ----------------
+// Inside the arcade, hide our own Fullscreen button and keep our buttons out of the corner
+// where the arcade's ⌂ return button sits (the family can drag it to any corner).
+function setupArcade() {
+  try {
+    if (!(window.FamilyArcade || window.__FA_RUNTIME__)) return;
+    document.body.classList.add('fa');
+    let corner = 'tl';
+    const apply = () => { for (const c of ['tl', 'tr', 'bl', 'br']) document.body.classList.toggle('fa-' + c, c === corner); };
+    apply();
+    const pd = window.parent !== window && window.parent.document, btn = pd && pd.querySelector('.home-btn');
+    if (btn) {
+      const sync = () => { corner = btn.dataset.corner || 'tl'; apply(); };
+      sync(); new MutationObserver(sync).observe(btn, { attributes: true, attributeFilter: ['data-corner'] });
+    }
+  } catch (e) { /* the arcade's page is not reachable: keep the default corner */ }
+}
+
+buildArt();
+setupTapMenus();
+setupArcade();
+window.addEventListener('resize', fit);
+fit(); setupTouch();
+// When the hosted page is updated, save first and drop back into the same profile afterwards.
+const hot = window.claude && window.claude.hot;
+if (hot && hot.snapshot) hot.snapshot(() => { if (G.prof && ['play', 'inv'].includes(G.state)) saveGame(); return { slot: G.prof ? G.slot : null }; });
+function boot(data) {
+  data = data || {};
+  if (data.slot != null && G.profiles[data.slot]) startGame(data.slot);
+  requestAnimationFrame(loop);
+}
+if (hot && hot.ready) hot.ready(boot); else boot(hot && hot.data);
+</script>
+</body>
+</html>
