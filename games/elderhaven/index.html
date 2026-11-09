@@ -192,6 +192,7 @@ SONGS.dungeon5 = Object.assign({}, SONGS.dungeon, { bpm: 110, tr: 5 });
 SONGS.dungeon6 = Object.assign({}, SONGS.dungeon, { bpm: 100, tr: -7 });
 SONGS.dungeon7 = Object.assign({}, SONGS.dungeon, { bpm: 92, tr: 2 });
 SONGS.dungeon8 = Object.assign({}, SONGS.dungeon, { bpm: 136, tr: -4 });
+SONGS.dungeon9 = Object.assign({}, SONGS.dungeon, { bpm: 146, tr: -1 });
 const Snd = {
   ac:null, master:null, mus:null, fx:null, pulse:{}, noiseBuf:null,
   cur:null, want:null, tracks:[], timer:null, step:0.1, loop:true,
@@ -659,6 +660,14 @@ function buildArt() {
     'GggG.GggggG.GggG', 'GgG..GgggggG.GgG', 'GG...GggggG...GG'].concat(GARG))];
   S.davidKey = spr(['.yyyy...', 'y....y..', 'y.yy.y..', 'y....y..', '.yyyy...', '..y.....', '..y.....', '..yyy...', '..y.....', '..yy....', '..y.....', '..yyy...']);
 
+  // ---------------- FINAL DUNGEON additions ----------------
+  const MORG = ['.G............G.', '.GG..........GG.', '..GG.kkkkkk.GG..', '...GkGGGGGGkG...', '...kGGGGGGGGk...', '...kGrrGGrrGk...',
+    '...kGGGkkGGGk...', '..RkkGGGGGGkkR..', '.RRRkkkkkkkkRRR.', 'RRRkGGkyykGGkRRR', 'RRkGGGkkkkGGGkRR', 'RRkGGGGkkGGGGkRR', 'RR.kGGGkkGGGk.RR'];
+  S.morgrath = [spr(MORG.concat(['R..kGGk..kGGk..R', '...kkk....kkk...', '..kkkk....kkkk..'])),
+                spr(MORG.concat(['.R.kGGk..kGGk.R.', '...kkk....kkk...', '..kkkk....kkkk..']))];
+  S.crestPower = spr(['................', '..kkkkkkkkkkkk..', '.kyyyyyyyyyyyyk.', '.kyywwyyyyyyyyk.', '.kywyyyrryyyyyk.', '.kyyyyrrrryyyyk.',
+    '.kyyyrrwrrryyyk.', '.kyyyyrrrryyyyk.', '..kyyyyrryyyyk..', '..knyyyyyyyynk..', '...knyyyyyynk...', '....knyyyynk....', '.....knnnnk.....', '......kkkk......']);
+
   buildTiles();
 }
 
@@ -737,7 +746,7 @@ const OW = {
   '0,0': { name: 'mountain', enemies: ['hopper', 'hopper', 'hopper', 'golem'], caves: { '3,2': 'sage_mtn' }, secrets: { '9,1': 'dun8' }, map: [
     'RRRRRRRRRRRRRRRR', 'RRRRRRRRRBRRRRRR', 'RRRCRRR.....RRRR', 'RR.............R', 'R...............', 'R...RR....RR....',
     'R...............', 'RR...........RRR', 'RRR..........RRR', 'RRRR........RRRR', 'RRRRRR....RRRRRR'] },
-  '1,0': { name: 'seal', enemies: ['boar', 'boar', 'hopper', 'hopper'], gate: true, map: [
+  '1,0': { name: 'seal', enemies: ['boar', 'boar', 'hopper', 'hopper'], gate: true, dungeon: { '7,2': 9, '8,2': 9 }, map: [
     'RRRRRRRRRRRRRRRR', 'RRRRRRKKKKRRRRRR', 'RRRRRRKLLKRRRRRR', 'RRR...........RR', '................', '..RR........RR..',
     '................', 'RR............RR', 'RRR..........RRR', 'RRRR........RRRR', 'RRRRRR....RRRRRR'] },
   '2,0': { name: 'peaks', enemies: ['hopper', 'hopper', 'hopper', 'golem'], secrets: { '10,1': 'heart_cave' }, dungeon: { '7,7': 5, '8,7': 5 }, map: [
@@ -833,6 +842,8 @@ const ITEMS = {
   mantle: { name: 'THE BLUE MANTLE', spr: 'mantle', big: true },
   silverarrows: { name: 'THE SILVER ARROWS', spr: 'arrowSilverItem', big: true },
   davidkey: { name: 'THE KEY OF DAVID', spr: 'davidKey', big: true },
+  silverbow: { name: 'THE SILVER BOW', spr: 'bow', big: true },
+  crestpower: { name: 'THE CREST OF POWER', spr: 'crestPower', big: true },
   sword2: { name: 'THE SILVER SWORD', spr: 'swordItem2', big: true },
   bible: { name: 'THE HOLY BIBLE', spr: 'bible', big: true },
   bow: { name: 'THE BOW', spr: 'bow', big: true },
@@ -1012,6 +1023,26 @@ const DUNGEONS = {
       '2,0': { doors: { s: 'shutter', w: 'shutter' }, layout: 'boss', enemies: ['gargoyle', 'gargoyle'], boss: true, item: { id: 'heartc', c: 6, r: 5, when: 'clear' } },
       '1,0': { doors: { e: 'open' }, layout: 'statues', item: { id: 'shard', c: 5, r: 3, when: 'now' } }
     }
+  },
+  9: {
+    name: 'LEVEL-9', title: 'THE DARK CITADEL',
+    pal: { wall: '#4C0C0C', wallHi: '#B83010', wallLo: '#200404', floor: '#5C3C3C', floorHi: '#9C6C5C', floorLo: '#301C1C' },
+    start: '2,4', exitTo: { sx: 1, sy: 0, x: 120, y: 40 }, bossRoom: '2,1',
+    rooms: {
+      '2,4': { doors: { n: 'open', s: 'exit' }, layout: 'statues', enemies: [] },
+      '2,3': { doors: { s: 'open', w: 'open', e: 'open', n: 'locked' }, layout: 'pillars', enemies: ['darkknight', 'darkknight', 'golem'], item: { id: 'map', c: 0, r: 0, when: 'now' } },
+      '1,3': { doors: { e: 'open', w: 'open' }, layout: 'tomb', enemies: ['yeti', 'yeti', 'raven', 'raven'], item: { id: 'key', c: 6, r: 3, when: 'clear' } },
+      '0,3': { doors: { e: 'open', n: 'open' }, layout: 'sand', dark: true, enemies: ['flame', 'flame', 'flame', 'sentry'], item: { id: 'key', c: 6, r: 3, when: 'clear' } },
+      '0,2': { doors: { s: 'open', e: 'open' }, layout: 'pool', enemies: ['lurker', 'lurker', 'crab', 'crab'], item: { id: 'compass', c: 6, r: 5, when: 'now' } },
+      '1,2': { doors: { w: 'open', e: 'bomb' }, layout: 'sage', sage: 'MORGRATH FEARS THE\nSILVER ARROWS. WHEN HE\nFALLS, LET ONE FLY!', item: { id: 'heartpot', c: 6, r: 4, when: 'now' } },
+      '3,3': { doors: { w: 'open', e: 'open' }, layout: 'pillars', enemies: ['thorn', 'thorn', 'mole', 'mole'] },
+      '4,3': { doors: { w: 'open', n: 'open' }, layout: 'statues', enemies: ['wisp', 'wisp', 'flame', 'bone', 'bone'], item: { id: 'key', c: 6, r: 3, when: 'clear' } },
+      '4,2': { doors: { s: 'open', w: 'locked' }, layout: 'center', enemies: ['darkknight', 'darkknight', 'darkknight', 'shade', 'shade'], item: { id: 'silverbow', c: 6, r: 5, when: 'clear' } },
+      '3,2': { doors: { e: 'locked', w: 'open' }, layout: 'tomb', enemies: ['yeti', 'golem', 'sentry', 'sentry'] },
+      '2,2': { doors: { s: 'locked', e: 'open', w: 'bomb', n: 'locked' }, layout: 'crypt', enemies: ['darkknight', 'darkknight', 'wrap', 'wrap', 'sentry'] },
+      '2,1': { doors: { s: 'shutter', n: 'shutter' }, layout: 'boss', enemies: ['morgrath'], boss: true, final: true, item: { id: 'crestpower', c: 5, r: 3, when: 'clear' } },
+      '2,0': { doors: { s: 'open' }, layout: 'empty', princess: true, music: 'chapel' }
+    }
   }
 };
 
@@ -1042,6 +1073,7 @@ const ENEMY = {
   darkknight: { hp: 6, dmg: 2, speed: 0.8, ai: 'walker', art: 'darkknight', dirArt: true, frontShield: true },
   raven: { hp: 2, dmg: 1, speed: 0, ai: 'raven', art: 'raven', fly: true },
   gargoyle: { hp: 6, dmg: 2, speed: 0, ai: 'gargoyle', art: 'gargoyle', boss: true, fly: true },
+  morgrath: { hp: 16, dmg: 2, speed: 0, ai: 'morgrath', art: 'morgrath', boss: true, size: 32 },
   bramble: { hp: 10, dmg: 2, speed: 0, ai: 'bramble', art: 'bramble', boss: true, size: 32 },
   brine: { hp: 10, dmg: 2, speed: 0, ai: 'brine', art: 'brine', boss: true, size: 32 },
   golem: { hp: 6, dmg: 2, speed: 0.4, ai: 'walker', art: 'golem' },
@@ -1130,8 +1162,9 @@ class Player {
         p.bombs--; G.pprojs.push(new Bomb(fx, fy)); Snd.sfx('bomb_drop'); this.useT = 8; return true;
       case 'bow':
         if (!p.items.bow || G.pprojs.some(q => q.kind === 'arrow')) return false;
-        if (p.gems <= 0) { Snd.sfx('deny'); return false; }
-        p.gems--; G.pprojs.push(new Arrow(this.x, this.y, this.dir)); Snd.sfx('arrow'); this.useT = 10; return true;
+        const free = G.area === 'dun' && G.rm && G.rm.final;
+        if (p.gems <= 0 && !free) { Snd.sfx('deny'); return false; }
+        if (!free) p.gems--; G.pprojs.push(new Arrow(this.x, this.y, this.dir)); Snd.sfx('arrow'); this.useT = 10; return true;
       case 'candle':
         if (!p.items.candle && !p.items.redcandle) return false;
         if (p.items.redcandle ? G.pprojs.filter(q => q.kind === 'fire').length >= 2 : G.candleUsed) return false;
@@ -1307,7 +1340,7 @@ class Enemy {
   }
   hitbox() {
     // hidden foes (sunk lurker, vanished lich) can't be hit and don't stop shots
-    if ((this.type === 'mole' && this.ph === 'under') || (this.type === 'lurker' && this.ph && this.ph !== 'up') || (this.type === 'lich' && this.phase && this.phase !== 'cast' && this.z > 0)) return { x: -999, y: -999, w: 0, h: 0 };
+    if ((this.type === 'morgrath' && ['appear', 'vanish', 'hidden'].includes(this.ph)) || (this.type === 'mole' && this.ph === 'under') || (this.type === 'lurker' && this.ph && this.ph !== 'up') || (this.type === 'lich' && this.phase && this.phase !== 'cast' && this.z > 0)) return { x: -999, y: -999, w: 0, h: 0 };
     if (this.type === 'gloom' && this.small > 0) return { x: this.x + 10, y: this.y + 10, w: 12, h: 12 };
     if (this.type === 'blob') return { x: this.x + 3, y: this.y + 8, w: 10, h: 7 };
     if (this.type === 'bat') return { x: this.x + 2, y: this.y + 6, w: 12, h: 6 };
@@ -1328,6 +1361,21 @@ class Enemy {
   }
   damage(n, dir, kind) {
     if (this.inv > 0 || this.spawn > 0 || this.dead) return false;
+    if (this.type === 'morgrath') {
+      // sword blows bring him to his knees; only a silver arrow ends him
+      if (this.ph === 'stunned') {
+        if (kind === 'arrow' && G.prof.items.silverarrows) { this.hp = 0; this.die(); return true; }
+        Snd.sfx('shield'); this.inv = 10; return false;
+      }
+      if (this.ph !== 'stand') return false;
+      this.hp -= n; this.inv = 20; Snd.sfx('bosshit');
+      if (this.hp <= 0) {
+        this.hp = 1; this.ph = 'stunned'; this.pt = 0; G.eprojs = [];
+        if (G.prof.items.bow) G.prof.bsel = 'bow';
+        say('MORGRATH IS STUNNED!\nSHOOT HIM WITH THE\nSILVER ARROWS!', 240);
+      }
+      return true;
+    }
     if (this.type === 'lich' && this.phase !== 'cast') return false;
     if (this.type === 'lurker' && this.ph !== 'up') return false;
     if (this.type === 'gloom' && !(this.small > 0)) { Snd.sfx('shield'); this.inv = 10; return false; }
@@ -1603,6 +1651,32 @@ class Enemy {
       if (this.pt > 240) { this.ph = 'land'; this.pt = 0; Snd.sfx('push'); }
     } else if (this.pt > (this.hp <= 3 ? 70 : 100)) { this.ph = 'fly'; this.pt = 0; this.blend = 0; this.lx = this.x; this.ly = this.y; }
   }
+  // --- AI: MORGRATH, the Dark Lord (final guardian) ---
+  morgrath() {
+    if (!this.ph) { this.ph = 'stand'; this.pt = 0; this.x = 112; this.y = 40; }
+    this.pt++;
+    const p = G.player;
+    if (this.ph === 'appear') { this.z = 99; if (this.pt > 25) { this.ph = 'stand'; this.pt = 0; } }
+    else if (this.ph === 'stand') {
+      this.z = 0;
+      if (this.pt === 30 || (this.hp <= 8 && this.pt === 70)) {
+        const cx = this.x + 12, cy = this.y + 16, a = Math.atan2(p.y + 4 - cy, p.x + 4 - cx);
+        for (const o of [-0.5, -0.25, 0, 0.25, 0.5]) G.eprojs.push(new EProj('fireball', cx, cy, Math.cos(a + o) * 1.6, Math.sin(a + o) * 1.6, this));
+        Snd.sfx('fire');
+      }
+      if (this.pt > 100) { this.ph = 'vanish'; this.pt = 0; }
+    } else if (this.ph === 'vanish') { this.z = 99; if (this.pt > 25) { this.ph = 'hidden'; this.pt = 0; } }
+    else if (this.ph === 'hidden') {
+      this.z = 99;
+      if (this.pt > 45) {
+        const spots = [[48, 40], [176, 40], [48, 96], [176, 96], [112, 56]].filter(([x, y]) => Math.hypot(x - p.x, y - p.y) > 64);
+        [this.x, this.y] = pick(spots.length ? spots : [[112, 40]]); this.ph = 'appear'; this.pt = 0;
+      }
+    } else if (this.ph === 'stunned') {
+      this.z = 7;
+      if (this.pt > 420) { this.hp = 6; this.ph = 'vanish'; this.pt = 0; say('MORGRATH RISES AGAIN!', 120); }
+    }
+  }
   // --- AI: Gorrak the Stone Ram (Level-1 guardian) ---
   ram() {
     const p = G.player;
@@ -1636,6 +1710,12 @@ class Enemy {
       const ph = this.phase, k = ph === 'appear' ? this.pt / 30 : ph === 'vanish' ? 1 - this.pt / 30 : ph === 'hidden' ? 0 : 1;
       if (k <= 0) return; ctx.globalAlpha = Math.max(0.15, Math.round(k * 4) / 4);
       ctx.drawImage(img, Math.round(this.x), Math.round(this.y) + HUD, 32, 32); ctx.globalAlpha = 1; return;
+    }
+    if (this.type === 'morgrath') {
+      const ph = this.ph, k = ph === 'appear' ? this.pt / 25 : ph === 'vanish' ? 1 - this.pt / 25 : ph === 'hidden' ? 0 : 1;
+      if (k <= 0) return;
+      const m = ph === 'stunned' && (this.pt & 8) ? tint(img, C.n) : img;
+      ctx.globalAlpha = Math.max(0.15, Math.round(k * 4) / 4); ctx.drawImage(m, Math.round(this.x), Math.round(this.y) + HUD, 32, 32); ctx.globalAlpha = 1; return;
     }
     if (this.type === 'gargoyle') {
       const g = this.ph === 'land' ? S.gargoyle[0] : S.gargoyle[(this.anim >> 2) & 1];
@@ -1768,6 +1848,7 @@ function loadOW(sx, sy) {
   G.tiles = G.scr.map.map(r => r.split(''));
   for (const k in (G.scr.secrets || {})) if (flag(`sec:${sx},${sy},${k}`)) { const [tx, ty] = k.split(',').map(Number); G.tiles[ty][tx] = G.tiles[ty][tx] === 'b' ? 'Z' : 'C'; }
   // a lake the Shepherd's Harp has drawn back: dry lakebed with stairs down
+  if (G.scr.gate && flag('gate')) for (const row of G.tiles) for (let c = 0; c < COLS; c++) if (row[c] === 'L') row[c] = 'E';
   if (G.scr.drain && flag(`drain:${sx},${sy}`)) { for (const row of G.tiles) for (let c = 0; c < COLS; c++) if (row[c] === 'W') row[c] = '.'; for (const k in G.scr.secrets) if (G.scr.secrets[k].startsWith('dun')) { const [tx, ty] = k.split(',').map(Number); G.tiles[ty][tx] = 'Z'; } }
   G.bounds = { x0: 0, y0: 0, x1: 240, y1: 160 }; G.lit = true;
   clearRoomObjects();
@@ -1820,7 +1901,8 @@ function loadCave(id, ret) {
     else if (!p.shards.includes(6)) lines = 'THORNS HIDE A HOLLOW IN\nTHE EASTERN WOOD. LET\nYOUR LIGHT SHINE.';
     else if (!p.shards.includes(7)) lines = 'AT THE HIGH LAKE, PLAY\nTHE HARP, AND THE WATERS\nWILL DRAW BACK.';
     else if (!p.shards.includes(8)) lines = 'THE LAST SHARD SLEEPS IN\nTHE NORTHWEST ROCK. A\nBOMB WILL OPEN THE WAY.';
-    else lines = 'THY WORD IS A LAMP UNTO\nMY FEET, AND A LIGHT\nUNTO MY PATH.  PS 119';
+    else if (!p.won) lines = 'THE HOLY SEAL ON THE\nNORTHERN MOUNTAIN WAITS\nFOR YOU. GO WITH GOD.';
+    else lines = 'WELL DONE, GOOD AND\nFAITHFUL SERVANT.\n       MATTHEW 25:21';
   }
   const gift = items.length && items.every(i => i.price === 0);
   if (gift && flag(`cave:${id}`)) { items = []; lines = cv.after || lines; }
@@ -1871,6 +1953,7 @@ function loadRoom(key) {
   if (flag(`push:${G.dnum}:${key}`)) for (let r = 0; r < ROWS; r++) for (let c = 0; c < COLS; c++) if (rows[r][c] === 'Q') { rows[r][c] = '.'; rows[r - 1][c] = 'O'; }
   G.tiles = rows; G.bounds = { x0: 32, y0: 32, x1: 208, y1: 128 };
   G.lit = !G.rm.dark;
+  if (G.rm.princess) { G.tiles[4][7] = G.tiles[4][8] = 'N'; G.tiles[4][4] = G.tiles[4][11] = 'F'; G.npc = { spr: 'princess', x: 120, y: 64 }; }
   if (G.rm.sage) { G.tiles[4][7] = G.tiles[4][8] = 'N'; G.tiles[4][4] = G.tiles[4][11] = 'F'; G.npc = { spr: 'sage', x: 120, y: 64 }; G.caveText = G.rm.sage; G.textT = 0; }
   G.roomClear = true;
 }
@@ -1884,7 +1967,7 @@ function roomEnter(fromDir) {
   const it = rm.item;
   if (it && !flag(`di:${G.dnum}:${G.rkey}`) && (it.when === 'now' || G.roomClear)) spawnRoomItem();
   G.autoWalk = fromDir ? { dir: fromDir, from: OPP[fromDir], n: 20 } : null;
-  Snd.play(rm.boss && !flag(`boss:${G.dnum}`) ? 'boss' : dunSong());
+  Snd.play(rm.music || (rm.boss && !flag(`boss:${G.dnum}`) ? 'boss' : dunSong()));
 }
 function spawnRoomItem() {
   const it = G.rm.item; if (G.pickups.some(p => p.flag === `di:${G.dnum}:${G.rkey}`)) return;
@@ -1936,7 +2019,10 @@ G.bump = function (d) {
   const tx = Math.floor(fx / 16), ty = Math.floor(fy / 16), ch = G.tiles[ty] && G.tiles[ty][tx];
   if (G.area === 'ow' && ch === 'L' && G.gateMsgT <= 0) {
     G.gateMsgT = 200;
-    if (G.prof.shards.length >= 8) say('ALL EIGHT SHARDS SHINE!\nTHE SEAL TREMBLES... THE\nWAY WILL OPEN SOON.', 200);
+    if (G.prof.shards.length >= 8) {
+      setFlag('gate'); for (const row of G.tiles) for (let c = 0; c < COLS; c++) if (row[c] === 'L') row[c] = 'E';
+      G.dirty = true; G.flash = 8; Snd.sfx('secret'); say('THE EIGHT SHARDS SHINE!\nTHE HOLY SEAL OPENS.', 200); saveGame();
+    }
     else say(`A HOLY SEAL BARS THE WAY.\nBRING ALL 8 SHARDS OF\nWISDOM.  YOU HAVE ${G.prof.shards.length}/8`, 200);
   }
   // THE RAFT: from a dock, walking toward open water sets sail
@@ -2030,6 +2116,8 @@ function giveItem(id) {
     case 'sword2': p.sword = 2; break;
     case 'silverarrows': p.items.silverarrows = 1; break;
     case 'davidkey': p.items.davidkey = 1; break;
+    case 'silverbow': p.items.bow = 1; p.items.silverarrows = 1; if (!p.bsel) p.bsel = 'bow'; break;
+    case 'crestpower': p.items.crestpower = 1; p.hp = p.maxHp; break;
     case 'boomerang2': p.items.boomerang = 1; p.items.boomerang2 = 1; if (!p.bsel) p.bsel = 'boomerang'; break;
     case 'bombbag': p.items.bombbag = 1; p.maxBombs = 12; p.bombs = 12; if (!p.bsel) p.bsel = 'bomb'; break;
     case 'gems30': p.gems = Math.min(255, p.gems + 30); break;
@@ -2047,6 +2135,8 @@ function giveItem(id) {
     if (id === 'bible') m += '\nTHE WAND\'S LIGHT WILL NOW\nLEAVE A HOLY FLAME.';
     if (id === 'wand' && !G.equipHint) m += '\nPRESS B TO CAST LIGHT.';
     if (id === 'candle') m += '\nIT LIGHTS DARK ROOMS AND\nBURNS AWAY BUSHES.';
+    if (id === 'silverbow') m += '\nIT FIRES SILVER ARROWS,\nREADY FOR THE LAST BATTLE.';
+    if (id === 'crestpower') m += '\nTHE SACRED CREST IS WHOLE!\nTHE PRINCESS WAITS BEYOND\nTHE NORTH DOOR.';
     if (id === 'davidkey') m += '\nHE OPENETH, AND NO MAN\nSHUTTETH. EVERY LOCKED\nDOOR NOW OPENS FOR YOU.';
     if (id === 'silverarrows') m += '\nYOUR ARROWS NOW STRIKE\nTWICE AS HARD AND PIERCE.';
     if (id === 'boomerang2') m += '\nIT FLIES FASTER AND\nFARTHER THAN BEFORE.';
@@ -2319,6 +2409,7 @@ function drawSlots(title) {
       const n = Math.min(8, pr.maxHp / 2); for (let h = 0; h < n; h++) ctx.drawImage(S.heart, 80 + h * 8, y + 10);
       text(`SHARDS ${pr.shards.length}/8`, 152, y + 10, C.y);
       if (pr.gentle) text('GENTLE', 176, y, C.l);
+      if (pr.won) ctx.drawImage(S.crestPower, 84 + pr.name.length * 8, y - 4);
     } else text('- NEW GAME -', 80, y + 4, C.G);
   }
 }
@@ -2439,6 +2530,7 @@ function updatePlay() {
   G.ents = G.ents.filter(e => !e.dead); G.pprojs = G.pprojs.filter(q => !q.dead);
   G.eprojs = G.eprojs.filter(q => !q.dead); G.pickups = G.pickups.filter(k => !k.dead);
   checkRoomClear();
+  if (G.area === 'dun' && G.rm && G.rm.princess && Math.hypot(pl.x - 120, pl.y - 80) < 26) startEnding();
   if (G.prof.hp <= 2 && G.t % 30 === 0) Snd.sfx('lowhp');
 }
 function drawPlay() {
@@ -2535,9 +2627,36 @@ function drawInv() {
 }
 
 // ---------------- MAIN LOOP ----------------
-const UPDATE = { title: updateTitle, story: updateStory, select: updateSelect, register: updateRegister, erase: updateErase,
+// ---------------- THE ENDING ----------------
+function startEnding() {
+  const p = G.prof; p.won = 1; setFlag('won'); setFlag('boss:9'); saveGame();
+  G.state = 'ending'; G.endT = 0; G.endY = 236; G.msg = null; Snd.stop(); Snd.play('victory');
+  G.endLines = ['THE DARK LORD MORGRATH', 'IS DEFEATED.', '', 'THE SACRED CREST IS WHOLE', 'ONCE MORE, AND PEACE HAS', 'RETURNED TO ELDERHAVEN.', '',
+    'PRINCESS SERAPHINA SAID:', `"THANK YOU, ${p.name}.`, 'YOU WERE BRAVE, AND YOU', 'WERE KIND. COURAGE IS', 'GOOD, BUT MERCY IS', 'GREATER STILL."', '',
+    '"BE STRONG AND OF A GOOD', 'COURAGE... FOR THE LORD', 'THY GOD IS WITH THEE', 'WHITHERSOEVER THOU', 'GOEST."', '       JOSHUA 1:9', '', '',
+    'THE END', '', 'THANK YOU FOR PLAYING!'];
+  G.endStop = 196 - (G.endLines.length - 1) * 12;
+}
+function updateEnding() {
+  G.t++; G.endT++;
+  if (G.endT === 170) Snd.play('title');
+  if (G.endT > 140 && G.endY > G.endStop) G.endY -= 0.33;
+  if (G.endY <= G.endStop && (Input.pressed.start || Input.pressed.a)) { Snd.stop(); G.state = 'title'; G.t = 0; G.profiles = Store.load(); }
+}
+function drawEnding() {
+  drawStars();
+  ctx.drawImage(S.crestPower, 120, 4);
+  ctx.drawImage((G.prof.items.mantle ? S.heroMantle : S.hero).down[(G.t >> 4) & 1], 88, 24, 32, 32);
+  ctx.drawImage(S.princess, 136, 24, 32, 32);
+  ctx.save(); ctx.beginPath(); ctx.rect(0, 64, 256, 156); ctx.clip();
+  G.endLines.forEach((ln, i) => { const y = Math.round(G.endY + i * 12); if (y > 56 && y < 224) textC(ln, y, ln === 'THE END' ? C.y : C.w); });
+  ctx.restore();
+  if (G.endY <= G.endStop && blink(5)) textC('PUSH START', 226, C.G);
+}
+
+const UPDATE = { ending: updateEnding, title: updateTitle, story: updateStory, select: updateSelect, register: updateRegister, erase: updateErase,
   play: updatePlay, inv: updateInv, dying: updateDying, gameover: updateGameOver };
-const DRAW = { title: drawTitle, story: drawStory, select: drawSelect, register: drawRegister, erase: drawErase,
+const DRAW = { ending: drawEnding, title: drawTitle, story: drawStory, select: drawSelect, register: drawRegister, erase: drawErase,
   play: drawPlay, inv: drawInv, dying: drawDying, gameover: drawGameOver };
 let last = performance.now(), acc = 0;
 function loop(now) {
